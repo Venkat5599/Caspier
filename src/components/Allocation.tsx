@@ -12,9 +12,10 @@ export default function Allocation() {
           One portfolio engineered for every economic season.
         </h2>
         <p className="mt-5 max-w-xl text-white/55">
-          The All-Weather allocation balances five asset classes so the portfolio
-          holds up whether growth rises or falls, inflation spikes or fades. Bastion
-          holds each as a tokenized real-world asset on Casper.
+          The All-Weather allocation balances five asset classes so the portfolio holds
+          up whether growth rises or falls, inflation spikes or fades. It's the base —
+          Bastion then tilts it toward the four economic regimes, holding each asset as a
+          tokenized real-world asset on Casper.
         </p>
       </Reveal>
 

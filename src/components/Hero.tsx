@@ -34,9 +34,9 @@ export default function Hero() {
         transition={{ duration: 0.9, ease: EASE, delay: 0.18 }}
         className="mt-7 max-w-xl text-lg leading-relaxed text-white/55"
       >
-        Bastion is an AI agent that builds and rebalances Ray Dalio's All-Weather
-        portfolio of tokenized real-world assets. One tap — the agent decides what to
-        trade and executes on-chain. Fully in your custody. It even pays for its own data.
+        Bastion reads the macro regime, tilts a Ray Dalio All-Weather portfolio of
+        tokenized real-world assets toward what wins in it, and rebalances on-chain —
+        staking its on-chain reputation on every call. In your custody. Pays for its own data.
       </motion.p>
 
       <motion.div

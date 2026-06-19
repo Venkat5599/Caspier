@@ -54,13 +54,16 @@ Autonomous All-Weather RWA portfolio agent on Casper.
 ### 2.1 Smart contracts (Odra → Casper Testnet)
 - **wRWA tokens** — 5 CEP-18 tokens standing in for tokenized RWAs (wTLT, wSPX, wIEF, wGLD, wDBC). Testnet mocks, minted by us. Clearly labeled.
 - **BasketVault** — custodies each user's wRWA holdings; tracks per-user balances; enforces self-custody (only the owner key can withdraw; agent can rebalance *within* the vault but cannot withdraw out).
-- **Rebalancer** — **upgradeable** contract holding target weights + rebalance logic. Upgradeability is the Casper-native edge: change strategy without migrating funds. Routes swaps through **CSPR.trade** AMM pools.
+- **Rebalancer** — **upgradeable** contract holding base weights + regime-tilt logic + rebalance execution. Upgradeability is the Casper-native edge: change strategy without migrating funds. Routes swaps through **CSPR.trade** AMM pools.
+- **AgentPassport + Reputation** — on-chain identity for the agent; each regime call + rebalance is recorded; a reputation score moves with realized outcome. The agent is **accountable on-chain** — and this primitive is reusable by other Casper agents (the monopoly hook).
 - ~~TestPool~~ — **dropped.** CSPR.trade is live on Testnet (Uniswap-V2 AMM, Odra). Agent rebalances through real CSPR.trade pools via its MCP server. We seed wRWA/stable pools with test liquidity.
 
 ### 2.2 Agent runtime (Bun service)
 The agent loop. Runs **on user request** (one triggered run per tap) — no idle cron, no continuous LLM spend. Within a run the perceive→decide→act steps are fully autonomous.
 - **Perceive:** fetch prices + one macro signal through an **x402-gated endpoint** → produces a real on-chain micropayment deploy. Falls back to a logged stub if the facilitator endpoint is unavailable.
-- **Decide:** compute current weights from BasketVault state (via CSPR.cloud), measure drift vs target, apply a rebalance threshold (e.g. >5% band) to avoid churn. LLM reasoning step explains the decision in natural language for the console.
+- **Classify regime:** map growth × inflation → one of four Dalio regimes; LLM reasoning step justifies the call. Tilt base All-Weather weights to regime targets (`tiltedTargets`).
+- **Decide:** compute current weights from BasketVault state (via CSPR.cloud), measure drift vs the *tilted* targets, apply a rebalance threshold (band) to avoid churn.
+- **Stake reputation:** write the regime call + result to the AgentPassport/Reputation contract; score adjusts with outcome.
 - **Act:** if rebalance warranted, build + submit Rebalancer deploys; wait for finality via CSPR.cloud streaming.
 - **Report:** append a structured event `{phase, summary, deployHash, ts}` to the activity log the web console renders.
 
