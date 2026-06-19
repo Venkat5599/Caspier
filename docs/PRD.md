@@ -18,7 +18,7 @@ DeFi promised access but delivered casinos. There is no autonomous, non-custodia
 
 ## 2. Solution
 
-Bastion is an autonomous agent, not a dashboard. The user sets a risk profile and deposits stablecoins. The agent then:
+Bastion is an agent, not a dashboard. The user sets a risk profile and deposits stablecoins. The user triggers a run on demand (one tap — no expensive idle compute / no 24-7 LLM cron). On each triggered run the agent autonomously:
 
 1. **Perceives** — pulls macro signals + RWA prices through paid data APIs, paying per request via Casper's native x402.
 2. **Decides** — computes portfolio drift from the target All-Weather allocation; decides if a rebalance is warranted (threshold-based, not constant churn).

@@ -58,7 +58,7 @@ Autonomous All-Weather RWA portfolio agent on Casper.
 - ~~TestPool~~ — **dropped.** CSPR.trade is live on Testnet (Uniswap-V2 AMM, Odra). Agent rebalances through real CSPR.trade pools via its MCP server. We seed wRWA/stable pools with test liquidity.
 
 ### 2.2 Agent runtime (Bun service)
-The autonomous loop. Runs on an interval (and on macro-event triggers).
+The agent loop. Runs **on user request** (one triggered run per tap) — no idle cron, no continuous LLM spend. Within a run the perceive→decide→act steps are fully autonomous.
 - **Perceive:** fetch prices + one macro signal through an **x402-gated endpoint** → produces a real on-chain micropayment deploy. Falls back to a logged stub if the facilitator endpoint is unavailable.
 - **Decide:** compute current weights from BasketVault state (via CSPR.cloud), measure drift vs target, apply a rebalance threshold (e.g. >5% band) to avoid churn. LLM reasoning step explains the decision in natural language for the console.
 - **Act:** if rebalance warranted, build + submit Rebalancer deploys; wait for finality via CSPR.cloud streaming.
@@ -74,7 +74,7 @@ Wraps Casper read/write as LLM-callable tools (`get_balances`, `get_price`, `sub
 
 ## 3. Data flow — one agent cycle
 
-1. Timer fires → agent calls x402-gated price endpoint → **payment deploy #1** on Testnet.
+1. User taps "Run agent" → agent calls x402-gated price endpoint → **payment deploy #1** on Testnet.
 2. Agent reads BasketVault balances via CSPR.cloud → computes weights.
 3. Drift check: if any asset off target by > band → build rebalance plan.
 4. Agent submits Rebalancer deploy(s) through TestPool → **swap deploy #2..n**.

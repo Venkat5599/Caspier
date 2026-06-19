@@ -17,7 +17,7 @@ export const ALLWEATHER: Asset[] = [
 export const STATS = [
   { value: "9.8%", label: "avg annual return", sub: "100-yr backtest, All-Weather" },
   { value: "−18%", label: "max drawdown in 2008", sub: "vs −56% S&P 500" },
-  { value: "24/7", label: "autonomous rebalancing", sub: "agent never sleeps" },
+  { value: "1-tap", label: "agent rebalances on request", sub: "it decides + executes for you" },
 ];
 
 export const PARTNERS = [

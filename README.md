@@ -1,6 +1,6 @@
 # Bastion — The Autonomous All-Weather Agent on Casper
 
-> An autonomous AI agent that builds and rebalances a **Ray Dalio All-Weather portfolio** of tokenized real-world assets on the **Casper Network** — 24/7, on-chain, fully non-custodial. It even pays for its own market data via **x402**.
+> An AI agent that builds and rebalances a **Ray Dalio All-Weather portfolio** of tokenized real-world assets on the **Casper Network**. You trigger a run; the agent autonomously decides what to trade and executes on-chain — non-custodial. It even pays for its own market data via **x402**.
 
 Built for the **Casper Agentic Buildathon 2026** — Casper Innovation Track. Hits all three pillars: **Agentic AI · DeFi · RWA**.
 
@@ -8,7 +8,7 @@ Built for the **Casper Agentic Buildathon 2026** — Casper Innovation Track. Hi
 
 ## What it is
 
-Bastion is an agent, not a dashboard. Each cycle it:
+Bastion is an agent, not a dashboard. You trigger a run (one tap — cheap, no idle compute); the agent then autonomously:
 
 1. **Perceives** — pulls prices + macro signals through a paid endpoint, paying per request via Casper's native **x402** facilitator.
 2. **Decides** — measures portfolio drift from the All-Weather target allocation; rebalances only past a threshold band (no churn).

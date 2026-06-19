@@ -21,8 +21,8 @@ export default function AlphaBeta() {
             <h3 className="mt-4 font-display text-2xl font-semibold">Your All-Weather base</h3>
             <p className="mt-3 text-white/55">
               The disciplined core that protects purchasing power across every regime.
-              Bastion runs it for you — rebalancing, paying for data, staying on target,
-              forever. Boring on purpose.
+              When you check in, Bastion does the work — reads the market, decides, and
+              rebalances back to target. Boring on purpose.
             </p>
           </div>
         </Reveal>
