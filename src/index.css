@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+
+  --color-void: #050505;
+  --color-ink: #0a0b0d;
+  --color-emerald-glow: #34d399;
+  --color-amber-glow: #fbbf24;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background-color: #050505;
+  color: #f4f4f5;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Fixed film-grain overlay (pointer-events none, never on scroll containers) */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Concentric squircle helper */
+.bezel {
+  border-radius: 2rem;
+}
+.bezel-inner {
+  border-radius: calc(2rem - 0.375rem);
+}
+
+::selection {
+  background: rgba(52, 211, 153, 0.25);
+}
+
+/* Subtle marquee for partner row */
+@keyframes drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee {
+  animation: drift 28s linear infinite;
+}
+
+/* Ticking number flash */
+@keyframes pulseGlow {
+  0% { color: #34d399; }
+  100% { color: inherit; }
+}
+.tick-flash {
+  animation: pulseGlow 1.2s ease-out;
+}
