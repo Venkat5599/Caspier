@@ -1,8 +1,11 @@
-# Bastion — The Autonomous All-Weather Agent on Casper
+# Bastion + Sentinel — A regime-aware AI agent that can't go rogue, on Casper
 
-> An AI agent that builds and rebalances a **Ray Dalio All-Weather portfolio** of tokenized real-world assets on the **Casper Network**. You trigger a run; the agent autonomously decides what to trade and executes on-chain — non-custodial. It even pays for its own market data via **x402**.
+> **Bastion** is an AI agent that reads the macro regime and rebalances a **Ray Dalio All-Weather portfolio** of tokenized real-world assets on **Casper** — non-custodial, paying for its own data via **x402**.
+> **Sentinel** is the native authorization & kill-switch rail that lets it act with bounded, instantly-revocable authority — using Casper's weighted-key account model. The AI runs; the rail keeps it safe.
 
-Built for the **Casper Agentic Buildathon 2026** — Casper Innovation Track. Hits all three pillars: **Agentic AI · DeFi · RWA**.
+Built for the **Casper Agentic Buildathon 2026** — Casper Innovation Track. Hits all three pillars: **Agentic AI · DeFi & Payments · RWA**.
+
+**The wedge:** autonomous AI agents are unsafe near money (2026's #1 unsolved agent problem — spend caps, kill switch). Casper is the only major L1 with **weighted associated keys + action thresholds** natively, so the agent gets a low-weight key that can *spend but never escalate or drain*, capped by an upgradeable policy contract, killable in one transaction. Reusable by every Casper agent.
 
 ---
 

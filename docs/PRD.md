@@ -1,107 +1,112 @@
-# Bastion — Product Requirements Document
+# Bastion + Sentinel — Product Requirements Document (FINAL)
 
-**The autonomous All-Weather agent on Casper.**
-An AI agent that builds, monitors, and rebalances a Ray Dalio All-Weather portfolio of tokenized real-world assets on the Casper Network. Non-custodial. It pays for its own market data via native x402.
+**A regime-aware AI agent that can't go rogue — on Casper.**
 
-- **Event:** Casper Agentic Buildathon 2026 — Casper Innovation Track
-- **Pillars hit:** Agentic AI ✓ · DeFi ✓ · RWA ✓ (all three)
-- **Status:** Draft v0.1 — pending go/no-go
-- **Submission deadline:** June 30, 2026
+- **Bastion** — the AI agent. Reads the macro regime, tilts a Ray Dalio All-Weather portfolio of tokenized RWAs, and rebalances on-chain.
+- **Sentinel** — the native authorization & kill-switch rail that lets that agent act with bounded, instantly-revocable authority, using Casper's weighted-key account model.
+
+> Bastion is the star (the AI). Sentinel is what makes autonomous AI *safe* — and is only natively possible on Casper.
+
+- **Event:** Casper Agentic Buildathon 2026 — Casper Innovation Track (single track)
+- **Pillars:** Agentic AI ✓ (primary) · DeFi & Payments ✓ · RWA ✓
+- **Status:** FINALIZED concept — building
+- **Deadline:** June 30, 2026
 
 ---
 
 ## 1. Problem
 
-Inflation quietly erased ~30% of global savings purchasing power in 5 years. Ray Dalio's All-Weather portfolio (Bridgewater) survives every macro regime — but it's locked behind institutional minimums and active management. Retail can't access it, and even if they could, rebalancing across 5 asset classes is manual, emotional, and slow.
+Two problems, one product:
 
-DeFi promised access but delivered casinos. There is no autonomous, non-custodial way for an ordinary person to hold a disciplined, inflation-resistant RWA portfolio that manages itself.
+1. **Inflation** quietly erased ~30% of global savings' purchasing power in 5 years. Ray Dalio's All-Weather portfolio survives every macro regime but is locked behind institutions and manual rebalancing. Retail has no autonomous, non-custodial way to hold it.
+2. **Autonomous AI agents are unsafe to let near money.** 2026's #1 unsolved agent problem is authorization / spend-caps / kill-switch:
+   - Harvard/MIT/Stanford red-team (Feb 2026): agents deleted DBs, exfiltrated SSNs, **no working kill switch**.
+   - Real incident: an AI agent deleted a production DB + every backup in **9 seconds**.
+   - **RSA 2026: "Agent Security" was the single largest category (41 companies).** OWASP / NIST / Microsoft / Okta / ServiceNow all shipping agent governance.
+
+You can't give an AI agent your money until you can bound it and kill it instantly. Today you can't.
 
 ## 2. Solution
 
-Bastion is an agent, not a dashboard. The user sets a risk profile and deposits stablecoins. The user triggers a run on demand (one tap — no expensive idle compute / no 24-7 LLM cron). On each triggered run the agent autonomously:
+**Bastion** is an AI agent the user runs on demand. Each run it autonomously:
 
-1. **Perceives** — pulls macro signals (growth, inflation) + RWA prices through paid data APIs, paying per request via Casper's native x402.
-2. **Classifies the regime** — maps growth × inflation to one of the four Dalio regimes (Goldilocks / Reflation / Deflation / Stagflation). This is the agent's judgment — not fixed weights.
-3. **Decides** — tilts the All-Weather allocation toward what wins in that regime, then computes drift vs the tilted targets and whether a rebalance clears the threshold band.
-4. **Acts** — executes swaps on-chain through the CSPR.trade AMM. The user always holds the keys (self-custody).
-5. **Stakes reputation** — records the regime call + rebalance on its on-chain **Agent Passport**; reputation rises or falls with the call's outcome. The agent is accountable, on-chain, for every decision.
-6. **Reports** — every step is logged with a clickable Casper Testnet deploy hash.
+1. **Perceives** — macro (growth, inflation) + RWA prices via an endpoint it pays for with **x402**.
+2. **Classifies the regime** — growth × inflation → one of four Dalio regimes (Goldilocks / Reflation / Deflation / Stagflation). *Real AI judgment, not fixed weights.*
+3. **Tilts + decides** — tilts All-Weather targets toward the regime; computes drift vs band.
+4. **Acts** — rebalances on-chain through the **CSPR.trade** AMM.
 
-> This is what makes it a 10/10 and not a PyRon clone: (a) **regime-aware tilting** = real AI judgment, not static weights; (b) **on-chain reputation staking** = accountable autonomy, an original primitive other Casper agents can reuse.
+**Sentinel** is the rail every Bastion action passes through:
 
-This is a genuine perceive→decide→act loop, which is what separates an *agent* from auto-execution.
+- The agent holds a **low-weight associated key** on the user's Casper account — enough to *spend* (deploy threshold) but **not** to manage keys (can't escalate, remove keys, or drain). User keeps the high-weight key.
+- An **upgradeable policy contract** enforces runtime caps: per-tx limit, daily spend, contract/method allowlist (only CSPR.trade + the x402 facilitator), rate limit.
+- **Instant kill:** user removes the agent's key in one deploy → agent is dead on-chain immediately. Authority *is* the key — revoke it and everything it could do (and delegate) stops.
 
-## 3. Why Casper (defensible, not portable)
+> Why 10/10 and unique to Casper: regime tilting = real AI; Sentinel = solves the hottest agent-safety problem using **weighted associated keys + action thresholds + upgradeable contracts**, a primitive no other major L1 has natively. Every Casper agent can reuse Sentinel — picks-and-shovels.
 
-- **Native x402 facilitator** (live June 2026) — the agent pays for its own data feeds per-request on-chain. Bastion is a real x402 *consumer*, producing on-chain payment txns. On other L1s x402 is bolted on; here it's native.
-- **Upgradeable contracts** (Casper-unique) — rebalance logic and allocation targets can be updated without redeploying or migrating user funds.
-- **MCP servers + CSPR.cloud streaming** — the agent reads chain state and monitors fills via the official toolkit.
-- **Odra** — the basket-custody + rebalance contracts ship in the framework the AI Toolkit already supports.
+## 3. Why Casper (not portable)
+
+- **Weighted associated keys + action thresholds** — scoped, revocable agent authority at L1 account level. Elsewhere this needs smart-wallet / PDA / session-key hacks.
+- **Upgradeable contracts** — policy + rebalance logic update without migrating funds.
+- **Native x402 facilitator** — the agent pays for its own data on-chain, capped by Sentinel.
+- **CSPR.trade AMM** (live Testnet) — real swaps.
+- **MCP + CSPR.cloud** — agent reads/streams chain via the official toolkit.
 
 ## 4. Scope
 
-### In scope (MVP for buildathon)
-- Landing site (institutional, conversion-focused) — the public face + demo host.
-- **Live agent demo**: visible perceive→decide→rebalance loop with on-chain Testnet deploy hashes.
-- Allocation engine: All-Weather target + drift detection + rebalance plan.
-- Tokenized RWA basket contract (Odra) on Casper Testnet.
-- x402-paid data fetch (one real paid feed call per cycle, on-chain proof).
-- Inflation-erosion calculator (interactive, retail hook).
-- 25-year All-Weather vs S&P performance comparison (illustrative chart).
-- Self-custody deposit/withdraw flow via CSPR.click wallet.
+### In scope (MVP)
+- Landing site + **live agent console** (regime detection, tilt, reputation, Sentinel caps + kill).
+- **Sentinel contracts:** policy contract (caps + allowlist), agent-key setup (weighted associated key), revocation flow.
+- **Bastion agent:** perceive→regime→decide→act loop; x402-paid data; CSPR.trade swaps.
+- **wRWA** CEP-18 ×5 + BasketVault (custody).
+- Self-custody via CSPR.click; deposit/withdraw.
+- Inflation calculator + 25-yr performance chart (retail hooks).
 
 ### Out of scope (v1)
-- Real tokenized securities (no Ondo equivalent on Casper yet → **we mint our own test RWA tokens** representing TLT/SPX/GLD/etc. Clearly labeled Testnet.)
-- Fiat on-ramp / email login (Privy-style) — roadmap, not demo.
-- "Alpha" discretionary trading module — roadmap.
-- Mainnet deployment.
-- Cross-chain.
+- Real tokenized securities → **wRWA test tokens** (labeled).
+- Fiat on-ramp / mainnet / cross-chain.
+- Multi-agent delegation trees (Sentinel handles single agent for v1).
 
 ## 5. Honest disclosures (anti-DQ)
-
-- All code original to this Buildathon. Concept inspired by the All-Weather strategy (public, Dalio) and the retail-RWA framing; **no third-party product code, branding, or assets reused.**
-- RWA tokens are Testnet mocks — stated plainly in UI and README.
-- Performance numbers are backtested/illustrative, labeled as such.
+- All code original to this Buildathon. Concept inspired by the public All-Weather strategy + retail-RWA framing; no third-party product code, branding, or assets reused.
+- wRWA are Testnet mocks (stated in UI + README).
+- Performance figures backtested/illustrative.
 
 ## 6. Users
+- **Retail saver** who wants inflation-resistant, hands-off, non-custodial wealth — and proof the bot can't run off with it.
+- **Any Casper agent builder** who needs bounded authority → reuses Sentinel.
 
-- **Primary:** inflation-anxious retail saver who wants "set it and it runs itself," non-custodial.
-- **Secondary:** crypto-native user who wants a disciplined defensive (beta) sleeve separate from their degen (alpha) plays.
+## 7. Core flow
+1. Land → inflation hook + All-Weather credibility → "Launch agent."
+2. CSPR.click connect → set risk + **spend caps** → deposit → grant agent its low-weight key (Sentinel).
+3. Run Bastion → live perceive→regime→act loop; rebalances via CSPR.trade under caps.
+4. Hit a cap → action blocked on-chain. Revoke key → agent dies on-chain. (The killer demo.)
+5. Withdraw anytime (self-custody).
 
-## 7. Core user flow
-
-1. Land → see inflation hook + All-Weather credibility → "Launch Agent."
-2. Connect CSPR.click wallet → pick risk profile → deposit test stablecoins.
-3. Agent activates → live loop visible (perceive/decide/act) → first rebalance executes on-chain.
-4. User watches portfolio hold target weights; every action has an explorer link.
-5. Withdraw anytime (self-custody proof).
-
-## 8. Success criteria
-
-| Buildathon requirement | How Bastion meets it |
+## 8. Success criteria → rubric
+| Requirement | Met by |
 |---|---|
-| Working prototype on Testnet | Basket + rebalance contracts deployed, live |
-| Transaction-producing on-chain component | x402 data payment + rebalance deploys per cycle |
-| Open-source repo + README | Yes, with setup + "what's mocked" section |
-| Demo video | Scripted live agent loop walkthrough |
-| Agentic AI (judging weight) | Real perceive→decide→act autonomy |
-| RWA + DeFi relevance | Tokenized RWA basket, autonomous rebalancing |
-| Long-term launch plan | Roadmap: real RWA partners, fiat on-ramp, mainnet |
+| Working prototype on Testnet | Sentinel + BasketVault + agent live |
+| Transaction-producing on-chain | x402 payment + CSPR.trade swaps + key-revocation deploys |
+| Open-source + README | Yes, incl. "what's mocked" |
+| Demo video | Live loop + cap-block + kill-switch |
+| Use of AI / Agentic | LLM regime decisions (Bastion) |
+| DeFi & RWA | tokenized basket, autonomous rebalancing |
+| Innovation / originality | Sentinel = Casper-unique authorization primitive |
+| Long-term impact | Sentinel = reusable infra for all Casper agents |
 
 ## 9. Risks
-
 | Risk | Mitigation |
 |---|---|
-| No real RWA assets on Casper Testnet | Mint labeled mock RWA tokens; frame as Testnet demo |
-| Testnet/RPC instability during judging | Pre-recorded live-run backup; explorer links stay valid |
-| x402 facilitator API immature | Wrap one real paid call; degrade gracefully to logged stub if down |
-| "Just a clone" perception | Original brand/code + the agentic loop is the new IP; lead with autonomy in demo |
-| 30-day scope | Cut to: 1 basket, 5 assets, threshold rebalance, 1 paid feed |
+| No real RWA on Testnet | labeled wRWA test tokens |
+| Testnet/RPC lag in judging | pre-recorded backup; explorer links stay valid |
+| x402 network detail | buildathon sponsors usage; confirm net at onboarding |
+| Sentinel key model complexity | v1 = single agent key + one policy contract; document clearly |
+| "Is it AI?" doubt | Bastion's LLM regime decisions are the visible AI; lead with them |
 
-## 10. Open questions — RESOLVED (go decision: GO)
+## 10. Dependencies — RESOLVED (GO)
+1. ✅ CSPR.click — Testnet + email/social login.
+2. ✅ x402 facilitator — live; Testnet; sponsored for teams.
+3. ✅ CSPR.trade — live Testnet AMM (Odra) + MCP server.
+4. ✅ Weighted associated keys + action thresholds — native Casper account feature (Sentinel's foundation).
 
-1. ✅ CSPR.click — works on Testnet; bonus Google/Apple/email login + card on-ramp.
-2. ✅ x402 facilitator — live; works on Testnet; buildathon sponsors free usage.
-3. ✅ AMM/swap — **CSPR.trade live on Testnet** (Uniswap-V2 AMM, Odra, real pools) + has an MCP server. Custom TestPool dropped; agent rebalances through CSPR.trade.
-
-Only remaining mock: wRWA tokens (CEP-18) — minted by us, seeded into CSPR.trade pools so swaps are genuinely on-chain.
+Remaining mock: wRWA tokens (CEP-18), seeded into CSPR.trade pools so swaps are real.

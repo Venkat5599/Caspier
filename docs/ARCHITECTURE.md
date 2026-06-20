@@ -1,133 +1,126 @@
-# Bastion — Technical Architecture
+# Bastion + Sentinel — Technical Architecture (FINAL)
 
-Autonomous All-Weather RWA portfolio agent on Casper.
+A regime-aware AI agent (**Bastion**) that acts under a native authorization & kill-switch rail (**Sentinel**) on Casper.
 
 ---
 
 ## 1. System overview
 
 ```
-                         ┌──────────────────────────────────────────┐
-                         │              USER (browser)               │
-                         │   CSPR.click wallet · self-custody keys    │
-                         └───────────────┬───────────────────────────┘
-                                         │ connect / deposit / withdraw
+                         ┌──────────────────────────────────────────────┐
+                         │                 USER (browser)                │
+                         │  CSPR.click wallet · HIGH-weight master key   │
+                         │  sets spend caps · can revoke agent in 1 tx   │
+                         └───────────────┬──────────────────────────────┘
+                                         │ deposit · grant agent key · set policy · REVOKE
                                          ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│  WEB APP (Vite + React + Tailwind)                                         │
-│  landing · live agent console · inflation calc · perf chart · portfolio    │
-└───────────────┬───────────────────────────────────────┬───────────────────┘
-                │ REST/WS                                 │ wallet sign (deploys)
-                ▼                                         ▼
-┌───────────────────────────────┐          ┌──────────────────────────────────┐
-│  AGENT RUNTIME (Node/Bun svc)  │          │   CASPER TESTNET                  │
-│  perceive → decide → act loop  │          │                                   │
-│                                │  deploys │  ┌────────────────────────────┐  │
-│  1. PERCEIVE                   │─────────▶│  │ BasketVault (Odra)         │  │
-│     macro + price feed         │          │  │  - holds wRWA tokens       │  │
-│     via x402 paid request ─────┼──x402───▶│  │  - per-user balances       │  │
-│  2. DECIDE                     │  payment │  │  - self-custody guard      │  │
-│     drift vs target weights    │          │  └────────────────────────────┘  │
-│     rebalance plan             │          │  ┌────────────────────────────┐  │
-│  3. ACT                        │          │  │ Rebalancer (Odra,          │  │
-│     submit rebalance deploy ───┼─────────▶│  │   upgradeable)             │  │
-│  4. REPORT                     │          │  │  - executes swaps          │  │
-│     log + deploy hash          │          │  └────────────────────────────┘  │
-└───────────────┬───────────────┘          │  ┌────────────────────────────┐  │
-                │ read state / events       │  │ TestPool (mock AMM)        │  │
-                ▼                            │  │  - fixed-rate wRWA swaps   │  │
-┌───────────────────────────────┐           │  └────────────────────────────┘  │
-│  CSPR.cloud  (REST + Streaming)│◀──────────│  ┌────────────────────────────┐  │
-│  balances · deploy status · evt│  events   │  │ wRWA tokens (CEP-18 x5)     │  │
-└───────────────────────────────┘           │  │  wTLT wSPX wIEF wGLD wDBC   │  │
-                ▲                            │  └────────────────────────────┘  │
-                │ MCP tool calls             └──────────────────────────────────┘
-┌───────────────┴───────────────┐
-│  Casper MCP Server             │
-│  exposes chain to the LLM as   │
-│  callable tools (query/submit) │
-└────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────┐
+│  WEB APP (Vite + React)  landing · live agent console · caps · kill switch   │
+└───────────────┬───────────────────────────────────────────┬──────────────────┘
+                │                                             │ wallet sign
+                ▼                                             ▼
+┌──────────────────────────────┐               ┌──────────────────────────────────┐
+│  BASTION agent (Bun)         │   deploys     │   CASPER TESTNET                  │
+│  perceive→regime→decide→act  │  (signed by   │                                   │
+│                              │   LOW-weight  │  ┌─────────────────────────────┐ │
+│  1 PERCEIVE  x402 paid data ─┼───agent key)─▶│  │ SENTINEL policy (Odra,      │ │
+│  2 REGIME    classify+tilt   │               │  │   upgradeable)              │ │
+│  3 DECIDE    drift vs target │               │  │  - per-tx + daily caps      │ │
+│  4 ACT       swap            │   every tx    │  │  - contract/method allowlist│ │
+│              ▲               │   checked     │  │  - rate limit · spend ledger│ │
+└──────────────┼───────────────┘   against    │  └─────────────────────────────┘ │
+               │ reads/streams      policy     │  ┌─────────────────────────────┐ │
+               ▼                                │  │ USER ACCOUNT (native keys)  │ │
+┌──────────────────────────────┐               │  │  master key  weight 3       │ │
+│  CSPR.cloud (REST + Stream)   │◀──────────────│  │  agent key   weight 1       │ │
+│  balances · deploys · events  │   events      │  │  deploy thr 1 · keymgmt 3   │ │
+└──────────────────────────────┘               │  └─────────────────────────────┘ │
+               ▲                                │  ┌─────────────────────────────┐ │
+               │ MCP tool calls                 │  │ BasketVault (Odra)          │ │
+┌──────────────┴───────────────┐               │  │  holds wRWA · self-custody  │ │
+│  Casper MCP + CSPR.trade MCP  │               │  └─────────────────────────────┘ │
+└───────────────────────────────┘              │  ┌─────────────────────────────┐ │
+                                                │  │ CSPR.trade AMM (live)       │ │
+                                                │  │  real wRWA swaps            │ │
+                                                │  └─────────────────────────────┘ │
+                                                │  ┌─────────────────────────────┐ │
+                                                │  │ wRWA CEP-18 ×5              │ │
+                                                │  └─────────────────────────────┘ │
+                                                └──────────────────────────────────┘
 ```
 
-## 2. Components
+## 2. The Sentinel model (the Casper-unique core)
 
-### 2.1 Smart contracts (Odra → Casper Testnet)
-- **wRWA tokens** — 5 CEP-18 tokens standing in for tokenized RWAs (wTLT, wSPX, wIEF, wGLD, wDBC). Testnet mocks, minted by us. Clearly labeled.
-- **BasketVault** — custodies each user's wRWA holdings; tracks per-user balances; enforces self-custody (only the owner key can withdraw; agent can rebalance *within* the vault but cannot withdraw out).
-- **Rebalancer** — **upgradeable** contract holding base weights + regime-tilt logic + rebalance execution. Upgradeability is the Casper-native edge: change strategy without migrating funds. Routes swaps through **CSPR.trade** AMM pools.
-- **AgentPassport + Reputation** — on-chain identity for the agent; each regime call + rebalance is recorded; a reputation score moves with realized outcome. The agent is **accountable on-chain** — and this primitive is reusable by other Casper agents (the monopoly hook).
-- ~~TestPool~~ — **dropped.** CSPR.trade is live on Testnet (Uniswap-V2 AMM, Odra). Agent rebalances through real CSPR.trade pools via its MCP server. We seed wRWA/stable pools with test liquidity.
+Casper accounts natively support **associated keys with weights** and **action thresholds**:
 
-### 2.2 Agent runtime (Bun service)
-The agent loop. Runs **on user request** (one triggered run per tap) — no idle cron, no continuous LLM spend. Within a run the perceive→decide→act steps are fully autonomous.
-- **Perceive:** fetch prices + one macro signal through an **x402-gated endpoint** → produces a real on-chain micropayment deploy. Falls back to a logged stub if the facilitator endpoint is unavailable.
-- **Classify regime:** map growth × inflation → one of four Dalio regimes; LLM reasoning step justifies the call. Tilt base All-Weather weights to regime targets (`tiltedTargets`).
-- **Decide:** compute current weights from BasketVault state (via CSPR.cloud), measure drift vs the *tilted* targets, apply a rebalance threshold (band) to avoid churn.
-- **Stake reputation:** write the regime call + result to the AgentPassport/Reputation contract; score adjusts with outcome.
-- **Act:** if rebalance warranted, build + submit Rebalancer deploys; wait for finality via CSPR.cloud streaming.
-- **Report:** append a structured event `{phase, summary, deployHash, ts}` to the activity log the web console renders.
+- `deploy` threshold — weight needed to send spending transactions.
+- `key_management` threshold — weight needed to add/remove keys or change weights.
 
-### 2.3 MCP server
-Wraps Casper read/write as LLM-callable tools (`get_balances`, `get_price`, `submit_rebalance`, `get_deploy_status`). Lets the agent reasoning layer reach the chain through the standard protocol — the "agentic" interface judges look for.
+Sentinel configures the user account as:
 
-### 2.4 Web app (Vite + React + Tailwind + framer-motion)
-- Landing (conversion): inflation hook, All-Weather credibility, allocation, 25-yr chart, inflation calculator, partners, alpha/beta, CTA.
-- **Agent Console** (the differentiator): live perceive→decide→act stream, target vs actual weights, every action linking to `testnet.cspr.live`.
-- Wallet: CSPR.click connect, deposit/withdraw.
+| Key | Weight | Can spend? | Can manage keys? |
+|-----|--------|-----------|------------------|
+| Master (user) | 3 | yes | yes |
+| Agent (Bastion) | 1 | yes (≥ deploy thr 1) | **no** (< keymgmt thr 3) |
 
-## 3. Data flow — one agent cycle
+So the agent can trade but can **never** escalate, remove keys, or drain. On top, the **Sentinel policy contract** (upgradeable) enforces *what* and *how much*: per-tx cap, daily cap, allowlist (only CSPR.trade + x402 facilitator), rate limit, and a spend ledger. **Revocation** = master key removes the agent key in one deploy → instant on-chain death, no orphaned children.
 
-1. User taps "Run agent" → agent calls x402-gated price endpoint → **payment deploy #1** on Testnet.
-2. Agent reads BasketVault balances via CSPR.cloud → computes weights.
-3. Drift check: if any asset off target by > band → build rebalance plan.
-4. Agent submits Rebalancer deploy(s) through TestPool → **swap deploy #2..n**.
-5. CSPR.cloud streaming confirms finality → console updates → log entries with hashes.
-6. If no drift → logs "within band, no action" (still a real perceive + decision).
+> No other major L1 has weighted associated keys + action thresholds at the account level. This is what makes Sentinel native to Casper and not portable.
 
-→ Every cycle yields ≥1 on-chain deploy, satisfying the "transaction-producing" requirement.
+## 3. Components
 
-## 4. Stack
+### 3.1 Contracts (Odra → Testnet)
+- **wRWA tokens** — CEP-18 ×5 (wTLT, wSPX, wIEF, wGLD, wDBC), Testnet mocks.
+- **BasketVault** — custodies user wRWA; self-custody (only master key withdraws).
+- **Rebalancer** — upgradeable; base weights + regime-tilt + executes swaps via CSPR.trade.
+- **Sentinel policy** — upgradeable; caps, allowlist, rate limit, spend ledger; every agent tx validates against it.
 
-| Layer | Choice | Why |
-|---|---|---|
-| Contracts | Odra (Rust) | AI Toolkit native; upgradeable; CEP-18 |
-| Agent runtime | Bun + TypeScript | per global rules; fast; one service |
-| LLM reasoning | Claude (decision narration + plan) | reasoning layer of the agent |
-| Chain access | Casper MCP server + CSPR.cloud | official toolkit; reads/streams |
-| Payments | Casper native x402 facilitator | agent pays for data on-chain |
-| Wallet | CSPR.click | self-custody connect |
-| Frontend | Vite + React + Tailwind v4 + framer-motion | fast premium SPA |
+### 3.2 Bastion agent (Bun)
+On user-triggered run: **perceive** (x402 paid macro/price) → **classify regime** (growth × inflation → Dalio quadrant; LLM justifies) → **tilt + decide** (drift vs tilted targets) → **act** (CSPR.trade swaps, signed by low-weight agent key, each checked by Sentinel). No idle cron — runs on request.
 
-## 5. Trust & safety
+### 3.3 MCP servers
+Casper MCP + CSPR.trade MCP expose chain read/write + swaps as LLM-callable tools.
 
-- **Self-custody:** withdraw authority bound to the user key only. Agent has rebalance-only authority scoped to the vault; it can never move funds out.
-- **Bounded autonomy:** rebalance threshold band + max trade size caps prevent runaway churn.
-- **Auditability:** every agent action emits a deploy hash; full activity log is public.
-- **Upgrade governance:** Rebalancer upgrades gated (multisig/owner) — documented as roadmap for mainnet.
+### 3.4 Web app
+Landing (inflation hook, allocation, 25-yr chart, calculator) + **agent console** (regime, tilt, reputation, live log) + **Sentinel panel** (caps, spend ledger, revoke button). CSPR.click connect.
+
+## 4. One agent run (data flow)
+1. User taps Run → agent calls x402 endpoint → **payment deploy** (checked by Sentinel allowlist + cap).
+2. Reads BasketVault via CSPR.cloud → classifies regime → tilts targets.
+3. Drift > band → builds rebalance plan.
+4. Submits CSPR.trade swap deploys, signed by **agent key** → each validated by Sentinel policy (cap/allowlist/rate). Over-cap → **rejected on-chain**.
+5. CSPR.cloud streaming confirms → console + spend ledger update with hashes.
+→ ≥1 on-chain deploy per run (eligibility met).
+
+**Kill demo:** user taps Revoke → master key removes agent key → agent's next deploy **fails on-chain** (insufficient weight).
+
+## 5. Stack
+| Layer | Choice |
+|---|---|
+| Contracts | Odra (Rust) — CEP-18, BasketVault, Rebalancer, Sentinel policy |
+| Agent | Bun + TypeScript; LLM (Claude) for regime reasoning |
+| Chain access | Casper MCP + CSPR.trade MCP + CSPR.cloud |
+| Payments | native x402 facilitator (capped by Sentinel) |
+| Auth model | native weighted associated keys + action thresholds |
+| Wallet | CSPR.click |
+| Frontend | Vite + React + Tailwind v4 + framer-motion |
 
 ## 6. Build order (30 days)
+1. **Wk1** — wRWA CEP-18 + BasketVault on Testnet; web landing (done).
+2. **Wk2** — Sentinel policy contract + weighted-key setup + revoke flow; CSPR.click connect; deposit/withdraw.
+3. **Wk3** — Bastion agent loop (perceive/regime/decide/act) + x402 + CSPR.trade swaps under Sentinel; console wired to CSPR.cloud.
+4. **Wk4** — Sentinel panel (caps, ledger, kill), polish, record demo (incl. cap-block + kill), README, dry-run.
 
-1. **Week 1** — wRWA CEP-18 tokens + BasketVault deployed to Testnet; web landing shell.
-2. **Week 2** — Rebalancer + TestPool; deposit/withdraw via CSPR.click; allocation engine.
-3. **Week 3** — Agent runtime loop (perceive/decide/act) + x402 paid call + MCP server; live console wired to CSPR.cloud.
-4. **Week 4** — polish landing (inflation calc, perf chart), record demo, README, harden, dry-run judging.
-
-## 7. What is real vs mocked (disclosed)
-
-| Real on Testnet | Mocked (labeled) |
+## 7. Real vs mocked (disclosed)
+| Real on Testnet | Mocked / illustrative |
 |---|---|
-| CEP-18 tokens, BasketVault, Rebalancer, TestPool deploys | RWA tokens represent real assets but are test tokens |
-| x402 payment deploy (if facilitator live) | Swap rates via TestPool oracle, not a real market |
-| CSPR.cloud reads/streams, deploy hashes | Backtested performance numbers (illustrative) |
-| CSPR.click self-custody flow | Macro feed may be a single stubbed source |
+| Sentinel weighted keys + policy, BasketVault, CSPR.trade swaps, x402 payment, revocation deploys, CSPR.cloud reads, CSPR.click custody | wRWA = test tokens; backtest numbers illustrative; console simulated until contracts wired |
 
-## 8. Repo layout (proposed)
-
+## 8. Repo layout
 ```
-/contracts        Odra: tokens, BasketVault, Rebalancer, TestPool
-/agent            Bun service: perceive/decide/act loop
-/mcp              Casper MCP server (tool definitions)
-/web              Vite + React landing + agent console
-/docs             PRD.md, ARCHITECTURE.md
-README.md         setup + "what's mocked"
+/src           web app (landing + agent console + sentinel panel)
+/docs          PRD.md, ARCHITECTURE.md
+/contracts     Odra: wRWA, BasketVault, Rebalancer, Sentinel policy   (next)
+/agent         Bun: perceive→regime→decide→act loop                   (next)
+/mcp           MCP tool definitions                                    (next)
 ```
