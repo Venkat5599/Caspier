@@ -1,0 +1,54 @@
+{
+  "name": "x402 · Settle + meter usage",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "settle",
+        "options": {}
+      },
+      "name": "On x402 settle",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify the Casper x402 payment proof before metering\nfor (const item of items) {\n  item.json.verified = Boolean(item.json.proof);\n}\nreturn items;"
+      },
+      "name": "Verify payment proof",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [430, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{$json[\"verified\"]}}", "value2": true }]
+        }
+      },
+      "name": "Proof valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://187.127.137.136:8086/usage",
+        "options": {}
+      },
+      "name": "Record in usage ledger",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [890, 220]
+    }
+  ],
+  "connections": {
+    "On x402 settle": { "main": [[{ "node": "Verify payment proof", "type": "main", "index": 0 }]] },
+    "Verify payment proof": { "main": [[{ "node": "Proof valid?", "type": "main", "index": 0 }]] },
+    "Proof valid?": { "main": [[{ "node": "Record in usage ledger", "type": "main", "index": 0 }], []] }
+  },
+  "active": false,
+  "settings": {}
+}

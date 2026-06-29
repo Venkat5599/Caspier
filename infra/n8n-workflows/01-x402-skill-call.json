@@ -1,0 +1,65 @@
+{
+  "name": "x402 · Agent pays per-call skill",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Agent trigger",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://187.127.137.136:8086/s/market-digest",
+        "options": {}
+      },
+      "name": "Call skill (expect 402)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [430, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [{ "value1": 402, "operation": "equal", "value2": 402 }]
+        }
+      },
+      "name": "Payment required?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [{ "name": "x402_proof", "value": "casper:settle:0x…" }]
+        },
+        "options": {}
+      },
+      "name": "Attach x402 payment",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [890, 200]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://187.127.137.136:8086/s/market-digest",
+        "options": {}
+      },
+      "name": "Retry with proof → 200",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1120, 200]
+    }
+  ],
+  "connections": {
+    "Agent trigger": { "main": [[{ "node": "Call skill (expect 402)", "type": "main", "index": 0 }]] },
+    "Call skill (expect 402)": { "main": [[{ "node": "Payment required?", "type": "main", "index": 0 }]] },
+    "Payment required?": { "main": [[{ "node": "Attach x402 payment", "type": "main", "index": 0 }], []] },
+    "Attach x402 payment": { "main": [[{ "node": "Retry with proof → 200", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {}
+}
