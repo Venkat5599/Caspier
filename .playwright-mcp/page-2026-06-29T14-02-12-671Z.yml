@@ -1,0 +1,188 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "Agent Fabric" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - navigation [ref=e6]:
+          - link "APIs" [ref=e7] [cursor=pointer]:
+            - /url: /apis
+            - img [ref=e8]
+            - text: APIs
+          - link "MCP Servers" [ref=e13] [cursor=pointer]:
+            - /url: /mcp
+            - img [ref=e14]
+            - text: MCP Servers
+          - link "Workflows" [ref=e17] [cursor=pointer]:
+            - /url: /workflows
+            - img [ref=e18]
+            - text: Workflows
+      - generic [ref=e22]:
+        - button "Toggle theme" [ref=e23]:
+          - img [ref=e24]
+        - button "Sign In" [ref=e30]:
+          - img [ref=e31]
+          - text: Sign In
+  - main [ref=e34]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]: Built on Casper · x402-native · MCP-compatible
+        - heading "Agents with limits." [level=1] [ref=e39]
+        - paragraph [ref=e40]: Programmable permissions for AI agents.
+        - paragraph [ref=e41]: Agent Fabric is an agent-native x402 execution fabric that lets AI agents safely interact with paid APIs and on-chain workflows on Casper — without ever accessing a user's private keys.
+        - generic [ref=e42]:
+          - link "How it Works" [ref=e43] [cursor=pointer]:
+            - /url: "#how"
+            - button "How it Works" [ref=e44]:
+              - text: How it Works
+              - img [ref=e45]
+          - link "Explore APIs" [ref=e47] [cursor=pointer]:
+            - /url: /apis
+            - button "Explore APIs" [ref=e48]:
+              - img [ref=e49]
+              - text: Explore APIs
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - img [ref=e55]
+          - generic [ref=e58]: AI Agent
+        - generic [ref=e60]:
+          - text: Permission Boundary
+          - generic [ref=e61]:
+            - img [ref=e63]
+            - generic [ref=e73]:
+              - paragraph [ref=e74]: Agent Fabric
+              - paragraph [ref=e75]: Scoped execution layer
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - img [ref=e80]
+            - generic [ref=e83]: Paid APIs
+          - generic [ref=e84]:
+            - img [ref=e86]
+            - generic [ref=e89]: Casper
+    - generic [ref=e91]:
+      - heading "The problem with AI agents today" [level=2] [ref=e92]
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - img [ref=e97]
+            - generic [ref=e100]: AI agents either can't act, or require full key access
+          - generic [ref=e101]:
+            - img [ref=e103]
+            - generic [ref=e105]: Hot wallets and unrestricted permissions create unacceptable risk
+          - generic [ref=e106]:
+            - img [ref=e108]
+            - generic [ref=e115]: APIs aren't agent-native or economically programmable
+          - generic [ref=e116]:
+            - img [ref=e118]
+            - generic [ref=e122]: On-chain workflows are powerful, but unsafe to automate
+        - generic [ref=e124]:
+          - img [ref=e126]
+          - paragraph [ref=e129]: Full key access
+          - paragraph [ref=e130]: = Unlimited risk
+      - paragraph [ref=e131]: Powerful agents without boundaries are a liability.
+    - generic [ref=e133]:
+      - heading "A safe execution layer for agentic finance" [level=2] [ref=e134]
+      - generic [ref=e135]:
+        - generic [ref=e136]:
+          - img [ref=e138]
+          - heading "Scoped by default" [level=3] [ref=e140]
+          - paragraph [ref=e141]: Agents operate using session keys with explicitly defined permissions — scoped by method, asset, value, and host. The primary key is never exposed.
+        - generic [ref=e142]:
+          - img [ref=e144]
+          - heading "Economic primitives" [level=3] [ref=e149]
+          - paragraph [ref=e150]: Turn any API or multi-step workflow into an x402-compatible, usage-based economic primitive agents can safely consume.
+        - generic [ref=e151]:
+          - img [ref=e153]
+          - heading "MCP-compatible" [level=3] [ref=e156]
+          - paragraph [ref=e157]: Publish APIs and workflows as MCP servers, making them discoverable and usable by AI agents like ChatGPT and Claude.
+    - generic [ref=e159]:
+      - heading "How Agent Fabric works" [level=2] [ref=e160]
+      - generic [ref=e161]:
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - img [ref=e164]
+            - generic [ref=e168]: "1"
+          - heading "Define Capabilities" [level=3] [ref=e169]
+          - paragraph [ref=e170]: Create x402 API proxies and on-chain workflows on Casper.
+        - generic [ref=e171]:
+          - generic [ref=e172]:
+            - img [ref=e173]
+            - generic [ref=e176]: "2"
+          - heading "Configure Account" [level=3] [ref=e177]
+          - paragraph [ref=e178]: Set up a Casper account with scoped, weighted associated keys.
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - img [ref=e181]
+            - generic [ref=e184]: "3"
+          - heading "Create an MCP Server" [level=3] [ref=e185]
+          - paragraph [ref=e186]: Expose selected APIs and workflows as a permissioned MCP server.
+        - generic [ref=e187]:
+          - generic [ref=e188]:
+            - img [ref=e189]
+            - generic [ref=e192]: "4"
+          - heading "Delegate Safely" [level=3] [ref=e193]
+          - paragraph [ref=e194]: Issue a session key that lets an agent perform only approved actions.
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - img [ref=e197]
+            - generic [ref=e200]: "5"
+          - heading "Agent Executes" [level=3] [ref=e201]
+          - paragraph [ref=e202]: The agent discovers, reasons, and executes — within strict boundaries.
+      - paragraph [ref=e203]: Autonomous execution, without autonomous risk.
+    - generic [ref=e205]:
+      - heading "Why Casper & x402" [level=2] [ref=e206]
+      - generic [ref=e207]:
+        - generic [ref=e208]:
+          - img [ref=e210]
+          - heading "Built for Casper" [level=3] [ref=e213]
+          - paragraph [ref=e214]: Agent Fabric runs on Casper and uses its native weighted associated keys + action thresholds — enabling agent-driven actions and on-chain automation with a key that can spend but never escalate or drain.
+        - generic [ref=e215]:
+          - img [ref=e217]
+          - heading "x402 by Default" [level=3] [ref=e222]
+          - paragraph [ref=e223]: x402 turns APIs and workflows into programmable, usage-based economic primitives — a perfect fit for autonomous agents and on-chain settlement.
+      - generic [ref=e224]:
+        - generic [ref=e225]: Casper
+        - generic [ref=e226]: x402
+        - generic [ref=e227]: MCP
+        - generic [ref=e228]: Weighted Keys
+        - generic [ref=e229]: Session Keys
+    - generic [ref=e231]:
+      - heading "Who it's for" [level=2] [ref=e232]
+      - generic [ref=e233]:
+        - generic [ref=e234]:
+          - img [ref=e236]
+          - heading "Developers" [level=3] [ref=e240]
+          - paragraph [ref=e241]: Build, monetize and expose agent-native APIs and workflows.
+        - generic [ref=e242]:
+          - img [ref=e244]
+          - heading "Protocol Teams" [level=3] [ref=e248]
+          - paragraph [ref=e249]: Enable safe agent interaction with your contracts and liquidity.
+        - generic [ref=e250]:
+          - img [ref=e252]
+          - heading "Power Users" [level=3] [ref=e254]
+          - paragraph [ref=e255]: Automate on-chain actions without hot wallets or unlimited permissions.
+    - generic [ref=e257]:
+      - img [ref=e259]
+      - heading "Build agentic workflows — without giving up control." [level=2] [ref=e263]
+      - generic [ref=e264]:
+        - link "Explore APIs" [ref=e265] [cursor=pointer]:
+          - /url: /apis
+          - button "Explore APIs" [ref=e266]:
+            - text: Explore APIs
+            - img [ref=e267]
+        - link "Explore the GitHub" [ref=e269] [cursor=pointer]:
+          - /url: https://github.com/Venkat5599/Caspier
+          - button "Explore the GitHub" [ref=e270]
+  - contentinfo [ref=e271]:
+    - generic [ref=e272]:
+      - paragraph [ref=e273]: Agent Fabric
+      - generic [ref=e274]:
+        - link "GitHub" [ref=e275] [cursor=pointer]:
+          - /url: https://github.com/Venkat5599/Caspier
+        - generic [ref=e276]: ·
+        - link "MCP" [ref=e277] [cursor=pointer]:
+          - /url: /mcp
+        - generic [ref=e278]: ·
+        - link "Status" [ref=e279] [cursor=pointer]:
+          - /url: http://187.127.137.136:8086/health
+      - paragraph [ref=e280]: Agent Fabric — an agent-native x402 execution fabric on Casper.

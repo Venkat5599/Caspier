@@ -5,7 +5,7 @@
 /* Theme tokens — values come from the CSS variables below so utilities
    (bg-surface, text-muted, …) follow the active light/dark theme. */
 @theme inline {
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --color-bg: var(--bg);
@@ -17,27 +17,27 @@
   --color-accent: var(--accent);
 }
 
-/* Dark (default) */
+/* Dark (default) — deep navy, corporate security blue */
 :root {
-  --bg: #07090b;
-  --surface: #0d1117;
-  --surface-2: #12181f;
-  --border: #1e2630;
-  --fg: #f1f5f9;
-  --muted: #8b97a6;
-  --accent: #22d3ee;
+  --bg: #060a14;
+  --surface: #0c1322;
+  --surface-2: #121b2e;
+  --border: #1c2740;
+  --fg: #eef2f8;
+  --muted: #8a98b4;
+  --accent: #2f6bff;
   color-scheme: dark;
 }
 
 /* Light */
 .light {
-  --bg: #f7f9fb;
+  --bg: #f6f8fc;
   --surface: #ffffff;
-  --surface-2: #eef2f6;
-  --border: #e2e8f0;
-  --fg: #0b1118;
-  --muted: #5b6776;
-  --accent: #0891b2;
+  --surface-2: #eef2f9;
+  --border: #dde3ee;
+  --fg: #0a1124;
+  --muted: #54627d;
+  --accent: #1d4ed8;
   color-scheme: light;
 }
 
@@ -57,9 +57,18 @@ body {
   background: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
-/* Ambient hero glow */
+/* Corporate hero gradient — navy to deeper navy with a blue wash */
 .hero-glow {
   background:
-    radial-gradient(55% 50% at 85% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
-    radial-gradient(45% 40% at 0% 10%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%);
+    radial-gradient(60% 60% at 75% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 65%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 40%);
+}
+
+/* Logo marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 32s linear infinite;
 }

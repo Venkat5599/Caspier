@@ -67,6 +67,24 @@ const AUDIENCE = [
 
 const PILLS = ["Casper", "x402", "MCP", "Weighted Keys", "Session Keys"];
 
+const STATS = [
+  { value: "0", label: "private keys exposed" },
+  { value: "1-tx", label: "instant revoke" },
+  { value: "REST + MCP", label: "every skill, two front doors" },
+  { value: "per-call", label: "x402 metered" },
+];
+
+const STACK = [
+  "Casper",
+  "x402",
+  "Model Context Protocol",
+  "Postgres",
+  "gVisor",
+  "Bun",
+  "TypeScript",
+  "Next.js",
+];
+
 export default function LandingPage() {
   return (
     <main>
@@ -127,6 +145,34 @@ export default function LandingPage() {
                 <DiagramNode icon={Cpu} label="Casper" small />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats band */}
+      <section className="border-b border-border bg-surface/40">
+        <div className="mx-auto grid max-w-7xl gap-px px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
+          {STATS.map((s) => (
+            <div key={s.label} className="px-4 text-center">
+              <p className="text-3xl font-extrabold tracking-tight text-accent">{s.value}</p>
+              <p className="mt-1 text-sm text-muted">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Tech marquee */}
+      <section className="overflow-hidden border-b border-border py-10">
+        <p className="mb-6 text-center font-mono text-xs uppercase tracking-widest text-muted">
+          Built with
+        </p>
+        <div className="relative flex">
+          <div className="marquee-track flex shrink-0 items-center gap-12 pr-12">
+            {[...STACK, ...STACK].map((t, i) => (
+              <span key={i} className="whitespace-nowrap text-lg font-semibold text-muted">
+                {t}
+              </span>
+            ))}
           </div>
         </div>
       </section>
@@ -262,27 +308,49 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-accent/10 text-accent">
-            <Layers className="h-7 w-7" />
-          </span>
-          <h2 className="mt-8 text-4xl font-extrabold leading-tight tracking-tight">
-            Build agentic workflows — without giving up control.
-          </h2>
-          <div className="mt-9 flex flex-wrap justify-center gap-3">
-            <Link href="/apis">
+      {/* Testimonial / trust band */}
+      <section className="border-b border-border bg-surface/40 py-24">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <p className="text-2xl font-semibold leading-relaxed tracking-tight sm:text-3xl">
+            &ldquo;The missing safety layer for agentic finance — agents that can
+            <span className="text-accent"> act</span>, bounded by keys that can&apos;t
+            <span className="text-accent"> drain</span>.&rdquo;
+          </p>
+          <p className="mt-6 font-mono text-sm text-muted">
+            Built for the Casper agentic ecosystem
+          </p>
+        </div>
+      </section>
+
+      {/* Split CTA */}
+      <section className="py-24">
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 md:grid-cols-2">
+          <Card className="flex flex-col justify-between gap-6 p-8">
+            <div>
+              <h3 className="text-2xl font-bold tracking-tight">Publish a skill</h3>
+              <p className="mt-2 text-muted">
+                Turn a SKILL.md into a metered REST + MCP endpoint in minutes.
+              </p>
+            </div>
+            <Link href="/apis/create">
               <Button size="lg">
-                Explore APIs <ArrowRight className="h-4 w-4" />
+                Create API <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+          </Card>
+          <Card className="flex flex-col justify-between gap-6 p-8">
+            <div>
+              <h3 className="text-2xl font-bold tracking-tight">Build with confidence</h3>
+              <p className="mt-2 text-muted">
+                Open source. Bounded, revocable authority on Casper. No private keys.
+              </p>
+            </div>
             <a href="https://github.com/Venkat5599/Caspier">
               <Button size="lg" variant="outline">
                 Explore the GitHub
               </Button>
             </a>
-          </div>
+          </Card>
         </div>
       </section>
     </main>
