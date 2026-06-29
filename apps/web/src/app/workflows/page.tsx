@@ -1,55 +1,45 @@
-import { Workflow, Plus } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { ExternalLink, Workflow } from "lucide-react";
 
-const STEPS = [
-  { kind: "x402 call", label: "Fetch market data" },
-  { kind: "condition", label: "If volatility > threshold" },
-  { kind: "skill", label: "Call rebalance skill" },
-  { kind: "on-chain", label: "Submit via session key" },
-];
+// n8n editor, embedded live through the X-Frame-safe proxy.
+const N8N_URL = process.env.NEXT_PUBLIC_N8N_URL ?? "http://187.127.137.136:8088";
 
 export default function WorkflowsPage() {
   return (
-    <div className="mx-auto max-w-4xl px-6 py-14">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Workflows</h1>
           <p className="mt-1 text-muted">
-            Compose skills, x402 calls, and on-chain actions into reusable, permissionable
-            automations agents can run.
+            Compose skills, x402 calls, and on-chain actions into reusable automations — powered by a
+            self-hosted n8n, running live below.
           </p>
         </div>
-        <Button variant="outline" disabled title="Coming soon">
-          <Plus className="h-4 w-4" /> New workflow
-        </Button>
+        <a
+          href={N8N_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-bg transition-opacity hover:opacity-90"
+        >
+          <ExternalLink className="h-4 w-4" /> Open full editor
+        </a>
       </div>
 
-      <Card className="mt-10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Workflow className="h-4 w-4 text-accent" /> Example: regime rebalance
-          </CardTitle>
-          <CardDescription>A four-step template, bounded by a Casper session key.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ol className="space-y-3">
-            {STEPS.map((s, i) => (
-              <li key={s.label} className="flex items-center gap-3">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-border font-mono text-xs text-muted">
-                  {i + 1}
-                </span>
-                <Badge variant="accent">{s.kind}</Badge>
-                <span className="text-sm">{s.label}</span>
-              </li>
-            ))}
-          </ol>
-        </CardContent>
-      </Card>
+      <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2.5">
+          <Workflow className="h-4 w-4 text-accent" />
+          <span className="text-sm font-medium">n8n · workflow editor</span>
+          <span className="ml-auto font-mono text-xs text-muted">live</span>
+        </div>
+        <iframe
+          src={N8N_URL}
+          title="n8n workflow editor"
+          className="h-[78vh] w-full"
+          allow="clipboard-read; clipboard-write"
+        />
+      </div>
 
-      <p className="mt-6 text-center font-mono text-xs text-muted">
-        Visual workflow builder lands with the workflow-fabric brick.
+      <p className="mt-4 text-center font-mono text-xs text-muted">
+        Self-hosted n8n on the Agent Fabric VPS. Sign in with the workspace credentials.
       </p>
     </div>
   );
