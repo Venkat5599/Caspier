@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Agent Fabric — Agent skills, served as endpoints",
   description:
     "Turn a SKILL.md into a live REST and MCP endpoint — validated, sandboxed, and metered. On Casper. Pay per call.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
