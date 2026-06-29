@@ -24,13 +24,22 @@ for _ in $(seq 1 20); do
   sleep 2
 done
 
-echo "==> install + migrate + build web (bun container)"
+echo "==> install + migrate"
 docker run --rm --network host -v "$APP":/app -w /app \
-  -e DATABASE_URL="$DATABASE_URL" -e NEXT_PUBLIC_GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-http://187.127.137.136:8086}" \
-  oven/bun:1 bash -lc \
-  "bun install --frozen-lockfile || bun install; bun services/catalog/src/migrate.ts; bun run web:build; \
-   cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true; \
-   cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static"
+  -e DATABASE_URL="$DATABASE_URL" oven/bun:1 bash -lc \
+  "bun install --frozen-lockfile || bun install; bun services/catalog/src/migrate.ts"
+
+echo "==> build web (retry up to 3x — flaky OOM on the shared box)"
+build_web() {
+  docker run --rm -v "$APP":/app -w /app \
+    -e NEXT_PUBLIC_GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-http://187.127.137.136:8086}" \
+    -e NODE_OPTIONS="--max-old-space-size=2048" \
+    oven/bun:1 bash -lc \
+    "rm -rf apps/web/.next; bun run web:build && \
+     cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true; \
+     cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static"
+}
+n=0; until build_web; do n=$((n+1)); [ "$n" -ge 3 ] && { echo "web build failed after 3 tries"; exit 1; }; echo "  retry $n…"; sleep 5; done
 
 echo "==> (re)start gateway"
 docker rm -f agentfabric-gateway >/dev/null 2>&1 || true
