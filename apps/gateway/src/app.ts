@@ -1,7 +1,18 @@
 import { Hono } from "hono";
-import { CatalogService, CatalogError } from "@fabric/catalog";
+import { CatalogService, CatalogError, PgCatalogStore } from "@fabric/catalog";
 import { ManifestParseError } from "@fabric/manifest";
 import { createLogger, type Logger } from "./logger.ts";
+
+/**
+ * Build a CatalogService backed by Postgres when DATABASE_URL is set, otherwise
+ * the in-memory store. Lets the gateway run durably in prod, ephemerally in dev.
+ */
+export function defaultCatalog(): CatalogService {
+  if (process.env.DATABASE_URL) {
+    return new CatalogService(PgCatalogStore.fromUrl());
+  }
+  return new CatalogService();
+}
 
 export interface AppDeps {
   catalog?: CatalogService;
@@ -13,7 +24,7 @@ export interface AppDeps {
  * Routes the publish → discover loop; auth, rate-limit, and payments land later.
  */
 export function createApp(deps: AppDeps = {}) {
-  const catalog = deps.catalog ?? new CatalogService();
+  const catalog = deps.catalog ?? defaultCatalog();
   const logger = deps.logger ?? createLogger();
   const app = new Hono();
 

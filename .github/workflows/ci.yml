@@ -9,6 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fabric
+          POSTGRES_PASSWORD: fabric
+          POSTGRES_DB: fabric
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fabric"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://fabric:fabric@localhost:5432/fabric
+
     steps:
       - uses: actions/checkout@v4
 
@@ -21,6 +40,9 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
+
+      - name: Migrate database
+        run: bun services/catalog/src/migrate.ts
 
       - name: Test
         run: bun run test
