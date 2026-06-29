@@ -93,4 +93,10 @@ describe("gateway", () => {
     const res = await app.request("/skills/nope");
     expect(res.status).toBe(404);
   });
+
+  test("sends CORS headers for browser clients", async () => {
+    const app = freshApp();
+    const res = await app.request("/skills", { headers: { Origin: "http://example.com" } });
+    expect(res.headers.get("access-control-allow-origin")).toBeTruthy();
+  });
 });

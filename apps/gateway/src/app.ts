@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { CatalogService, CatalogError, PgCatalogStore } from "@fabric/catalog";
 import { ManifestParseError } from "@fabric/manifest";
 import { createLogger, type Logger } from "./logger.ts";
@@ -27,6 +28,9 @@ export function createApp(deps: AppDeps = {}) {
   const catalog = deps.catalog ?? defaultCatalog();
   const logger = deps.logger ?? createLogger();
   const app = new Hono();
+
+  // Browser clients (the marketplace) call this from a different origin/port.
+  app.use("*", cors());
 
   app.get("/health", (c) => c.json({ status: "ok", service: "gateway" }));
 
