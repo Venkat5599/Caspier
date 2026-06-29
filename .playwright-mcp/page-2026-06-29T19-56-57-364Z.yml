@@ -1,0 +1,51 @@
+- generic [active]:
+  - generic:
+    - generic [ref=e3]:
+      - generic: 
+      - generic: 
+      - generic [ref=e4]:
+        - img [ref=e6] [cursor=pointer]
+        - menubar [ref=e8]:
+          - menuitem [ref=e9] [cursor=pointer]
+          - menuitem "Workflow" [ref=e10]:
+            - generic [ref=e11] [cursor=pointer]:
+              - img [ref=e12]
+              - text: 
+          - menuitem "Credentials" [ref=e14]:
+            - generic [ref=e15] [cursor=pointer]:
+              - img [ref=e16]
+              - text: 
+          - menuitem [ref=e18] [cursor=pointer]:
+            - img [ref=e20]
+          - menuitem "Help" [ref=e22]:
+            - generic [ref=e23] [cursor=pointer]:
+              - img [ref=e24]
+              - text: 
+    - generic:
+      - generic:
+        - text: 
+        - generic "Add Node" [ref=e30]:
+          - button [ref=e31] [cursor=pointer]:
+            - img [ref=e35]
+        - generic [ref=e37]:
+          - button "Zoom to Fit" [ref=e38] [cursor=pointer]:
+            - img [ref=e39]
+          - button "Zoom In" [ref=e41] [cursor=pointer]:
+            - img [ref=e42]
+          - button "Zoom Out" [ref=e44] [cursor=pointer]:
+            - img [ref=e45]
+        - button "Execute Workflow" [ref=e48] [cursor=pointer]:
+          - generic [ref=e49]:
+            - img [ref=e52]
+            - generic [ref=e54]: Execute Workflow
+        - generic:
+          - generic: 
+  - textbox [ref=e55]
+  - alert [ref=e60]:
+    - generic [ref=e61]: 
+    - generic [ref=e62]:
+      - heading "Init Problem" [level=2] [ref=e63]
+      - paragraph [ref=e65]:
+        - text: "There was a problem initializing the workflow:"
+        - text: Could not find workflow
+      - generic [ref=e66] [cursor=pointer]: 

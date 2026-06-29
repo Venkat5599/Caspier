@@ -21,7 +21,7 @@ export default function WorkflowsPage() {
         </a>
       </div>
       <iframe
-        src={N8N_URL}
+        src={`${N8N_URL}/workflow/1`}
         title="Workflow editor"
         className="min-h-0 w-full flex-1 border-0"
         allow="clipboard-read; clipboard-write"
