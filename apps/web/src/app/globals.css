@@ -1,45 +1,65 @@
 @import "tailwindcss";
 
-@theme {
+@variant dark (&:where(.dark, .dark *));
+
+/* Theme tokens — values come from the CSS variables below so utilities
+   (bg-surface, text-muted, …) follow the active light/dark theme. */
+@theme inline {
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
-  --color-background: #0a0a0b;
-  --color-surface: #111113;
-  --color-surface-2: #18181b;
-  --color-border: #26262a;
-  --color-foreground: #fafafa;
-  --color-muted: #a1a1aa;
-  --color-primary: #6366f1;
-  --color-primary-fg: #ffffff;
-  --color-accent: #34d399;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
 }
 
+/* Dark (default) */
 :root {
+  --bg: #07090b;
+  --surface: #0d1117;
+  --surface-2: #12181f;
+  --border: #1e2630;
+  --fg: #f1f5f9;
+  --muted: #8b97a6;
+  --accent: #22d3ee;
   color-scheme: dark;
 }
 
-* {
-  border-color: var(--color-border);
+/* Light */
+.light {
+  --bg: #f7f9fb;
+  --surface: #ffffff;
+  --surface-2: #eef2f6;
+  --border: #e2e8f0;
+  --fg: #0b1118;
+  --muted: #5b6776;
+  --accent: #0891b2;
+  color-scheme: light;
 }
 
+* {
+  border-color: var(--border);
+}
 html {
   -webkit-font-smoothing: antialiased;
 }
-
 body {
   margin: 0;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans);
 }
-
 ::selection {
-  background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
-/* Subtle dotted grid backdrop */
-.grid-bg {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 28px 28px;
+/* Ambient hero glow */
+.hero-glow {
+  background:
+    radial-gradient(55% 50% at 85% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+    radial-gradient(45% 40% at 0% 10%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%);
 }

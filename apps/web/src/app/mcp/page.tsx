@@ -18,31 +18,31 @@ const TOOLS = [
 
 export default function McpPage() {
   return (
-    <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold tracking-tight">MCP integration</h1>
-      <p className="mt-1 text-sm text-muted">
+    <div className="mx-auto max-w-4xl px-6 py-14">
+      <h1 className="text-3xl font-extrabold tracking-tight">MCP Servers</h1>
+      <p className="mt-1 text-muted">
         Every published skill is discoverable as a Model Context Protocol tool. Point any MCP client
         — Claude, ChatGPT — at the Agent Fabric server.
       </p>
 
-      <Card className="mt-8">
+      <Card className="mt-10">
         <CardHeader>
           <CardTitle>Client configuration</CardTitle>
           <CardDescription>Add this to your MCP client config, then restart it.</CardDescription>
         </CardHeader>
         <CardContent>
-          <pre className="overflow-x-auto rounded-lg border border-border bg-background p-4 font-mono text-xs leading-relaxed text-foreground">
+          <pre className="overflow-x-auto rounded-lg border border-border bg-bg p-4 font-mono text-xs leading-relaxed text-foreground">
             {MCP_CONFIG}
           </pre>
         </CardContent>
       </Card>
 
-      <h2 className="mt-10 text-lg font-semibold tracking-tight">Available tools</h2>
+      <h2 className="mt-12 text-lg font-bold tracking-tight">Available tools</h2>
       <div className="mt-4 space-y-3">
         {TOOLS.map((t) => (
           <Card key={t.name}>
             <CardContent className="flex items-center gap-4 p-4">
-              <Badge variant="primary">{t.name}</Badge>
+              <Badge variant="accent">{t.name}</Badge>
               <span className="text-sm text-muted">{t.desc}</span>
             </CardContent>
           </Card>
