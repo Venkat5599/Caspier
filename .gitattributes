@@ -1,0 +1,9 @@
+# Normalize line endings — keep LF in the repo, avoid CRLF churn on Windows.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.svg text eol=lf
+*.wasm binary
+*.lock text eol=lf

@@ -9,12 +9,16 @@
     "services/*",
     "packages/*"
   ],
+  "devDependencies": {
+    "typescript": "^5.5.3",
+    "bun-types": "latest"
+  },
   "scripts": {
     "web:dev": "bun --filter @fabric/web dev",
     "web:build": "bun --filter @fabric/web build",
     "gateway:dev": "bun --filter @fabric/gateway dev",
     "mcp:dev": "bun --filter @fabric/mcp-server dev",
     "typecheck": "bun --filter '*' typecheck",
-    "test": "bun --filter '*' test"
+    "test": "bun test"
   }
 }
