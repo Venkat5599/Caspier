@@ -1,0 +1,967 @@
+- generic [ref=e3]:
+  - navigation [ref=e5]:
+    - link "BlockSec" [ref=e7] [cursor=pointer]:
+      - /url: /
+      - img "BlockSec" [ref=e8]
+    - generic [ref=e10]:
+      - button "Audit" [ref=e12] [cursor=pointer]
+      - button "Products" [ref=e14] [cursor=pointer]
+      - button "Solutions" [ref=e16] [cursor=pointer]
+      - button "Resources" [ref=e18] [cursor=pointer]
+      - button "Company" [ref=e20] [cursor=pointer]
+    - generic [ref=e21]:
+      - button "Sign in" [ref=e23] [cursor=pointer]
+      - button "Contact Sales" [ref=e24] [cursor=pointer]
+  - generic [ref=e25]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - img "Phalcon Compliance" [ref=e30]
+          - generic [ref=e31]: Compliance
+        - heading "Your Smart Crypto AML Platform" [level=1] [ref=e32]
+        - paragraph [ref=e33]: Keep illicit funds away from your wallet, stay secure and compliant with ease
+      - generic [ref=e40] [cursor=pointer]:
+        - generic [ref=e42]: 
+        - combobox [ref=e43]
+      - link "Try now for free" [ref=e46] [cursor=pointer]:
+        - /url: https://app.blocksec.com/phalcon/compliance
+        - button "Try now for free" [ref=e47]
+    - generic [ref=e54]:
+      - heading "One Platform for Crypto Compliance and Security" [level=2] [ref=e55]
+      - generic [ref=e56]:
+        - generic [ref=e57]: AML/CFT to screen, alert, and trace illicit flows and prevent money laundering.
+        - generic [ref=e58]: Security Audit to validate design, code, and business logic before launch.
+        - generic [ref=e59]: Security Monitoring to detect and block attacks before execution.
+    - generic [ref=e64]:
+      - link "AML/CFT" [ref=e65] [cursor=pointer]:
+        - /url: "#product-suite-compliance"
+        - generic [ref=e66]: AML/CFT
+      - link "Security Audit" [ref=e67] [cursor=pointer]:
+        - /url: "#product-suite-audit"
+        - generic [ref=e68]: Security Audit
+      - link "Security Monitoring" [ref=e69] [cursor=pointer]:
+        - /url: "#product-suite-security"
+        - generic [ref=e70]: Security Monitoring
+    - generic [ref=e71]:
+      - generic [ref=e73]:
+        - heading "Intelligent Compliance. Confident Growth." [level=2] [ref=e75]
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - paragraph [ref=e79]: Screen, alert, and trace.
+            - paragraph [ref=e80]: Stop illicit funds before they move.
+          - generic [ref=e81]:
+            - link "Phalcon Compliance Crypto compliance hub for wallet screening and KYT Try now for free" [ref=e82] [cursor=pointer]:
+              - /url: https://app.blocksec.com/phalcon/compliance
+              - generic [ref=e83]:
+                - generic:
+                  - img
+                - generic:
+                  - img
+                - generic [ref=e85]:
+                  - generic [ref=e86]:
+                    - paragraph [ref=e87]: Phalcon Compliance
+                    - paragraph [ref=e88]: Crypto compliance hub for wallet screening and KYT
+                  - generic [ref=e89]:
+                    - text: Try now for free
+                    - generic [ref=e90]: 
+            - link "Phalcon Network A public intelligence network for illicit funds Apply to join the network" [ref=e91] [cursor=pointer]:
+              - /url: /phalcon/network#form
+              - generic [ref=e92]:
+                - generic:
+                  - img
+                - generic:
+                  - img
+                - generic [ref=e94]:
+                  - generic [ref=e95]:
+                    - paragraph [ref=e96]: Phalcon Network
+                    - paragraph [ref=e97]: A public intelligence network for illicit funds
+                  - generic [ref=e98]:
+                    - text: Apply to join the network
+                    - generic [ref=e99]: 
+            - link "MetaSleuth Trace flows and build evidence for investigations Try now for free" [ref=e100] [cursor=pointer]:
+              - /url: https://metasleuth.io
+              - generic [ref=e101]:
+                - generic:
+                  - img
+                - generic:
+                  - img
+                - generic [ref=e103]:
+                  - generic [ref=e104]:
+                    - paragraph [ref=e105]: MetaSleuth
+                    - paragraph [ref=e106]: Trace flows and build evidence for investigations
+                  - generic [ref=e107]:
+                    - text: Try now for free
+                    - generic [ref=e108]: 
+      - generic [ref=e111]:
+        - generic [ref=e116]:
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: Intelligent and Instant KYA and KYT
+              - paragraph [ref=e121]: Screen counterparties, trace unlimited-hop fund flows, and monitor transactions in real time to reduce AML exposure and keep your Web3 operations compliant.
+            - text: 
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - paragraph [ref=e125]: Generate Audit-Ready STR Reports in Seconds
+              - paragraph [ref=e126]: Turn alerts and cases into structured reports, with key evidence and risk context, for faster internal review and regulatory filing.
+            - text: 
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - paragraph [ref=e130]: Get Real-Time Alerts on Illicit Funds
+              - paragraph [ref=e131]: Monitor illicit fund inflows before they are withdrawn, and receive real-time alerts to stop laundering at the source.
+            - text: 
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - paragraph [ref=e135]: Trace Cross-Chain Flows and Investigate with Evidence
+              - paragraph [ref=e136]: Visualize transaction paths, cluster entities, uncover hidden connections, and produce evidence-ready outputs for investigators, law enforcement, and regulators.
+            - text: 
+        - generic [ref=e139]:
+          - link "Phalcon Compliance Phalcon Compliance" [ref=e142] [cursor=pointer]:
+            - /url: https://app.blocksec.com/phalcon/compliance
+            - img "Phalcon Compliance" [ref=e144]
+            - generic [ref=e145]: Phalcon Compliance
+            - img [ref=e146]
+          - generic [ref=e148]:
+            - img "Intelligent and Instant KYA and KYT" [ref=e150]
+            - img "Generate Audit-Ready STR Reports in Seconds" [ref=e152]
+            - img "Get Real-Time Alerts on Illicit Funds" [ref=e154]
+            - img "Trace Cross-Chain Flows and Investigate with Evidence" [ref=e156]
+      - generic [ref=e157]:
+        - heading "Global Compliance Trusted in 50+ Countries" [level=2] [ref=e159]
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - img "FTI" [ref=e162]
+            - img "PwC" [ref=e163]
+            - img "Coinbase" [ref=e164]
+            - img "Crypto.com" [ref=e165]
+            - img "Animoca brands" [ref=e166]
+            - img "Interlace" [ref=e167]
+            - img "Exodus" [ref=e168]
+            - img "SFC" [ref=e169]
+            - img "HKPF" [ref=e170]
+            - img "MoonPay" [ref=e171]
+            - img "Tokenlon" [ref=e172]
+            - img "UN" [ref=e173]
+          - generic [ref=e174]:
+            - img "FTI" [ref=e175]
+            - img "PwC" [ref=e176]
+            - img "Coinbase" [ref=e177]
+            - img "Crypto.com" [ref=e178]
+            - img "Animoca brands" [ref=e179]
+            - img "Interlace" [ref=e180]
+            - img "Exodus" [ref=e181]
+            - img "SFC" [ref=e182]
+            - img "HKPF" [ref=e183]
+            - img "MoonPay" [ref=e184]
+            - img "Tokenlon" [ref=e185]
+            - img "UN" [ref=e186]
+          - generic [ref=e187]:
+            - img "FTI" [ref=e188]
+            - img "PwC" [ref=e189]
+            - img "Coinbase" [ref=e190]
+            - img "Crypto.com" [ref=e191]
+            - img "Animoca brands" [ref=e192]
+            - img "Interlace" [ref=e193]
+            - img "Exodus" [ref=e194]
+            - img "SFC" [ref=e195]
+            - img "HKPF" [ref=e196]
+            - img "MoonPay" [ref=e197]
+            - img "Tokenlon" [ref=e198]
+            - img "UN" [ref=e199]
+          - generic [ref=e200]:
+            - img "FTI" [ref=e201]
+            - img "PwC" [ref=e202]
+            - img "Coinbase" [ref=e203]
+            - img "Crypto.com" [ref=e204]
+            - img "Animoca brands" [ref=e205]
+            - img "Interlace" [ref=e206]
+            - img "Exodus" [ref=e207]
+            - img "SFC" [ref=e208]
+            - img "HKPF" [ref=e209]
+            - img "MoonPay" [ref=e210]
+            - img "Tokenlon" [ref=e211]
+            - img "UN" [ref=e212]
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - generic [ref=e216]: Address labels
+          - generic [ref=e217]: M+
+          - generic [ref=e218]: Revealing risks across 200+ indicators and AI-driven behavioral analysis.
+        - generic [ref=e219]:
+          - generic [ref=e220]: Intelligence Updates
+          - generic [ref=e221]: /
+          - generic [ref=e222]: Successfully rescuing assets from active attacks through rapid real-time response.
+        - generic [ref=e223]:
+          - generic [ref=e224]: Instant Response
+          - generic [ref=e225]: Millisecond
+          - generic [ref=e226]: Enabling real-time screening for high-volume platforms and batch queries.
+      - generic [ref=e228]:
+        - heading "Deep Audits. Safer Launches." [level=2] [ref=e230]
+        - generic [ref=e232]:
+          - generic [ref=e233]:
+            - paragraph [ref=e234]: Validate design, code, and business logic.
+            - paragraph [ref=e235]: Find edge cases fast with clear, actionable feedback.
+          - generic [ref=e236]:
+            - link "Smart Contract Audit Ensure robust dApp logic meets top standards. Request an audit" [ref=e237] [cursor=pointer]:
+              - /url: /expert-contact
+              - generic [ref=e238]:
+                - generic:
+                  - img
+                - generic:
+                  - img
+                - generic [ref=e240]:
+                  - generic [ref=e241]:
+                    - paragraph [ref=e242]: Smart Contract Audit
+                    - paragraph [ref=e243]: Ensure robust dApp logic meets top standards.
+                  - generic [ref=e244]:
+                    - text: Request an audit
+                    - generic [ref=e245]: 
+            - link "Infrastructure Audit Secure L1/L2 chains and wallets against systemic risks. Request an audit" [ref=e246] [cursor=pointer]:
+              - /url: /expert-contact
+              - generic [ref=e247]:
+                - generic:
+                  - img
+                - generic:
+                  - img
+                - generic [ref=e249]:
+                  - generic [ref=e250]:
+                    - paragraph [ref=e251]: Infrastructure Audit
+                    - paragraph [ref=e252]: Secure L1/L2 chains and wallets against systemic risks.
+                  - generic [ref=e253]:
+                    - text: Request an audit
+                    - generic [ref=e254]: 
+      - generic [ref=e257]:
+        - generic [ref=e262]:
+          - generic [ref=e264]:
+            - generic [ref=e265]:
+              - paragraph [ref=e266]: Audits for Contracts, Wallets, and Chains
+              - paragraph [ref=e267]: Audit smart contracts, wallets, and blockchain infrastructure across major chains and languages, backed by deep protocol understanding and complete coverage.
+            - text:  
+          - generic [ref=e269]:
+            - generic [ref=e270]:
+              - paragraph [ref=e271]: Multi-Auditor Cross-Review with Actionable Fixes
+              - paragraph [ref=e272]: Dedicated teams run independent reviews and systematic cross-checks, then deliver clear, implementable remediation guidance through fast, efficient communication.
+            - text:  
+          - generic [ref=e274]:
+            - generic [ref=e275]:
+              - paragraph [ref=e276]: Architecture and Threat Modeling that Matters
+              - paragraph [ref=e277]: Start from system design, asset flows, and trust boundaries, identify realistic attack paths, and focus on business logic, edge cases, and pre-launch risk reduction.
+            - text:  
+          - generic [ref=e279]:
+            - generic [ref=e280]:
+              - paragraph [ref=e281]: In-House Tooling to Uncover Hidden Vulnerabilities
+              - paragraph [ref=e282]: Battle-tested differential testing and customized fuzzing, proven across millions in bug bounties, uncover inconsistencies, edge-case failures, and hidden vulnerabilities.
+            - text:  
+        - generic [ref=e285]:
+          - generic [ref=e287]:
+            - link "Smart Contract Audit Smart Contract Audit" [ref=e289] [cursor=pointer]:
+              - /url: /audit
+              - img "Smart Contract Audit" [ref=e291]
+              - generic [ref=e292]: Smart Contract Audit
+              - img [ref=e293]
+            - link "Infrastructure Audit Infrastructure Audit" [ref=e296] [cursor=pointer]:
+              - /url: /chain-audit
+              - img "Infrastructure Audit" [ref=e298]
+              - generic [ref=e299]: Infrastructure Audit
+              - img [ref=e300]
+          - generic [ref=e302]:
+            - img "Audits for Contracts, Wallets, and Chains" [ref=e304]
+            - img "Multi-Auditor Cross-Review with Actionable Fixes" [ref=e306]
+            - img "Architecture and Threat Modeling that Matters" [ref=e308]
+            - img "In-House Tooling to Uncover Hidden Vulnerabilities" [ref=e310]
+      - generic [ref=e311]:
+        - generic [ref=e312]:
+          - heading "Audit Reports" [level=2] [ref=e313]
+          - link "View More Reports" [ref=e314] [cursor=pointer]:
+            - /url: /audit-report
+            - generic [ref=e315]: View More Reports
+            - img [ref=e316]
+        - generic [ref=e318]:
+          - link "Security Audit Report for Morph Emerald upgrade Security Audit Report for Morph Emerald upgrade Morph Dec 23, 2025 Security Audit Report for Morph Emerald upgrade The target of this audit is the code repositories of Morph Emerald upgrade. The Morph Emerald upgrade introduces alternative fee transactions, enabling native multi-token gas payments on the Morph L2 chain. This upgrade allows users to pay gas fees using registered ERC-20 tokens." [ref=e319] [cursor=pointer]:
+            - /url: /audit-report/audit-report-morph-emerald-upgrade
+            - generic [ref=e320]:
+              - generic [ref=e321]:
+                - img "Security Audit Report for Morph Emerald upgrade" [ref=e322]
+                - generic [ref=e323]:
+                  - img "Security Audit Report for Morph Emerald upgrade" [ref=e324]
+                  - paragraph [ref=e325]: Morph
+              - generic [ref=e326]:
+                - generic [ref=e327]: Dec 23, 2025
+                - generic [ref=e328]:
+                  - generic [ref=e329]: Security Audit Report for Morph Emerald upgrade
+                  - generic [ref=e330]: The target of this audit is the code repositories of Morph Emerald upgrade. The Morph Emerald upgrade introduces alternative fee transactions, enabling native multi-token gas payments on the Morph L2 chain. This upgrade allows users to pay gas fees using registered ERC-20 tokens.
+          - link [ref=e331] [cursor=pointer]:
+            - /url: /audit-report/audit-report-okx-s-smart-wallet-recovery----groth16-solana
+            - generic [ref=e332]:
+              - generic [ref=e333]:
+                - img "Security Audit Report for OKX's smart-wallet-recovery & groth16-solana" [ref=e334]
+                - generic [ref=e335]:
+                  - img "Security Audit Report for OKX's smart-wallet-recovery & groth16-solana" [ref=e336]
+                  - paragraph
+              - generic [ref=e337]:
+                - generic [ref=e338]: Oct 17, 2025
+                - generic [ref=e339]:
+                  - generic [ref=e340]: Security Audit Report for OKX's smart-wallet-recovery & groth16-solana
+                  - generic [ref=e341]: This project is a smart account recovery system deployed on Solana. It combines ZK-Email zero-knowledge proofs, ECDSA signature verification, and a DKIM registry to provide scalable, low-interaction account recovery. Smart wallet providers can pre-register their DKIM public keys via the DKIM registry, eliminating the need to trust third-party DNS providers. When a user needs to recover an account, they submit proofs to the recovery-manager contract, which consist of an off-chain generated ZK-Email proof demonstrating ownership of a specific email and an off-chain 2FA-verified ECDSA signature. After verification, the smart account’s owner key can be updated, completing the account recovery process.
+          - link "Security Audit Report for OKX's Smart Wallet Recovery Security Audit Report for OKX's Smart Wallet Recovery Sep 30, 2025 Security Audit Report for OKX's Smart Wallet Recovery The project implements a cross-chain recovery system for unified smart accounts, focusing on the Ethereum Virtual Machine (EVM) stack implementation. The system integrates ZKEmail and ECDSA technologies to deliver an extensible, low-interaction, and multi-chain reusable recovery mechanism for EVM-compatible chains." [ref=e342] [cursor=pointer]:
+            - /url: /audit-report/audit-report-okx-s-smart-wallet-recovery
+            - generic [ref=e343]:
+              - generic [ref=e344]:
+                - img "Security Audit Report for OKX's Smart Wallet Recovery" [ref=e345]
+                - generic [ref=e346]:
+                  - img "Security Audit Report for OKX's Smart Wallet Recovery" [ref=e347]
+                  - paragraph
+              - generic [ref=e348]:
+                - generic [ref=e349]: Sep 30, 2025
+                - generic [ref=e350]:
+                  - generic [ref=e351]: Security Audit Report for OKX's Smart Wallet Recovery
+                  - generic [ref=e352]: The project implements a cross-chain recovery system for unified smart accounts, focusing on the Ethereum Virtual Machine (EVM) stack implementation. The system integrates ZKEmail and ECDSA technologies to deliver an extensible, low-interaction, and multi-chain reusable recovery mechanism for EVM-compatible chains.
+      - generic [ref=e354]:
+        - heading "Real-Time Monitoring. Automatic Protection." [level=2] [ref=e356]
+        - generic [ref=e358]:
+          - paragraph [ref=e359]: Detect, Alert, and Block. Stop hacks across protocols, wallets, and L2s before execution.
+          - generic [ref=e360]:
+            - generic [ref=e361] [cursor=pointer]:
+              - generic:
+                - img
+              - generic:
+                - img
+              - generic [ref=e363]:
+                - generic [ref=e364]:
+                  - paragraph [ref=e365]: Phalcon Security
+                  - paragraph [ref=e366]: Detect every threat, alert what matters, and block attacks.
+                - generic [ref=e367]:
+                  - text: Contact Sales
+                  - generic [ref=e368]: 
+            - generic [ref=e369] [cursor=pointer]:
+              - generic:
+                - img
+              - generic:
+                - img
+              - generic [ref=e371]:
+                - generic [ref=e372]:
+                  - paragraph [ref=e373]: "Safe{Wallet} Monitor"
+                  - paragraph [ref=e374]: "Analyze and simulate to ensure your Safe{Wallet}'s security."
+                - generic [ref=e375]:
+                  - text: Contact Sales
+                  - generic [ref=e376]: 
+            - generic [ref=e377] [cursor=pointer]:
+              - generic:
+                - img
+              - generic:
+                - img
+              - generic [ref=e379]:
+                - generic [ref=e380]:
+                  - paragraph [ref=e381]: STOP for L2 Chains
+                  - paragraph [ref=e382]: Secure your L1/L2 chains, wallets against systemic risk.
+                - generic [ref=e383]:
+                  - text: Contact Sales
+                  - generic [ref=e384]: 
+      - generic [ref=e387]:
+        - generic [ref=e392]:
+          - generic [ref=e394]:
+            - generic [ref=e395]:
+              - paragraph [ref=e396]: Gain Precise Attack Intelligence
+              - paragraph [ref=e397]: Scan mempool early, scrutinize 200+ hacking signals, and detect threats with the highest precision.
+            - text: 
+          - generic [ref=e399]:
+            - generic [ref=e400]:
+              - paragraph [ref=e401]: Block Hacks Before Execution
+              - paragraph [ref=e402]: Automatically initiate response actions, place your transaction ahead of attackers, and block hacks before execution.
+            - text: 
+          - generic [ref=e404]:
+            - generic [ref=e405]:
+              - paragraph [ref=e406]: Sign What You See
+              - paragraph [ref=e407]: "Translate complex Safe{Wallet} transactions into human-readable insights, simulate outcomes, and alert suspicious activities before you sign."
+            - text: 
+          - generic [ref=e409]:
+            - generic [ref=e410]:
+              - paragraph [ref=e411]: STOP Hacks at L2 Sequencers
+              - paragraph [ref=e412]: Screen transactions in milliseconds, block malicious ones with high precision, and blacklist attacker addresses automatically.
+            - text: 
+        - generic [ref=e415]:
+          - link "Phalcon Security Phalcon Security" [ref=e418] [cursor=pointer]:
+            - /url: /phalcon/security
+            - img "Phalcon Security" [ref=e420]
+            - generic [ref=e421]: Phalcon Security
+            - generic [ref=e422]: 
+          - generic [ref=e423]:
+            - img "Gain Precise Attack Intelligence" [ref=e425]
+            - img "Block Hacks Before Execution" [ref=e427]
+            - img "Sign What You See" [ref=e429]
+            - img "STOP Hacks at L2 Sequencers" [ref=e431]
+    - generic [ref=e434]:
+      - generic [ref=e435]: Phalcon Explorer Dive into Transactions and Act Wisely
+      - paragraph [ref=e436]: Visulize, simulate, and debug on-chain transactions with an intuitive interface.
+      - generic [ref=e437]:
+        - link "Try now for free" [ref=e438] [cursor=pointer]:
+          - /url: /phalcon/explorer
+          - generic [ref=e439]: Try now for free
+        - generic [ref=e441] [cursor=pointer]: Request Chain Integration
+    - generic [ref=e444]:
+      - generic [ref=e445]:
+        - generic [ref=e446]: Customer Satisfaction
+        - generic [ref=e448]: "%"
+        - generic [ref=e449]: Visualize, Earning the trust of top-tier protocols through expert audits and reliable protection.
+      - generic [ref=e450]:
+        - generic [ref=e451]: On-Chain Security
+        - generic [ref=e453]:
+          - text: $
+          - text: + Billion
+        - generic [ref=e454]: Actively safeguarding on-chain assets with our real-time hack detection and prevention system.
+      - generic [ref=e455]:
+        - generic [ref=e456]: Real-Time Recovery
+        - generic [ref=e458]:
+          - text: $
+          - text: + Billion
+        - generic [ref=e459]: Successfully rescuing assets from active attacks through rapid real-time response.
+      - generic [ref=e460]:
+        - generic [ref=e461]: Accuracy up to
+        - generic [ref=e462]:
+          - text: .
+          - generic [ref=e463]: "%"
+        - generic [ref=e464]: Unmatched precision, born from expert Web3 insights, continuous engineering refinement, and evolving machine learning.
+    - generic [ref=e465]:
+      - heading "Testimonials and Endorsements" [level=2] [ref=e467]
+      - generic [ref=e469]:
+        - generic [ref=e472]:
+          - paragraph [ref=e473]: “BlockSec is a critical partner for Cobo. Their Phalcon platform is groundbreaking and marks a huge step forward in DeFi security. We're enthusiastic about partnering with such a dedicated team to develop robust security solutions for investors.”
+          - generic [ref=e475]:
+            - img "avatar" [ref=e476]
+            - generic [ref=e477]:
+              - generic [ref=e478]: Discus Fish
+              - generic [ref=e479]: CEO
+        - generic [ref=e483]:
+          - paragraph [ref=e484]: “We are big fans of BlockSec and have been deeply involved from the inception of BlockSec to the use of each of its products. Phalcon is a very good security tool, to help Bybit achieve on-chain tracking and web3 contract security monitoring. We will have more cooperation with BlockSec in the future.”
+          - generic [ref=e486]:
+            - img "avatar" [ref=e487]
+            - generic [ref=e488]:
+              - generic [ref=e489]: David Zong
+              - generic [ref=e490]: CSO
+        - generic [ref=e494]:
+          - paragraph [ref=e495]: “We had a great experience working with BlockSec on the security testing of Mega-EVM, our stateless validator, and the SALT data structure. They’re responsive, diligent, and easy to collaborate with, with a fast feedback loop throughout the audit. Their deep expertise across both smart contracts and node-level systems made them a strong partner for complex infrastructure work.”
+          - generic [ref=e497]:
+            - img "avatar" [ref=e498]
+            - generic [ref=e499]:
+              - generic [ref=e500]: Yilong Li
+              - generic [ref=e501]: Co-Founder
+        - generic [ref=e505]:
+          - paragraph [ref=e506]: “Overall, BlockSec provides far more than just 'dashboard-style' monitoring or one-off audits. They are deeply integrated into our on-chain security defense and emergency response, playing a pivotal role in safeguarding the continuous operation of the entire Manta ecosystem.”
+          - generic [ref=e508]:
+            - img "avatar" [ref=e509]
+            - generic [ref=e510]:
+              - generic [ref=e511]: Victor
+              - generic [ref=e512]: Founder
+        - generic [ref=e516]:
+          - paragraph [ref=e517]: “Phalcon is an effective tool that helps project teams complete core monitoring in a very short period. Additionally, Phalcon is backed by a highly professional technical team that can provide timely support, solution discussions, development, and testing.”
+          - generic [ref=e519]:
+            - img "avatar" [ref=e520]
+            - generic [ref=e521]:
+              - generic [ref=e522]: Sean
+              - generic [ref=e523]: Product Manager
+        - generic [ref=e527]:
+          - paragraph [ref=e528]: “BlockSec has shown remarkable professionalism in smart contract audits. Their expertise in blockchain and smart contract technology, along with a meticulous approach, ensures thorough identification and resolution of security risks. We highly commend their professionalism and anticipate continued collaboration.”
+          - generic [ref=e530]:
+            - img "avatar" [ref=e531]
+            - generic [ref=e532]:
+              - generic [ref=e533]: Frederick
+              - generic [ref=e534]: Security Lead
+        - generic [ref=e538]:
+          - paragraph [ref=e539]: “BlockSec doesn't just ship reports; they stick around to protect protocols as they scale. Its Phalcon platform integrates advanced capabilities, including a Security APP that detects and prevents hacks in real time having successfully recovered over $20 million in losses during past attacks and a Compliance APP that streamlines AML/CTF compliance. By providing comprehensive solutions that address the entire lifecycle of security and compliance, BlockSec ensures robust and reliable protection for its clients.”
+          - generic [ref=e541]:
+            - img "avatar" [ref=e542]
+            - generic [ref=e543]:
+              - generic [ref=e544]: Calvin
+              - generic [ref=e545]: Core Builder
+        - generic [ref=e549]:
+          - paragraph [ref=e550]: “BlockSec's deep expertise in smart contract security has been invaluable to exSat. Their rigorous audits consistently uncover subtle yet critical vulnerabilities, delivering clear, practical remediations. With their meticulous, code-level scrutiny, we gain unparalleled confidence in our protocol’s integrity—making BlockSec our trusted partner for secure, resilient smart contracts.”
+          - generic [ref=e552]:
+            - img "avatar" [ref=e553]
+            - generic [ref=e554]:
+              - generic [ref=e555]: Joshua
+              - generic [ref=e556]: CGO
+        - generic [ref=e560]:
+          - paragraph [ref=e561]: “Partnering with BlockSec has significantly strengthened the security of our platform. Real-time deposit and withdrawal risk management has prevented numerous high-risk transactions. BlockSec’s solution not only improved our compliance capabilities but also preserved user experience—critical for our long-term growth. ”
+          - generic [ref=e563]:
+            - img "avatar" [ref=e564]
+            - generic [ref=e565]:
+              - generic [ref=e566]: Romy
+              - generic [ref=e567]: CPO
+        - generic [ref=e571]:
+          - paragraph [ref=e572]: “Partnering with BlockSec has been crucial to Tokenlon's mission of preserving the openness of DeFi while leveraging technology to create a safer, more trustworthy space for all. BlockSec's cutting-edge on-chain analytics allow us to identify high-risk addresses across multiple blockchains and navigate complex global regulations with confidence. Their expertise helps us safeguard our liquidity partners and consistently deliver a seamless, reliable DeFi experience for genuine users.”
+          - generic [ref=e574]:
+            - img "avatar" [ref=e575]
+            - generic [ref=e576]:
+              - generic [ref=e577]: Randy
+              - generic [ref=e578]: Sr. PM
+        - generic [ref=e582]:
+          - paragraph [ref=e583]: “BlockSec Phalcon integrates a powerful real-time updated database with customizable and granular risk thresholds, ensuring full compliance with FATF standards and major jurisdictional requirements. It helps institutions mitigate regulatory risks while streamlining workflows and optimizing operational efficiency.”
+          - generic [ref=e585]:
+            - img "avatar" [ref=e586]
+            - generic [ref=e587]:
+              - generic [ref=e588]: MAOSphere
+              - generic [ref=e589]: Grandway Law Offices
+        - generic [ref=e593]:
+          - paragraph [ref=e594]: “From a long-term security professional’s perspective, the Phalcon platform developed by BlockSec empowers us to respond to contingency security incidents with ease. The BlockSec team truly understands the real-world needs of us security engineers working on the frontlines.”
+          - generic [ref=e596]:
+            - img "avatar" [ref=e597]
+            - generic [ref=e598]:
+              - generic [ref=e599]: Chiachih Wu
+              - generic [ref=e600]: Head of Web Security
+        - generic [ref=e604]:
+          - paragraph [ref=e605]: “We appreciate our partnership with BlockSec, enhancing Web3 security together. Their commitment to innovation has made a significant impact. As users of BlockSec's Phalcon - we can truly appreciate how these collaborations can push Web3 security forward together, as a community.”
+          - generic [ref=e607]:
+            - img "avatar" [ref=e608]
+            - generic [ref=e609]:
+              - generic [ref=e610]: Or Dadosh
+              - generic [ref=e611]: CEO
+        - generic [ref=e615]:
+          - paragraph [ref=e616]: “With a keen eye for detail, the team identify potential vulnerabilities and provide robust solutions, ensuring our contracts are secure and optimized. For anyone in need of expert smart contract auditing, I cannot recommend BlockSec highly enough.”
+          - generic [ref=e618]:
+            - img "avatar" [ref=e619]
+            - generic [ref=e620]:
+              - generic [ref=e621]: Rivers Yang
+              - generic [ref=e622]: Core Developer
+        - generic [ref=e626]:
+          - paragraph [ref=e627]: “I want to extend my sincerest appreciation to BlockSec for conducting a thorough audit of the Stratos project. Their meticulous approach and insightful feedback have significantly contributed to enhancing our project's security and reliability.”
+          - generic [ref=e629]:
+            - img "avatar" [ref=e630]
+            - generic [ref=e631]:
+              - generic [ref=e632]: Bin Zhu
+              - generic [ref=e633]: CEO
+        - generic [ref=e637]:
+          - paragraph [ref=e638]: “It's been a fantastic experience collaborating with BlockSec. You have shown your professionalism in the audit field, especially on the smart contract side.”
+          - generic [ref=e640]:
+            - img "avatar" [ref=e641]
+            - generic [ref=e642]:
+              - generic [ref=e643]: Marco Sun
+              - generic [ref=e644]: CEO
+        - generic [ref=e648]:
+          - paragraph [ref=e649]: “The Forta Community uses Phalcon and the broad range of Blocksec's investigative tooling (MetaSuites/ MetaSleuth) every day. BlockSec is a leader in this space and a crucial Forta partner securing the broader web3 ecosystem.”
+          - generic [ref=e651]:
+            - img "avatar" [ref=e652]
+            - generic [ref=e653]:
+              - generic [ref=e654]: Christian Seifert
+              - generic [ref=e655]: Researcher
+        - generic [ref=e659]:
+          - paragraph [ref=e660]: “I really like how MetaSleuth and Phalcon make it easier to investigate and understand on-chain attacks and hacks. The products work in a simple way but allow you to dig deep. Very happy with both. ”
+          - generic [ref=e662]:
+            - img "avatar" [ref=e663]
+            - generic [ref=e664]:
+              - generic [ref=e665]: Pablo Sabbatella
+              - generic [ref=e666]: Head of Security Researcher
+        - generic [ref=e670]:
+          - paragraph [ref=e671]: “With the help of BlockSec, about $246K attacked by the 4th attacker has been fully refunded.”
+          - generic [ref=e673]:
+            - img "avatar" [ref=e674]
+            - generic [ref=e675]:
+              - generic [ref=e676]: Transit Swap
+              - generic [ref=e677]: "@TransitFinance"
+        - generic [ref=e681]:
+          - paragraph [ref=e682]: “Thanks to the BlockSec team, who has intercepted 100% of the fund from the attacker that once took the unclaimed rewards from Trade Mining pool on Oct 1st.”
+          - generic [ref=e684]:
+            - img "avatar" [ref=e685]
+            - generic [ref=e686]:
+              - generic [ref=e687]: BabySwap
+              - generic [ref=e688]: "@babyswap_bsc"
+        - generic [ref=e692]:
+          - paragraph [ref=e693]: “The attack has been mitigated and all affected metapools have been paused. User funds are safe. Special thx to the BlockSec team for securing the 3.8m in vulnerable funds.”
+          - generic [ref=e695]:
+            - img "avatar" [ref=e696]
+            - generic [ref=e697]:
+              - generic [ref=e698]: Saddle
+              - generic [ref=e699]: "@saddlefinance"
+    - generic [ref=e701]:
+      - generic [ref=e702]:
+        - heading "Trusted by 500+ clients" [level=2] [ref=e703]
+        - paragraph [ref=e704]: from Web3 leaders to global regulators
+      - generic [ref=e705]:
+        - generic [ref=e706]:
+          - generic [ref=e707]:
+            - img "Uniswap Foundation" [ref=e709]
+            - img "Compound Finance" [ref=e711]
+            - img "Radiant" [ref=e713]
+            - img "FBTC" [ref=e715]
+            - img "Magpie" [ref=e717]
+            - img "Telcoin" [ref=e719]
+            - img "Bybit" [ref=e721]
+            - img "EOS Network Foundation" [ref=e723]
+            - img "1intro" [ref=e725]
+            - img "Kava" [ref=e727]
+            - img "EVMOS" [ref=e729]
+            - img "ApeX" [ref=e731]
+            - img "Tectonic" [ref=e733]
+            - img "Burrow" [ref=e735]
+            - img "Alpaca Finance" [ref=e737]
+            - img "Meta Pool" [ref=e739]
+            - img "Izumi" [ref=e741]
+            - img "Mage Finance" [ref=e743]
+            - img "bitget" [ref=e745]
+            - img "yei finance" [ref=e747]
+          - generic [ref=e748]:
+            - img "Uniswap Foundation" [ref=e750]
+            - img "Compound Finance" [ref=e752]
+            - img "Radiant" [ref=e754]
+            - img "FBTC" [ref=e756]
+            - img "Magpie" [ref=e758]
+            - img "Telcoin" [ref=e760]
+            - img "Bybit" [ref=e762]
+            - img "EOS Network Foundation" [ref=e764]
+            - img "1intro" [ref=e766]
+            - img "Kava" [ref=e768]
+            - img "EVMOS" [ref=e770]
+            - img "ApeX" [ref=e772]
+            - img "Tectonic" [ref=e774]
+            - img "Burrow" [ref=e776]
+            - img "Alpaca Finance" [ref=e778]
+            - img "Meta Pool" [ref=e780]
+            - img "Izumi" [ref=e782]
+            - img "Mage Finance" [ref=e784]
+            - img "bitget" [ref=e786]
+            - img "yei finance" [ref=e788]
+          - generic [ref=e789]:
+            - img "Uniswap Foundation" [ref=e791]
+            - img "Compound Finance" [ref=e793]
+            - img "Radiant" [ref=e795]
+            - img "FBTC" [ref=e797]
+            - img "Magpie" [ref=e799]
+            - img "Telcoin" [ref=e801]
+            - img "Bybit" [ref=e803]
+            - img "EOS Network Foundation" [ref=e805]
+            - img "1intro" [ref=e807]
+            - img "Kava" [ref=e809]
+            - img "EVMOS" [ref=e811]
+            - img "ApeX" [ref=e813]
+            - img "Tectonic" [ref=e815]
+            - img "Burrow" [ref=e817]
+            - img "Alpaca Finance" [ref=e819]
+            - img "Meta Pool" [ref=e821]
+            - img "Izumi" [ref=e823]
+            - img "Mage Finance" [ref=e825]
+            - img "bitget" [ref=e827]
+            - img "yei finance" [ref=e829]
+          - generic [ref=e830]:
+            - img "Uniswap Foundation" [ref=e832]
+            - img "Compound Finance" [ref=e834]
+            - img "Radiant" [ref=e836]
+            - img "FBTC" [ref=e838]
+            - img "Magpie" [ref=e840]
+            - img "Telcoin" [ref=e842]
+            - img "Bybit" [ref=e844]
+            - img "EOS Network Foundation" [ref=e846]
+            - img "1intro" [ref=e848]
+            - img "Kava" [ref=e850]
+            - img "EVMOS" [ref=e852]
+            - img "ApeX" [ref=e854]
+            - img "Tectonic" [ref=e856]
+            - img "Burrow" [ref=e858]
+            - img "Alpaca Finance" [ref=e860]
+            - img "Meta Pool" [ref=e862]
+            - img "Izumi" [ref=e864]
+            - img "Mage Finance" [ref=e866]
+            - img "bitget" [ref=e868]
+            - img "yei finance" [ref=e870]
+        - generic [ref=e871]:
+          - generic [ref=e872]:
+            - img "Puffer" [ref=e874]
+            - img "Pancakeswap" [ref=e876]
+            - img "Mantle" [ref=e878]
+            - img "Prisma" [ref=e880]
+            - img "Polygon ZKEVM" [ref=e882]
+            - img "Cobo" [ref=e884]
+            - img "crypto.com" [ref=e886]
+            - img "Polyhedra Network" [ref=e888]
+            - img "Filecoin" [ref=e890]
+            - img "NEAR Foundation" [ref=e892]
+            - img "Stader" [ref=e894]
+            - img "Amber" [ref=e896]
+            - img "LiNEAR" [ref=e898]
+            - img "Matrixport" [ref=e900]
+            - img "VVS Finance" [ref=e902]
+            - img "Aurora" [ref=e904]
+            - img "Lista DAO" [ref=e906]
+            - img "okx" [ref=e908]
+            - img "megaeth" [ref=e910]
+          - generic [ref=e911]:
+            - img "Puffer" [ref=e913]
+            - img "Pancakeswap" [ref=e915]
+            - img "Mantle" [ref=e917]
+            - img "Prisma" [ref=e919]
+            - img "Polygon ZKEVM" [ref=e921]
+            - img "Cobo" [ref=e923]
+            - img "crypto.com" [ref=e925]
+            - img "Polyhedra Network" [ref=e927]
+            - img "Filecoin" [ref=e929]
+            - img "NEAR Foundation" [ref=e931]
+            - img "Stader" [ref=e933]
+            - img "Amber" [ref=e935]
+            - img "LiNEAR" [ref=e937]
+            - img "Matrixport" [ref=e939]
+            - img "VVS Finance" [ref=e941]
+            - img "Aurora" [ref=e943]
+            - img "Lista DAO" [ref=e945]
+            - img "okx" [ref=e947]
+            - img "megaeth" [ref=e949]
+          - generic [ref=e950]:
+            - img "Puffer" [ref=e952]
+            - img "Pancakeswap" [ref=e954]
+            - img "Mantle" [ref=e956]
+            - img "Prisma" [ref=e958]
+            - img "Polygon ZKEVM" [ref=e960]
+            - img "Cobo" [ref=e962]
+            - img "crypto.com" [ref=e964]
+            - img "Polyhedra Network" [ref=e966]
+            - img "Filecoin" [ref=e968]
+            - img "NEAR Foundation" [ref=e970]
+            - img "Stader" [ref=e972]
+            - img "Amber" [ref=e974]
+            - img "LiNEAR" [ref=e976]
+            - img "Matrixport" [ref=e978]
+            - img "VVS Finance" [ref=e980]
+            - img "Aurora" [ref=e982]
+            - img "Lista DAO" [ref=e984]
+            - img "okx" [ref=e986]
+            - img "megaeth" [ref=e988]
+          - generic [ref=e989]:
+            - img "Puffer" [ref=e991]
+            - img "Pancakeswap" [ref=e993]
+            - img "Mantle" [ref=e995]
+            - img "Prisma" [ref=e997]
+            - img "Polygon ZKEVM" [ref=e999]
+            - img "Cobo" [ref=e1001]
+            - img "crypto.com" [ref=e1003]
+            - img "Polyhedra Network" [ref=e1005]
+            - img "Filecoin" [ref=e1007]
+            - img "NEAR Foundation" [ref=e1009]
+            - img "Stader" [ref=e1011]
+            - img "Amber" [ref=e1013]
+            - img "LiNEAR" [ref=e1015]
+            - img "Matrixport" [ref=e1017]
+            - img "VVS Finance" [ref=e1019]
+            - img "Aurora" [ref=e1021]
+            - img "Lista DAO" [ref=e1023]
+            - img "okx" [ref=e1025]
+            - img "megaeth" [ref=e1027]
+    - generic [ref=e1032]:
+      - generic [ref=e1033]:
+        - heading "Full Security & Compliance" [level=2] [ref=e1034]
+        - paragraph [ref=e1035]: Partner with BlockSec for end-to-end blockchain security and compliance.
+      - generic [ref=e1036]:
+        - img "AICPA SOC" [ref=e1037]
+        - img "GDPR Ready" [ref=e1038]
+        - img "Regulator Trusted Partner" [ref=e1039]
+    - generic [ref=e1041]:
+      - heading "Recent Blogs" [level=2] [ref=e1042]
+      - generic [ref=e1043]:
+        - 'link "Jun 29, 2026 Australia VASP Framework: What Institutions Must Prepare" [ref=e1045] [cursor=pointer]':
+          - /url: /blog/australia-vasp-compliance-framework
+          - generic [ref=e1047]: Jun 29, 2026
+          - generic [ref=e1048]: "Australia VASP Framework: What Institutions Must Prepare"
+        - link "Jun 26, 2026 OFAC Sanctions ISIS Tron Addresses in Terror-Financing Trail" [ref=e1051] [cursor=pointer]:
+          - /url: /blog/ofac-sanctions-isis-tron-addresses-terror-financing
+          - generic [ref=e1053]: Jun 26, 2026
+          - generic [ref=e1054]: OFAC Sanctions ISIS Tron Addresses in Terror-Financing Trail
+        - 'link "Jun 25, 2026 ~$18M Lost: jaredFromSubway, Aztec & More | BlockSec Weekly" [ref=e1057] [cursor=pointer]':
+          - /url: /blog/web3-security-jaredfromsubway-aztec-more
+          - generic [ref=e1059]: Jun 25, 2026
+          - generic [ref=e1060]: "~$18M Lost: jaredFromSubway, Aztec & More | BlockSec Weekly"
+        - 'link "Jun 23, 2026 Web3 Companion: The Open-Source Secure Agentic Wallet" [ref=e1063] [cursor=pointer]':
+          - /url: /blog/web3-companion-secure-agentic-wallet
+          - generic [ref=e1065]: Jun 23, 2026
+          - generic [ref=e1066]: "Web3 Companion: The Open-Source Secure Agentic Wallet"
+        - 'link "Jun 17, 2026 ~$5.98M Lost: Aztec, Raydium & More | BlockSec Weekly" [ref=e1069] [cursor=pointer]':
+          - /url: /blog/web3-security-aztec-raydium-more
+          - generic [ref=e1071]: Jun 17, 2026
+          - generic [ref=e1072]: "~$5.98M Lost: Aztec, Raydium & More | BlockSec Weekly"
+    - generic [ref=e1074]:
+      - generic [ref=e1075]:
+        - generic [ref=e1076]:
+          - heading "Ready to get started?" [level=2] [ref=e1077]
+          - paragraph [ref=e1078]: Sign in to continue, or contact sales to discuss the right product, plan and integration path for your team.
+        - generic [ref=e1079]:
+          - link "Sign in" [ref=e1080] [cursor=pointer]:
+            - /url: https://app.blocksec.com/phalcon/compliance
+            - button "Sign in" [ref=e1081]
+          - generic [ref=e1082] [cursor=pointer]:
+            - text: Contact sales
+            - generic [ref=e1083]: 
+      - generic [ref=e1084]:
+        - generic [ref=e1085]:
+          - generic [ref=e1087]:
+            - paragraph [ref=e1088]: Start your integration
+            - paragraph [ref=e1089]: Get compliant faster with KYA and KYT APIs, built for crypto payment, CEX, and DEX.
+          - link "API reference" [ref=e1090] [cursor=pointer]:
+            - /url: https://docs.compliance.phalcon.blocksec.com/api-documentation/introduction
+            - text: API reference
+            - generic [ref=e1091]: 
+        - generic [ref=e1092]:
+          - generic [ref=e1094]:
+            - paragraph [ref=e1095]: Request a security audit
+            - paragraph [ref=e1096]: Deep audits of code and business logic, with edge-case coverage and actionable fixes.
+          - link "Request an audit" [ref=e1097] [cursor=pointer]:
+            - /url: /expert-contact
+            - text: Request an audit
+            - generic [ref=e1098]: 
+  - generic [ref=e1100]:
+    - generic [ref=e1101]:
+      - generic [ref=e1102]:
+        - img "logo" [ref=e1103]
+        - generic [ref=e1104]:
+          - generic [ref=e1105]:
+            - textbox [ref=e1106]
+            - generic:
+              - generic: E
+              - generic: "n"
+              - generic: t
+              - generic: e
+              - generic: r
+              - generic: "y"
+              - generic: o
+              - generic: u
+              - generic: r
+              - generic: e
+              - generic: m
+              - generic: a
+              - generic: i
+              - generic: l
+          - button "Subscribe" [ref=e1107] [cursor=pointer]
+      - generic [ref=e1108]:
+        - generic [ref=e1109]:
+          - generic [ref=e1110]: Products
+          - list [ref=e1111]:
+            - listitem [ref=e1112]:
+              - link "Smart Contract Audits" [ref=e1113] [cursor=pointer]:
+                - /url: /audit
+            - listitem [ref=e1114]:
+              - link "Infrastructure Audits" [ref=e1115] [cursor=pointer]:
+                - /url: /chain-audit
+            - listitem [ref=e1116]:
+              - link "Phalcon Security" [ref=e1117] [cursor=pointer]:
+                - /url: /phalcon/security
+            - listitem [ref=e1118]:
+              - 'link "Safe{Wallet} Monitor" [ref=e1119] [cursor=pointer]':
+                - /url: /safe-wallet-monitor
+            - listitem [ref=e1120]:
+              - link "STOP for L2 Chains" [ref=e1121] [cursor=pointer]:
+                - /url: /stop
+            - listitem [ref=e1122]:
+              - link "Phalcon Compliance" [ref=e1123] [cursor=pointer]:
+                - /url: /phalcon/crypto-compliance
+            - listitem [ref=e1124]:
+              - link "Phalcon Network" [ref=e1125] [cursor=pointer]:
+                - /url: /phalcon/network
+            - listitem [ref=e1126]:
+              - link "MetaSleuth" [ref=e1127] [cursor=pointer]:
+                - /url: https://metasleuth.io/
+        - generic [ref=e1128]:
+          - generic [ref=e1129]: Tools
+          - list [ref=e1130]:
+            - listitem [ref=e1131]:
+              - link "Phalcon Explorer" [ref=e1132] [cursor=pointer]:
+                - /url: /explorer
+            - listitem [ref=e1133]:
+              - link "MetaSuites" [ref=e1134] [cursor=pointer]:
+                - /url: /metasuites
+            - listitem [ref=e1135]:
+              - link "Simulation API" [ref=e1136] [cursor=pointer]:
+                - /url: https://docs.blocksec.com/transaction-insights/transaction-simulation-api
+            - listitem [ref=e1137]:
+              - link "Anti-MEV RPC" [ref=e1138] [cursor=pointer]:
+                - /url: https://anti-mev.blocksec.com/
+        - generic [ref=e1139]:
+          - generic [ref=e1140]: Solutions
+          - list [ref=e1141]:
+            - listitem [ref=e1142]:
+              - link "DeFi Protocols" [ref=e1143] [cursor=pointer]:
+                - /url: /solutions/defi-protocols
+            - listitem [ref=e1144]:
+              - link "Centralized Exchanges" [ref=e1145] [cursor=pointer]:
+                - /url: /solutions/centralized-exchanges
+            - listitem [ref=e1146]:
+              - link "L1/L2 Chains" [ref=e1147] [cursor=pointer]:
+                - /url: /solutions/l1l2-chain
+            - listitem [ref=e1148]:
+              - link "Stablecoin Issuer" [ref=e1149] [cursor=pointer]:
+                - /url: /solutions/stablecoin-issuer
+            - listitem [ref=e1150]:
+              - link "Crypto Payment" [ref=e1151] [cursor=pointer]:
+                - /url: /solutions/crypto-payment
+            - listitem [ref=e1152]:
+              - link "RWA" [ref=e1153] [cursor=pointer]:
+                - /url: /solutions/rwa
+        - generic [ref=e1154]:
+          - generic [ref=e1155]: Company
+          - list [ref=e1156]:
+            - listitem [ref=e1157]:
+              - link "About Us" [ref=e1158] [cursor=pointer]:
+                - /url: /about-us
+            - listitem [ref=e1159]:
+              - link "Customers" [ref=e1160] [cursor=pointer]:
+                - /url: /customers
+            - listitem [ref=e1161]:
+              - link "Newsroom" [ref=e1162] [cursor=pointer]:
+                - /url: /newsroom
+            - listitem [ref=e1163]:
+              - link "Media Kit" [ref=e1164] [cursor=pointer]:
+                - /url: https://assets.blocksec.com/zip/1768533964206/blocksec-media-kit.zip
+            - listitem [ref=e1165]:
+              - link "Employee Verification" [ref=e1166] [cursor=pointer]:
+                - /url: /employee-verification
+            - listitem [ref=e1167]:
+              - link "Certificate Verification" [ref=e1168] [cursor=pointer]:
+                - /url: /certificate-verification
+        - generic [ref=e1169]:
+          - generic [ref=e1170]: Resources
+          - list [ref=e1171]:
+            - listitem [ref=e1172]:
+              - link "Audit Report" [ref=e1173] [cursor=pointer]:
+                - /url: /audit-report
+            - listitem [ref=e1174]:
+              - link "Docs" [ref=e1175] [cursor=pointer]:
+                - /url: https://docs.blocksec.com/
+            - listitem [ref=e1176]:
+              - link "Security Incident Library" [ref=e1177] [cursor=pointer]:
+                - /url: /security-incident
+            - listitem [ref=e1178]:
+              - link "Blog" [ref=e1179] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e1180]:
+              - link "Research" [ref=e1181] [cursor=pointer]:
+                - /url: /research
+            - listitem [ref=e1182]:
+              - link "Guides" [ref=e1183] [cursor=pointer]:
+                - /url: /guides
+    - generic [ref=e1184]:
+      - generic [ref=e1185]:
+        - generic [ref=e1186]: Copyright © 2021-2026 BlockSec
+        - generic [ref=e1187]:
+          - link "Terms" [ref=e1188] [cursor=pointer]:
+            - /url: /terms-of-service
+          - generic [ref=e1189]: "&"
+          - link "Policies" [ref=e1190] [cursor=pointer]:
+            - /url: /privacy-policy
+          - generic [ref=e1191]: "&"
+          - link "Disclaimer" [ref=e1192] [cursor=pointer]:
+            - /url: /disclaimer
+      - generic [ref=e1193]:
+        - generic [ref=e1194] [cursor=pointer]:
+          - generic [ref=e1195]: email
+          - img [ref=e1197]
+        - link "X" [ref=e1199] [cursor=pointer]:
+          - /url: https://twitter.com/blocksecteam
+          - generic [ref=e1200]: X
+          - img [ref=e1202]
+        - link "Telegram" [ref=e1204] [cursor=pointer]:
+          - /url: https://t.me/BlockSecTeam
+          - generic [ref=e1205]: Telegram
+          - img [ref=e1207]
+        - link "YouTube" [ref=e1209] [cursor=pointer]:
+          - /url: https://www.youtube.com/@blocksecteam
+          - generic [ref=e1210]: YouTube
+          - img [ref=e1212]
+        - link "Linkedin" [ref=e1214] [cursor=pointer]:
+          - /url: https://www.linkedin.com/company/blocksec
+          - generic [ref=e1215]: Linkedin
+          - img [ref=e1217]
+        - link "GitHub" [ref=e1219] [cursor=pointer]:
+          - /url: https://github.com/blocksecteam
+          - generic [ref=e1220]: GitHub
+          - img [ref=e1222]
