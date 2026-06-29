@@ -4,12 +4,17 @@ import { join } from "node:path";
 
 const MIGRATIONS_DIR = join(import.meta.dir, "..", "migrations");
 
-/** Split a .sql file into individual statements (naive `;` split, comment-safe enough for our DDL). */
-function statements(sqlText: string): string[] {
-  return sqlText
+/** Split a .sql file into individual statements. Strips `--` line comments first
+ *  so a leading comment can't swallow the statement that follows it. */
+export function statements(sqlText: string): string[] {
+  const withoutComments = sqlText
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n");
+  return withoutComments
     .split(";")
     .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith("--"));
+    .filter((s) => s.length > 0);
 }
 
 /** Apply every migration file in order. Idempotent (uses IF NOT EXISTS DDL). */
