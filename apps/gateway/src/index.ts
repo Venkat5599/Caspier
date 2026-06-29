@@ -1,4 +1,14 @@
-// @fabric/gateway
-// Scaffold entry point. See docs/ROADMAP.md for the build sequence.
-export const NAME = "@fabric/gateway";
-console.log(`[${NAME}] scaffold — not yet implemented`);
+import { createApp } from "./app.ts";
+import { loadConfig } from "./config.ts";
+import { createLogger } from "./logger.ts";
+
+const config = loadConfig();
+const logger = createLogger(config.logLevel);
+const app = createApp({ logger });
+
+logger.info("gateway listening", { port: config.port });
+
+export default {
+  port: config.port,
+  fetch: app.fetch,
+};

@@ -9,5 +9,13 @@
     "start": "bun src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
+  },
+  "dependencies": {
+    "@fabric/catalog": "workspace:*",
+    "@fabric/manifest": "workspace:*",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
   }
 }
