@@ -1,0 +1,21 @@
+# Agent Fabric — edge reverse proxy (auto-TLS).
+# Scaffold. Replace example.com with the real domain; wire upstreams as services land.
+
+{$FABRIC_DOMAIN:localhost} {
+	encode gzip
+
+	# API gateway
+	handle /api/* {
+		reverse_proxy gateway:8080
+	}
+
+	# MCP gateway
+	handle /mcp/* {
+		reverse_proxy mcp-server:8081
+	}
+
+	# Web app (marketplace + dashboards)
+	handle {
+		reverse_proxy web:5173
+	}
+}

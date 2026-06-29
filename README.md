@@ -1,82 +1,84 @@
-# Bastion + Sentinel — A regime-aware AI agent that can't go rogue, on Casper
+# Agent Fabric
 
-> **Bastion** is an AI agent that reads the macro regime and rebalances a **Ray Dalio All-Weather portfolio** of tokenized real-world assets on **Casper** — non-custodial, paying for its own data via **x402**.
-> **Sentinel** is the native authorization & kill-switch rail that lets it act with bounded, instantly-revocable authority — using Casper's weighted-key account model. The AI runs; the rail keeps it safe.
+> **Permissioned execution layer for AI agents.** Agents act on paid APIs and on-chain workflows with **scoped session keys** — bounded protocols, assets, methods, and spend — **without ever touching a private key**. Autonomy without custody.
+>
+> **Flagship feature — Skills as Endpoints:** turn a `SKILL.md` into a live, validated, sandboxed, **x402-metered** REST + MCP endpoint. Humans, apps, and agents call it and **pay per call**.
 
-Built for the **Casper Agentic Buildathon 2026** — Casper Innovation Track. Hits all three pillars: **Agentic AI · DeFi & Payments · RWA**.
-
-**The wedge:** autonomous AI agents are unsafe near money (2026's #1 unsolved agent problem — spend caps, kill switch). Casper is the only major L1 with **weighted associated keys + action thresholds** natively, so the agent gets a low-weight key that can *spend but never escalate or drain*, capped by an upgradeable policy contract, killable in one transaction. Reusable by every Casper agent.
+Built from scratch. Production target, not a demo.
 
 ---
 
-## What it is
+## The idea
 
-Bastion is an agent, not a dashboard. You trigger a run (one tap — cheap, no idle compute); the agent then autonomously:
+Autonomous agents are unsafe near money and APIs — they need keys to act, but keys mean unbounded blast radius. Agent Fabric fixes this with a **least-privilege rail**:
 
-1. **Perceives** — pulls macro (growth, inflation) + prices through a paid endpoint, paying per request via Casper's native **x402** facilitator.
-2. **Classifies the regime** — maps growth × inflation to one of four Dalio regimes (Goldilocks / Reflation / Deflation / Stagflation). Real judgment, not fixed weights.
-3. **Tilts + decides** — tilts the All-Weather allocation toward the regime, then rebalances only past a threshold band.
-4. **Acts** — executes swaps on-chain through the **CSPR.trade** AMM. You always hold your keys.
-5. **Stakes reputation** — records the call on its on-chain **Agent Passport**; reputation moves with the outcome. Accountable autonomy.
-6. **Reports** — every step emits a Casper Testnet deploy hash you can click.
+1. **Smart account** — upgrade an EOA to a smart account (ERC-7702 delegation).
+2. **Scoped session keys** — cryptographic delegations limited to specific contracts, assets, methods, max value, and expiry.
+3. **x402 proxies** — wrap any API as a pay-per-call endpoint with programmatic settlement.
+4. **Workflow fabric** — compose x402 calls + on-chain actions + conditionals into reusable, permissionable units.
+5. **MCP servers** — expose every unit as an agent-discoverable tool (Claude, ChatGPT, any MCP client).
 
-**Why this isn't a clone:** regime-aware tilting (the AI actually decides) + on-chain reputation staking (accountable autonomy, a primitive other Casper agents can reuse).
+On top of the rail sits the headline product: **a `SKILL.md` becomes a metered endpoint** — another permissionable unit, sold per call.
 
-## Allocation (All-Weather, tokenized)
+```
+SKILL.md ─▶ INGEST ─▶ VALIDATE ─▶ SANDBOX ─▶ METER ─▶ REST route + MCP tool
+                                    (isolated)  (x402)   (one skill, two front doors)
+```
 
-| Token | Asset | Weight |
-|-------|-------|--------|
-| wTLT  | Long-Term Treasuries | 40% |
-| wSPX  | Equities (S&P basket) | 30% |
-| wIEF  | Intermediate Treasuries | 15% |
-| wGLD  | Gold | 7.5% |
-| wDBC  | Commodities | 7.5% |
+## Why it matters
 
-## Why Casper
-
-- **Native x402** — the agent pays for its own data on-chain, per request.
-- **Upgradeable contracts** — rebalance strategy updates without migrating funds.
-- **CSPR.trade AMM** (live on Testnet) — real swaps, real liquidity.
-- **MCP + CSPR.cloud** — the agent reads/streams chain state via the official toolkit.
+- **Publishers** monetize a skill by uploading one Markdown file.
+- **Callers / agents** discover and invoke capabilities and pay per use — no integration tax.
+- **Account owners** keep custody; the agent gets a low-privilege, revocable key that can spend but never drain or escalate.
 
 ## Stack
 
-- **Web:** Vite + React + TypeScript + Tailwind v4 + framer-motion
-- **Contracts:** Odra (Rust) — CEP-18 wRWA tokens, BasketVault, upgradeable Rebalancer
-- **Agent:** Bun + TypeScript perceive→decide→act loop
-- **Chain:** Casper MCP server + CSPR.cloud + x402 facilitator + CSPR.click wallet
+| Layer | Choice |
+|---|---|
+| Edge | Caddy (auto-TLS) + API gateway |
+| Services | TypeScript on Bun, Hono |
+| Contracts | Solidity + Foundry, ERC-7702 |
+| Sandbox | Firecracker microVM (KVM) or gVisor (fallback) |
+| Data | Postgres · Redis · NATS · MinIO |
+| Payments | x402 facilitator on EVM |
+| MCP | Express MCP server |
+| Web | Next.js / Vite + React + Tailwind |
+| Infra | Docker → k3s, GitHub Actions, Vault |
+| Observability | Prometheus · Grafana · Loki · Tempo |
 
-## Run the web app
+## Monorepo layout
+
+```
+/apps
+  /web              marketplace + dashboards (Vite/React today, Next.js target)
+  /gateway          API edge: authn, rate-limit, routing
+  /mcp-server       MCP gateway — units as agent tools
+/services
+  /identity         users, orgs, API keys, wallet links
+  /catalog          skill/workflow registry, versions, pricing, validation
+  /execution        orchestrator + sandbox pool
+  /payments         x402 gate, settlement, ledger, payouts
+  /chain-worker     the only signer — ERC-7702 + x402, transactional outbox
+/packages
+  /sdk              caller SDK (auto x402 payment)
+  /manifest         SKILL.md spec + parser + validator
+  /authz            session-key + scope library
+/contracts          Solidity (ERC-7702 delegation, session keys)
+/infra              compose, caddy, k8s, CI
+/docs               PRD, ARCHITECTURE, ROADMAP, SANDBOX
+```
+
+## Develop
 
 ```bash
 bun install
-bun run dev      # http://localhost:5173
-bun run build    # production build to dist/
-```
-
-## Project layout
-
-```
-/src           web app (landing + live agent console)
-/docs          PRD.md, ARCHITECTURE.md
-/contracts     Odra contracts            (in progress)
-/agent         Bun agent runtime         (in progress)
-/mcp           Casper MCP server         (in progress)
+bun run web:dev      # web app
+bun run gateway:dev  # API edge (stub)
+bun run mcp:dev      # MCP server (stub)
 ```
 
 ## Status
 
-- ✅ Web app + live agent console (demo flow)
-- 🚧 Odra contracts → Testnet
-- 🚧 Agent runtime wired to chain
-- 🚧 x402-paid data feed
+Pivoted from the previous Casper "Bastion" concept to Agent Fabric. Foundation + architecture landed; services scaffolded. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the build sequence and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full system design.
 
-## What is real vs mocked (honest)
-
-| Real on Testnet | Mocked / illustrative (labeled in UI) |
-|-----------------|----------------------------------------|
-| Odra contracts, deploy hashes, CSPR.trade swaps, CSPR.cloud reads, CSPR.click custody | wRWA tokens represent real assets but are **test tokens**; backtest/performance numbers are illustrative; the console flow is simulated until contracts land |
-
-All code original to this Buildathon. Concept inspired by the public All-Weather strategy; no third-party product code or assets reused.
-
-> Testnet demo. Not financial advice.
+> Concept derived from the public agent_fabric project (Cronos x402 permissioned execution) plus the "skills served as endpoints" model. All code original.

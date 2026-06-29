@@ -1,126 +1,199 @@
-# Bastion + Sentinel — Technical Architecture (FINAL)
+# Agent Fabric — System Architecture
 
-A regime-aware AI agent (**Bastion**) that acts under a native authorization & kill-switch rail (**Sentinel**) on Casper.
+Enterprise design for a permissioned execution layer where AI agents act under scoped, revocable authority, and where any `SKILL.md` becomes a metered REST + MCP endpoint.
 
 ---
 
-## 1. System overview
+## 0. Product surface
+
+| Persona | Uses | Needs |
+|---|---|---|
+| Publisher | uploads SKILL.md / workflow → earns per call | publish, version, price, payout, analytics |
+| Caller (dev/app) | calls units via REST/SDK | API key, x402 wallet, spend caps, usage |
+| Agent | discovers + calls via MCP | tool discovery, auto-pay, bounded scope |
+| Account owner | funds smart account, mints session keys | custody, caps, revoke, audit |
+| Platform ops | runs it | observability, kill switch, fraud control |
+
+---
+
+## 1. Bounded contexts (DDD)
 
 ```
-                         ┌──────────────────────────────────────────────┐
-                         │                 USER (browser)                │
-                         │  CSPR.click wallet · HIGH-weight master key   │
-                         │  sets spend caps · can revoke agent in 1 tx   │
-                         └───────────────┬──────────────────────────────┘
-                                         │ deposit · grant agent key · set policy · REVOKE
-                                         ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│  WEB APP (Vite + React)  landing · live agent console · caps · kill switch   │
-└───────────────┬───────────────────────────────────────────┬──────────────────┘
-                │                                             │ wallet sign
-                ▼                                             ▼
-┌──────────────────────────────┐               ┌──────────────────────────────────┐
-│  BASTION agent (Bun)         │   deploys     │   CASPER TESTNET                  │
-│  perceive→regime→decide→act  │  (signed by   │                                   │
-│                              │   LOW-weight  │  ┌─────────────────────────────┐ │
-│  1 PERCEIVE  x402 paid data ─┼───agent key)─▶│  │ SENTINEL policy (Odra,      │ │
-│  2 REGIME    classify+tilt   │               │  │   upgradeable)              │ │
-│  3 DECIDE    drift vs target │               │  │  - per-tx + daily caps      │ │
-│  4 ACT       swap            │   every tx    │  │  - contract/method allowlist│ │
-│              ▲               │   checked     │  │  - rate limit · spend ledger│ │
-└──────────────┼───────────────┘   against    │  └─────────────────────────────┘ │
-               │ reads/streams      policy     │  ┌─────────────────────────────┐ │
-               ▼                                │  │ USER ACCOUNT (native keys)  │ │
-┌──────────────────────────────┐               │  │  master key  weight 3       │ │
-│  CSPR.cloud (REST + Stream)   │◀──────────────│  │  agent key   weight 1       │ │
-│  balances · deploys · events  │   events      │  │  deploy thr 1 · keymgmt 3   │ │
-└──────────────────────────────┘               │  └─────────────────────────────┘ │
-               ▲                                │  ┌─────────────────────────────┐ │
-               │ MCP tool calls                 │  │ BasketVault (Odra)          │ │
-┌──────────────┴───────────────┐               │  │  holds wRWA · self-custody  │ │
-│  Casper MCP + CSPR.trade MCP  │               │  └─────────────────────────────┘ │
-└───────────────────────────────┘              │  ┌─────────────────────────────┐ │
-                                                │  │ CSPR.trade AMM (live)       │ │
-                                                │  │  real wRWA swaps            │ │
-                                                │  └─────────────────────────────┘ │
-                                                │  ┌─────────────────────────────┐ │
-                                                │  │ wRWA CEP-18 ×5              │ │
-                                                │  └─────────────────────────────┘ │
-                                                └──────────────────────────────────┘
+Identity & Accounts    Authorization Rail     Catalog
+  users, orgs,           smart accts,           skills, workflows,
+  API keys, wallets      session keys, scopes   versions, pricing
+
+Execution              Payments & Billing      Observability
+  sandbox, runtime,      x402, settlement,      usage events,
+  workflow engine        payouts, invoices      audit log, metrics
 ```
 
-## 2. The Sentinel model (the Casper-unique core)
+Start as a **modular monolith**; split at scale seams (Execution and Payments split first).
 
-Casper accounts natively support **associated keys with weights** and **action thresholds**:
+---
 
-- `deploy` threshold — weight needed to send spending transactions.
-- `key_management` threshold — weight needed to add/remove keys or change weights.
+## 2. Service decomposition
 
-Sentinel configures the user account as:
-
-| Key | Weight | Can spend? | Can manage keys? |
-|-----|--------|-----------|------------------|
-| Master (user) | 3 | yes | yes |
-| Agent (Bastion) | 1 | yes (≥ deploy thr 1) | **no** (< keymgmt thr 3) |
-
-So the agent can trade but can **never** escalate, remove keys, or drain. On top, the **Sentinel policy contract** (upgradeable) enforces *what* and *how much*: per-tx cap, daily cap, allowlist (only CSPR.trade + x402 facilitator), rate limit, and a spend ledger. **Revocation** = master key removes the agent key in one deploy → instant on-chain death, no orphaned children.
-
-> No other major L1 has weighted associated keys + action thresholds at the account level. This is what makes Sentinel native to Casper and not portable.
-
-## 3. Components
-
-### 3.1 Contracts (Odra → Testnet)
-- **wRWA tokens** — CEP-18 ×5 (wTLT, wSPX, wIEF, wGLD, wDBC), Testnet mocks.
-- **BasketVault** — custodies user wRWA; self-custody (only master key withdraws).
-- **Rebalancer** — upgradeable; base weights + regime-tilt + executes swaps via CSPR.trade.
-- **Sentinel policy** — upgradeable; caps, allowlist, rate limit, spend ledger; every agent tx validates against it.
-
-### 3.2 Bastion agent (Bun)
-On user-triggered run: **perceive** (x402 paid macro/price) → **classify regime** (growth × inflation → Dalio quadrant; LLM justifies) → **tilt + decide** (drift vs tilted targets) → **act** (CSPR.trade swaps, signed by low-weight agent key, each checked by Sentinel). No idle cron — runs on request.
-
-### 3.3 MCP servers
-Casper MCP + CSPR.trade MCP expose chain read/write + swaps as LLM-callable tools.
-
-### 3.4 Web app
-Landing (inflation hook, allocation, 25-yr chart, calculator) + **agent console** (regime, tilt, reputation, live log) + **Sentinel panel** (caps, spend ledger, revoke button). CSPR.click connect.
-
-## 4. One agent run (data flow)
-1. User taps Run → agent calls x402 endpoint → **payment deploy** (checked by Sentinel allowlist + cap).
-2. Reads BasketVault via CSPR.cloud → classifies regime → tilts targets.
-3. Drift > band → builds rebalance plan.
-4. Submits CSPR.trade swap deploys, signed by **agent key** → each validated by Sentinel policy (cap/allowlist/rate). Over-cap → **rejected on-chain**.
-5. CSPR.cloud streaming confirms → console + spend ledger update with hashes.
-→ ≥1 on-chain deploy per run (eligibility met).
-
-**Kill demo:** user taps Revoke → master key removes agent key → agent's next deploy **fails on-chain** (insufficient weight).
-
-## 5. Stack
-| Layer | Choice |
-|---|---|
-| Contracts | Odra (Rust) — CEP-18, BasketVault, Rebalancer, Sentinel policy |
-| Agent | Bun + TypeScript; LLM (Claude) for regime reasoning |
-| Chain access | Casper MCP + CSPR.trade MCP + CSPR.cloud |
-| Payments | native x402 facilitator (capped by Sentinel) |
-| Auth model | native weighted associated keys + action thresholds |
-| Wallet | CSPR.click |
-| Frontend | Vite + React + Tailwind v4 + framer-motion |
-
-## 6. Build order (30 days)
-1. **Wk1** — wRWA CEP-18 + BasketVault on Testnet; web landing (done).
-2. **Wk2** — Sentinel policy contract + weighted-key setup + revoke flow; CSPR.click connect; deposit/withdraw.
-3. **Wk3** — Bastion agent loop (perceive/regime/decide/act) + x402 + CSPR.trade swaps under Sentinel; console wired to CSPR.cloud.
-4. **Wk4** — Sentinel panel (caps, ledger, kill), polish, record demo (incl. cap-block + kill), README, dry-run.
-
-## 7. Real vs mocked (disclosed)
-| Real on Testnet | Mocked / illustrative |
-|---|---|
-| Sentinel weighted keys + policy, BasketVault, CSPR.trade swaps, x402 payment, revocation deploys, CSPR.cloud reads, CSPR.click custody | wRWA = test tokens; backtest numbers illustrative; console simulated until contracts wired |
-
-## 8. Repo layout
 ```
-/src           web app (landing + agent console + sentinel panel)
-/docs          PRD.md, ARCHITECTURE.md
-/contracts     Odra: wRWA, BasketVault, Rebalancer, Sentinel policy   (next)
-/agent         Bun: perceive→regime→decide→act loop                   (next)
-/mcp           MCP tool definitions                                    (next)
+   clients (REST / SDK / MCP / web)
+            │
+   ┌────────▼─────────┐  Caddy + gateway: authn, rate-limit, route, WAF
+   │  API GATEWAY     │
+   └────────┬─────────┘
+   ┌────┬────┼────┬─────────┬─────────┐
+   ▼    ▼    ▼    ▼         ▼         ▼
+Identity Catalog Execution Payments  MCP-Gateway
+                  │
+            ┌─────▼──────┐
+            │ SANDBOX    │  Firecracker microVMs (KVM) / gVisor
+            │ POOL       │
+            └─────┬──────┘
+   ┌──────────────▼────────────────────────────────┐
+   │ Postgres (schema/context) · Redis · NATS · S3  │
+   └──────────────┬────────────────────────────────┘
+            ┌──────▼───────┐
+            │ CHAIN WORKER │  only signer; outbox → EVM (ERC-7702 + x402)
+            └──────────────┘
 ```
+
+- **API Gateway** — single ingress; authn (API key + wallet sig), rate-limit, routing, WAF.
+- **Identity** — users, orgs, RBAC, API keys, wallet links.
+- **Catalog** — registry, versions, pricing, manifest validation, search.
+- **Execution** — schedules runs, manages sandbox pool, workflow state machine.
+- **Sandbox Pool** — isolated microVMs running untrusted skill bodies.
+- **Payments** — x402 gate, settlement, double-entry ledger, payouts, invoices.
+- **MCP Gateway** — catalog as MCP tools; agent discovery + auto-pay handshake.
+- **Chain Worker** — sole holder of signing keys; transactional outbox → EVM.
+
+---
+
+## 3. Data architecture
+
+Postgres, schema-per-context:
+
+- `identity`: users, orgs, members, api_keys, wallet_links
+- `catalog`: units, versions, manifests, pricing, tags, ratings
+- `authz`: smart_accounts, session_keys, scopes, revocations
+- `execution`: runs, run_steps, sandbox_assignments, results
+- `payments`: payment_intents, settlements, ledger_entries, payouts, invoices
+- `audit`: append-only, hash-chained event log
+
+Supporting: **Redis** (rate-limit, session-key cache, idempotency, hot manifests), **NATS / Redis Streams** (run requests, settlement + usage events), **Object store** (SKILL.md blobs, run logs, large outputs).
+
+Patterns: **transactional outbox** (DB write + event atomic), **idempotency keys** on every call + settle, **event sourcing** for usage/billing. On-chain settlement is the source of truth for money; DB is the fast mirror, reconciled by a job.
+
+---
+
+## 4. Critical flow — paid skill call
+
+```
+agent/app      gateway     payments    execution   sandbox    chain
+ POST /s/{slug} ─▶ authn+RL
+                ─▶ quote ─▶
+   402 + price+nonce ◀─────
+ retry + x402 proof ─▶ verify ─▶ check cap + scope
+                                ─▶ run ─▶ assign VM ─▶ execute (capped)
+                                          result ◀───────────
+                       settle (outbox) ───────────────────▶ hash
+   200 + result ◀── meter + ledger
+```
+
+Settlement is **async via outbox** — caller doesn't wait for chain finality; usage metered immediately, settled durably; reconciliation matches ledger ↔ chain.
+
+---
+
+## 5. Sandbox execution (highest-risk surface)
+
+Untrusted `SKILL.md` = remote-code-execution surface. Defense in depth:
+
+```
+Execution Orchestrator → warm pool of ephemeral microVMs
+┌──────────── microVM (one per call) ────────────┐
+│ seccomp + cgroups (cpu/mem/pids/time caps)      │
+│ read-only rootfs · tmpfs scratch · no host fs   │
+│ network DENY-all → egress allowlist proxy only  │
+│ no platform secrets · scoped session-key handle │
+│ runtime engine: LLM-exec | code-exec | hybrid   │
+└─────────────────────────────────────────────────┘
+       VM destroyed after call (no reuse, no leak)
+```
+
+- Warm pool for latency; one VM per call, destroyed after → no cross-tenant state leak.
+- Egress through a filtering proxy — only declared-scope hosts.
+- Resource caps enforced at the hypervisor, not the app.
+- Skills never hold funds — they receive a capability handle to call session-key-scoped actions via Payments.
+
+**Isolation tech** depends on host: Firecracker (needs `/dev/kvm`) preferred; **gVisor** where KVM is unavailable; plain Docker + seccomp only for trusted deterministic code. See [`SANDBOX.md`](SANDBOX.md).
+
+---
+
+## 6. Authorization rail (the fabric core)
+
+```
+Account owner ──ERC-7702──▶ Smart Account ──delegates──▶ Session Key (scoped)
+                                                          allowed contracts/assets/
+                                                          methods, max-value, expiry, rate
+                                                                │ every tx
+                                                                ▼
+                                                  on-chain permission enforcement
+                                                  over-scope → revert · revoke = 1 tx
+```
+
+Platform never custodies. Session key = least privilege, expiring, revocable. Skills/workflows act through it, capped.
+
+---
+
+## 7. Infrastructure topology
+
+**Now (single VPS):**
+
+```
+Caddy (TLS/WAF)
+  → [gateway, identity, catalog, payments, mcp] containers
+  → execution + sandbox pool (Firecracker needs KVM)
+  → Postgres + Redis + NATS + MinIO
+  → chain-worker (isolated; signer keys in Vault)
+Observability: Prometheus + Grafana + Loki + Tempo
+CI/CD: GitHub Actions → registry → blue-green deploy
+```
+
+**Scale path:** stateless services → k8s; managed Postgres + read replicas; sandbox pool → dedicated KVM hosts; CDN edge; multi-region chain workers.
+
+---
+
+## 8. Security architecture
+
+- **Edge:** TLS, WAF, per-key + per-IP rate limit, DDoS protection.
+- **AuthN:** hashed API keys, wallet signature (SIWE), MCP OAuth.
+- **AuthZ:** RBAC (org/role) + on-chain session-key scope.
+- **Secrets:** Vault / SOPS; signer keys isolated to chain-worker, HSM-ready.
+- **Sandbox:** microVM + seccomp + egress allowlist + no-secrets.
+- **Audit:** hash-chained append-only log; tamper-evident.
+- **Contracts:** external audit before mainnet; fork tests; pause guardian.
+- **Compliance path:** PII minimization, retention policy, SOC2 control mapping.
+
+---
+
+## 9. Observability & SRE
+
+- Golden signals per service (latency, traffic, errors, saturation).
+- Distributed tracing REST → sandbox → chain (OpenTelemetry).
+- Business metrics: calls, revenue, settle success %, payout lag.
+- Alerts: sandbox escape, cap breach, settle failure, queue backlog.
+- SLOs + error budgets; runbooks; on-call.
+
+---
+
+## 10. Build sequence
+
+1. Infra + CI/CD + observability skeleton.
+2. Identity + Catalog + Gateway (modular monolith).
+3. Contracts: smart account + session keys + audit.
+4. Payments + x402 + ledger + chain worker (outbox).
+5. Execution orchestrator + sandbox (after isolation infra solid).
+6. Skills-as-endpoints feature on top of execution.
+7. MCP gateway + SDK.
+8. Web marketplace + dashboards.
+9. Harden → audit → staging → load test → mainnet.
+
+See [`ROADMAP.md`](ROADMAP.md) for the phased checklist.
