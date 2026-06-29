@@ -1,0 +1,133 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: NEW
+      - generic [ref=e6]: Skills served as endpoints — live on Casper.
+      - link "Explore" [ref=e7] [cursor=pointer]:
+        - /url: /apis
+        - text: Explore
+        - img [ref=e8]
+    - banner [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - link "Agent Fabric" [ref=e13] [cursor=pointer]:
+            - /url: /
+          - navigation [ref=e14]:
+            - link "APIs" [ref=e15] [cursor=pointer]:
+              - /url: /apis
+            - link "MCP Servers" [ref=e16] [cursor=pointer]:
+              - /url: /mcp
+            - link "Workflows" [ref=e17] [cursor=pointer]:
+              - /url: /workflows
+        - generic [ref=e18]:
+          - button "Toggle theme" [ref=e19]:
+            - img [ref=e20]
+          - button "Sign In" [ref=e22]
+          - link "Get Started" [ref=e23] [cursor=pointer]:
+            - /url: /apis/create
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Workflows" [level=1] [ref=e27]
+        - paragraph [ref=e28]: Compose skills, x402 calls, and on-chain actions into reusable automations — a live, self-hosted workflow editor, running below.
+      - link "Open full editor" [ref=e29] [cursor=pointer]:
+        - /url: http://187.127.137.136:8088
+        - img [ref=e30]
+        - text: Open full editor
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - img [ref=e36]
+        - generic [ref=e40]: Workflow editor
+        - generic [ref=e41]: live
+      - iframe [ref=e42]:
+        - generic [ref=f12e3]:
+          - main [ref=f12e4]:
+            - main [ref=f12e7]:
+              - generic [ref=f12e9]:
+                - generic [ref=f12e10]:
+                  - img [ref=f12e11]
+                  - img [ref=f12e13]
+                - generic [ref=f12e17]:
+                  - generic [ref=f12e19]: Set up owner account
+                  - generic [ref=f12e22]:
+                    - generic [ref=f12e24]:
+                      - generic [ref=f12e29]:
+                        - text: Email
+                        - generic [ref=f12e30]: "*"
+                      - textbox "Email *" [ref=f12e34]:
+                        - /placeholder: ""
+                    - generic [ref=f12e36]:
+                      - generic [ref=f12e41]:
+                        - text: First Name
+                        - generic [ref=f12e42]: "*"
+                      - textbox "First Name *" [ref=f12e46]:
+                        - /placeholder: ""
+                    - generic [ref=f12e48]:
+                      - generic [ref=f12e53]:
+                        - text: Last Name
+                        - generic [ref=f12e54]: "*"
+                      - textbox "Last Name *" [ref=f12e58]:
+                        - /placeholder: ""
+                    - generic [ref=f12e60]:
+                      - generic [ref=f12e65]:
+                        - text: Password
+                        - generic [ref=f12e66]: "*"
+                      - textbox "Password *" [ref=f12e70]:
+                        - /placeholder: ""
+                      - generic [ref=f12e71]: 8+ characters, at least 1 number and 1 capital letter
+                    - generic [ref=f12e73] [cursor=pointer]:
+                      - checkbox "I want to receive security and product updates" [ref=f12e74]
+                      - generic [ref=f12e75]: I want to receive security and product updates
+                  - button "Next" [ref=f12e77] [cursor=pointer]:
+                    - generic [ref=f12e79]: Next
+          - complementary
+    - paragraph [ref=e43]: Self-hosted workflow engine on the Agent Fabric VPS.
+  - contentinfo [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - paragraph [ref=e48]: Agent Fabric
+          - paragraph [ref=e49]: An agent-native x402 execution fabric on Casper. Skills served as endpoints — validated, sandboxed, metered.
+        - generic [ref=e50]:
+          - paragraph [ref=e51]: Product
+          - list [ref=e52]:
+            - listitem [ref=e53]:
+              - link "APIs" [ref=e54] [cursor=pointer]:
+                - /url: /apis
+            - listitem [ref=e55]:
+              - link "Create API" [ref=e56] [cursor=pointer]:
+                - /url: /apis/create
+            - listitem [ref=e57]:
+              - link "MCP Servers" [ref=e58] [cursor=pointer]:
+                - /url: /mcp
+            - listitem [ref=e59]:
+              - link "Workflows" [ref=e60] [cursor=pointer]:
+                - /url: /workflows
+        - generic [ref=e61]:
+          - paragraph [ref=e62]: Developers
+          - list [ref=e63]:
+            - listitem [ref=e64]:
+              - link "GitHub" [ref=e65] [cursor=pointer]:
+                - /url: https://github.com/Venkat5599/Caspier
+            - listitem [ref=e66]:
+              - link "Gateway API" [ref=e67] [cursor=pointer]:
+                - /url: http://187.127.137.136:8086/skills
+            - listitem [ref=e68]:
+              - link "Status" [ref=e69] [cursor=pointer]:
+                - /url: http://187.127.137.136:8086/health
+        - generic [ref=e70]:
+          - paragraph [ref=e71]: Platform
+          - list [ref=e72]:
+            - listitem [ref=e73]:
+              - link "Casper" [ref=e74] [cursor=pointer]:
+                - /url: https://casper.network
+            - listitem [ref=e75]:
+              - link "x402" [ref=e76] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e77]:
+              - link "Model Context Protocol" [ref=e78] [cursor=pointer]:
+                - /url: https://modelcontextprotocol.io
+      - generic [ref=e79]:
+        - paragraph [ref=e80]: © 2026 Agent Fabric. All code original.
+        - paragraph [ref=e81]: Built on Casper · x402 · MCP
+  - alert [ref=e82]

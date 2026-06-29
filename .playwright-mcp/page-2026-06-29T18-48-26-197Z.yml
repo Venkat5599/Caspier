@@ -1,0 +1,26 @@
+- generic [ref=e9]:
+  - generic [ref=e11]:
+    - img "n8n.io" [ref=e13]
+    - generic [ref=e15]:
+      - generic [ref=e17]: Set up owner account
+      - generic [ref=e20]:
+        - generic [ref=e22]:
+          - generic [ref=e25]: Email *
+          - textbox [active] [ref=e28]: komarivenkataramana4#
+        - generic [ref=e30]:
+          - generic [ref=e33]: First Name *
+          - textbox [ref=e36]
+        - generic [ref=e38]:
+          - generic [ref=e41]: Last Name *
+          - textbox [ref=e44]
+        - generic [ref=e46]:
+          - generic [ref=e49]: Password *
+          - textbox [ref=e52]
+          - generic [ref=e53]: 8+ characters, at least 1 number and 1 capital letter
+      - generic [ref=e54]:
+        - generic [ref=e58] [cursor=pointer]: Skip setup for now
+        - button "Next" [ref=e59] [cursor=pointer]:
+          - generic [ref=e60]: Next
+  - generic:
+    - generic: 
+    - generic: 

@@ -1,0 +1,32 @@
+- generic [ref=e6]:
+  - img "n8n.io" [ref=e8]
+  - generic [ref=e10]:
+    - generic [ref=e12]: Set up owner account
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e20]:
+          - text: Email
+          - generic [ref=e21]: "*"
+        - textbox [ref=e25]
+      - generic [ref=e27]:
+        - generic [ref=e30]:
+          - text: First Name
+          - generic [ref=e31]: "*"
+        - textbox [ref=e35]
+      - generic [ref=e37]:
+        - generic [ref=e40]:
+          - text: Last Name
+          - generic [ref=e41]: "*"
+        - textbox [ref=e45]
+      - generic [ref=e47]:
+        - generic [ref=e50]:
+          - text: Password
+          - generic [ref=e51]: "*"
+        - textbox [ref=e55]
+        - generic [ref=e56]: 8+ characters, at least 1 number and 1 capital letter
+      - generic [ref=e58] [cursor=pointer]:
+        - generic [ref=e59]:
+          - checkbox "Inform me about security vulnerabilities if they arise"
+        - generic [ref=e65]: Inform me about security vulnerabilities if they arise
+    - button "Next" [ref=e67] [cursor=pointer]:
+      - generic [ref=e68]: Next

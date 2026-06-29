@@ -1,7 +1,7 @@
 import { ExternalLink, Workflow } from "lucide-react";
 
 // n8n editor, embedded live through the X-Frame-safe proxy.
-const N8N_URL = process.env.NEXT_PUBLIC_N8N_URL ?? "http://187.127.137.136:8088";
+const N8N_URL = process.env.NEXT_PUBLIC_N8N_URL ?? "http://187.127.137.136:8089";
 
 export default function WorkflowsPage() {
   return (

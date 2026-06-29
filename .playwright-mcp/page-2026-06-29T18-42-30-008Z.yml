@@ -1,0 +1,92 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: NEW
+      - generic [ref=e6]: Skills served as endpoints — live on Casper.
+      - link "Explore" [ref=e7] [cursor=pointer]:
+        - /url: /apis
+        - text: Explore
+        - img [ref=e8]
+    - banner [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - link "Agent Fabric" [ref=e13] [cursor=pointer]:
+            - /url: /
+          - navigation [ref=e14]:
+            - link "APIs" [ref=e15] [cursor=pointer]:
+              - /url: /apis
+            - link "MCP Servers" [active] [ref=e16] [cursor=pointer]:
+              - /url: /mcp
+            - link "Workflows" [ref=e17] [cursor=pointer]:
+              - /url: /workflows
+        - generic [ref=e18]:
+          - button "Toggle theme" [ref=e19]:
+            - img [ref=e20]
+          - button "Sign In" [ref=e22]
+          - link "Get Started" [ref=e23] [cursor=pointer]:
+            - /url: /apis/create
+  - generic [ref=e24]:
+    - heading "MCP Servers" [level=1] [ref=e25]
+    - paragraph [ref=e26]: Every published skill is discoverable as a Model Context Protocol tool. Point any MCP client — Claude, ChatGPT — at the Agent Fabric server.
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Client configuration" [level=3] [ref=e29]
+        - paragraph [ref=e30]: Add this to your MCP client config, then restart it.
+      - generic [ref=e32]: "{ \"mcpServers\": { \"agent-fabric\": { \"command\": \"bun\", \"args\": [\"apps/mcp-server/src/index.ts\"], \"env\": { \"GATEWAY_URL\": \"http://187.127.137.136:8086\" } } } }"
+    - heading "Available tools" [level=2] [ref=e33]
+    - generic [ref=e34]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: list_skills
+        - generic [ref=e38]: List all published skills in the catalog (name, price, summary).
+      - generic [ref=e40]:
+        - generic [ref=e41]: get_skill
+        - generic [ref=e42]: Fetch one skill's manifest and body by slug (optionally a pinned version).
+  - contentinfo [ref=e43]:
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - paragraph [ref=e47]: Agent Fabric
+          - paragraph [ref=e48]: An agent-native x402 execution fabric on Casper. Skills served as endpoints — validated, sandboxed, metered.
+        - generic [ref=e49]:
+          - paragraph [ref=e50]: Product
+          - list [ref=e51]:
+            - listitem [ref=e52]:
+              - link "APIs" [ref=e53] [cursor=pointer]:
+                - /url: /apis
+            - listitem [ref=e54]:
+              - link "Create API" [ref=e55] [cursor=pointer]:
+                - /url: /apis/create
+            - listitem [ref=e56]:
+              - link "MCP Servers" [ref=e57] [cursor=pointer]:
+                - /url: /mcp
+            - listitem [ref=e58]:
+              - link "Workflows" [ref=e59] [cursor=pointer]:
+                - /url: /workflows
+        - generic [ref=e60]:
+          - paragraph [ref=e61]: Developers
+          - list [ref=e62]:
+            - listitem [ref=e63]:
+              - link "GitHub" [ref=e64] [cursor=pointer]:
+                - /url: https://github.com/Venkat5599/Caspier
+            - listitem [ref=e65]:
+              - link "Gateway API" [ref=e66] [cursor=pointer]:
+                - /url: http://187.127.137.136:8086/skills
+            - listitem [ref=e67]:
+              - link "Status" [ref=e68] [cursor=pointer]:
+                - /url: http://187.127.137.136:8086/health
+        - generic [ref=e69]:
+          - paragraph [ref=e70]: Platform
+          - list [ref=e71]:
+            - listitem [ref=e72]:
+              - link "Casper" [ref=e73] [cursor=pointer]:
+                - /url: https://casper.network
+            - listitem [ref=e74]:
+              - link "x402" [ref=e75] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e76]:
+              - link "Model Context Protocol" [ref=e77] [cursor=pointer]:
+                - /url: https://modelcontextprotocol.io
+      - generic [ref=e78]:
+        - paragraph [ref=e79]: © 2026 Agent Fabric. All code original.
+        - paragraph [ref=e80]: Built on Casper · x402 · MCP
+  - alert [ref=e81]
