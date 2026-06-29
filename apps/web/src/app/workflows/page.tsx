@@ -10,8 +10,8 @@ export default function WorkflowsPage() {
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Workflows</h1>
           <p className="mt-1 text-muted">
-            Compose skills, x402 calls, and on-chain actions into reusable automations — powered by a
-            self-hosted n8n, running live below.
+            Compose skills, x402 calls, and on-chain actions into reusable automations — a live,
+            self-hosted workflow editor, running below.
           </p>
         </div>
         <a
@@ -27,7 +27,7 @@ export default function WorkflowsPage() {
       <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-surface">
         <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2.5">
           <Workflow className="h-4 w-4 text-accent" />
-          <span className="text-sm font-medium">n8n · workflow editor</span>
+          <span className="text-sm font-medium">Workflow editor</span>
           <span className="ml-auto font-mono text-xs text-muted">live</span>
         </div>
         <iframe
@@ -39,7 +39,7 @@ export default function WorkflowsPage() {
       </div>
 
       <p className="mt-4 text-center font-mono text-xs text-muted">
-        Self-hosted n8n on the Agent Fabric VPS. Sign in with the workspace credentials.
+        Self-hosted workflow engine on the Agent Fabric VPS.
       </p>
     </div>
   );
