@@ -26,8 +26,11 @@ done
 
 echo "==> install + migrate + build web (bun container)"
 docker run --rm --network host -v "$APP":/app -w /app \
-  -e DATABASE_URL="$DATABASE_URL" oven/bun:1 bash -lc \
-  "bun install --frozen-lockfile || bun install; bun services/catalog/src/migrate.ts; bun run web:build"
+  -e DATABASE_URL="$DATABASE_URL" -e NEXT_PUBLIC_GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-http://187.127.137.136:8086}" \
+  oven/bun:1 bash -lc \
+  "bun install --frozen-lockfile || bun install; bun services/catalog/src/migrate.ts; bun run web:build; \
+   cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true; \
+   cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static"
 
 echo "==> (re)start gateway"
 docker rm -f agentfabric-gateway >/dev/null 2>&1 || true
@@ -36,12 +39,13 @@ docker run -d --name agentfabric-gateway --restart unless-stopped --network host
   -e DATABASE_URL="$DATABASE_URL" -e GATEWAY_PORT="${GATEWAY_PORT:-8086}" -e LOG_LEVEL=info \
   oven/bun:1 bash -lc "bun apps/gateway/src/index.ts" >/dev/null
 
-echo "==> (re)start web"
+echo "==> (re)start web (Next.js standalone)"
 docker rm -f agentfabric-web >/dev/null 2>&1 || true
 docker run -d --name agentfabric-web --restart unless-stopped \
-  -p "${WEB_PORT:-8087}:80" \
-  -v "$APP/apps/web/dist":/usr/share/nginx/html:ro \
-  nginx:alpine >/dev/null
+  -p "${WEB_PORT:-8087}:3000" \
+  -e PORT=3000 -e HOSTNAME=0.0.0.0 \
+  -v "$APP":/app -w /app/apps/web/.next/standalone/apps/web \
+  oven/bun:1 bash -lc "bun server.js" >/dev/null
 
 sleep 4
 echo "==> health"

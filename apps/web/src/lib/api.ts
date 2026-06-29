@@ -1,7 +1,7 @@
 // Typed client for the Agent Fabric gateway.
-// Base URL comes from VITE_GATEWAY_URL at build time, defaulting to the live VPS.
+// Base URL comes from NEXT_PUBLIC_GATEWAY_URL, defaulting to the live VPS.
 
-const BASE = (import.meta.env.VITE_GATEWAY_URL ?? "http://187.127.137.136:8086").replace(
+const BASE = (process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://187.127.137.136:8086").replace(
   /\/+$/,
   "",
 );
