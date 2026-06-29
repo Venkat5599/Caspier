@@ -22,14 +22,19 @@ function EndpointMock() {
         <span className="h-3 w-3 rounded-full bg-red-400/70" />
         <span className="h-3 w-3 rounded-full bg-amber-400/70" />
         <span className="h-3 w-3 rounded-full bg-green-400/70" />
-        <span className="ml-3 font-mono text-xs text-muted">POST /s/hello-weather</span>
+        <span className="ml-3 font-mono text-xs text-muted">agent → POST /s/market-digest</span>
       </div>
       <div className="space-y-3 p-5 font-mono text-xs leading-relaxed">
-        <p className="text-muted">$ curl -X POST /s/hello-weather -d &apos;{`{"city":"Tokyo"}`}&apos;</p>
-        <p className="text-amber-500">← 402 Payment Required · 1000 USDC</p>
-        <p className="text-muted">$ retry with x402 proof</p>
+        <p className="text-muted">
+          # AI agent calls a skill
+          <br />$ POST /s/market-digest -d &apos;{`{"sector":"DeFi","window":"24h"}`}&apos;
+        </p>
+        <p className="text-amber-500">← 402 Payment Required · 0.05 USDC</p>
+        <p className="text-muted">$ agent attaches x402 proof + scoped session key</p>
         <p className="text-accent">→ 200 OK</p>
-        <pre className="rounded-lg bg-bg p-3 text-foreground">{`{ "summary": "Tokyo is 22°C, clear." }`}</pre>
+        <pre className="rounded-lg bg-bg p-3 text-foreground">{`{ "headline": "ETH dominance up 2.1%",
+  "signals": 12, "risk": "low",
+  "confidence": 0.91 }`}</pre>
       </div>
     </div>
   );
@@ -37,9 +42,9 @@ function EndpointMock() {
 
 function CatalogMock() {
   const rows = [
-    { n: "hello-weather", p: "1000 USDC" },
-    { n: "summarize-pdf", p: "500 USDC" },
-    { n: "price-feed", p: "free" },
+    { n: "market-digest", p: "0.05 USDC" },
+    { n: "research-synth", p: "0.10 USDC" },
+    { n: "sentiment-scan", p: "free" },
   ];
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-black/5">
