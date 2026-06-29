@@ -96,12 +96,37 @@ ssh -i ~/.ssh/agent_fabric_vps root@187.127.137.136 "cd /opt/agent-fabric && bas
 - **Rotate the aicredits API key** — `sk-live-fbc0…` pasted in chat. New key goes ONLY into
   `/opt/agent-fabric/.env` (`AICREDITS_API_KEY=…`), then restart the gateway. Never commit it.
 
+## 🎯 HARD REQUIREMENT: REAL TRANSACTIONS (no mocks)
+
+User wants **all on-chain actions to be REAL Casper transactions** — every payment,
+settlement, session-key grant/revoke, and skill-triggered action must produce a real
+deploy hash on Casper (Testnet first, mainnet later). No simulated/mock flows.
+
+This is the next big push. What it needs:
+- **Casper Testnet account, funded** via the faucet (need a public/secret key pair).
+- **RPC node** — Casper Testnet RPC URL (e.g. node on testnet) + `casper-js-sdk` to
+  build → sign → send → poll deploys.
+- **x402 on Casper** — VERIFY whether a real Casper x402 facilitator exists, or implement
+  payment as a real CSPR/token transfer deploy gated by the 402 flow. (x402 originated on
+  EVM/Coinbase — confirm the Casper story before building.)
+- **Session keys** = real Casper **weighted associated keys** set on the funded account
+  (low-weight agent key that can deploy but not manage keys). Revoke = real key-removal deploy.
+- **Signing** — CSPR.click wallet in the browser for user-signed deploys; agent key signs
+  server-side (key in VPS .env / Vault).
+- Every step emits a **clickable Testnet deploy hash** in the UI (cspr.live link).
+
+Open questions to resolve first: Testnet vs mainnet? Does Casper have a live x402
+facilitator or do we roll payment as a native transfer? Where does the agent secret key
+live (VPS .env now, Vault later)?
+
 ## NEXT (open bricks, pick up here)
 
-- **Casper wallet sign-in** (CSPR.click) — real "Sign In" instead of the placeholder button.
-- **x402 metering brick** — gateway 402 gate → verify Casper x402 proof → execute → usage ledger → settle.
+- **Real Casper transactions** (above) — the priority. Start: fund a Testnet account,
+  wire `casper-js-sdk` in a new `services/chain-worker`, send a real transfer deploy, show the hash.
+- **Casper wallet sign-in** (CSPR.click) — real "Sign In" + user-signed deploys.
+- **x402 metering brick** — gateway 402 gate → verify REAL Casper payment → execute → usage ledger → settle.
+- **packages/authz** — implement real Casper session-key mint / scope / revoke (weighted keys).
 - **Sandbox runtime** — execute a real SKILL.md in gVisor (runtime engine still TBD: llm/code/hybrid).
-- **packages/authz** — implement Casper session-key mint / scope / revoke.
 - Wire AI-generated workflow HTTP nodes to actually hit live skills; add "my workflows" list in chat.
 
 ## Pending decisions
