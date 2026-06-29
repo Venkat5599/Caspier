@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { CatalogService, CatalogError, PgCatalogStore } from "@fabric/catalog";
 import { ManifestParseError } from "@fabric/manifest";
 import { createLogger, type Logger } from "./logger.ts";
+import { generateWorkflow } from "./workflowGen.ts";
 
 /**
  * Build a CatalogService backed by Postgres when DATABASE_URL is set, otherwise
@@ -74,6 +75,26 @@ export function createApp(deps: AppDeps = {}) {
       body: unit.body,
       createdAt: unit.createdAt,
     });
+  });
+
+  // AI workflow builder: NL prompt -> themed n8n workflow -> created in n8n.
+  app.post("/workflows/generate", async (c) => {
+    let prompt = "";
+    try {
+      const body = (await c.req.json()) as { prompt?: string };
+      prompt = (body.prompt ?? "").trim();
+    } catch {
+      return c.json({ error: "expected JSON body { prompt }" }, 400);
+    }
+    if (!prompt) return c.json({ error: "prompt is required" }, 400);
+    try {
+      const result = await generateWorkflow(prompt);
+      logger.info("workflow generated", { id: result.id, name: result.name });
+      return c.json(result, 201);
+    } catch (err) {
+      logger.error("workflow generate failed", { err: String(err) });
+      return c.json({ error: `could not generate workflow: ${(err as Error).message}` }, 502);
+    }
   });
 
   app.notFound((c) => c.json({ error: "not found" }, 404));

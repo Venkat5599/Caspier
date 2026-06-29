@@ -37,6 +37,11 @@ docker rm -f agentfabric-gateway >/dev/null 2>&1 || true
 docker run -d --name agentfabric-gateway --restart unless-stopped --network host \
   -v "$APP":/app -w /app \
   -e DATABASE_URL="$DATABASE_URL" -e GATEWAY_PORT="${GATEWAY_PORT:-8086}" -e LOG_LEVEL=info \
+  -e AICREDITS_API_KEY="${AICREDITS_API_KEY:-}" \
+  -e AICREDITS_BASE_URL="${AICREDITS_BASE_URL:-https://api.aicredits.in/v1}" \
+  -e AICREDITS_MODEL="${AICREDITS_MODEL:-deepseek/deepseek-v4-flash}" \
+  -e N8N_REST_URL="${N8N_REST_URL:-http://127.0.0.1:5678}" \
+  -e GATEWAY_PUBLIC_URL="${GATEWAY_PUBLIC_URL:-http://187.127.137.136:8086}" \
   oven/bun:1 bash -lc "bun apps/gateway/src/index.ts" >/dev/null
 
 echo "==> (re)start web (Next.js standalone)"
