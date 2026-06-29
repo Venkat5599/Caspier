@@ -1,29 +1,23 @@
 import Background from "./components/Background";
-import Nav from "./components/Nav";
+import Header from "./components/Header";
 import Hero from "./components/Hero";
-import Allocation from "./components/Allocation";
-import AgentConsole from "./components/AgentConsole";
-import Performance from "./components/Performance";
-import InflationCalc from "./components/InflationCalc";
-import Partners from "./components/Partners";
-import AlphaBeta from "./components/AlphaBeta";
+import SkillGrid from "./components/SkillGrid";
+import PublishPanel from "./components/PublishPanel";
 import Footer from "./components/Footer";
 
 export default function App() {
   return (
     <div className="grain relative min-h-screen bg-void">
       <Background />
-      <Nav />
-      <main className="relative">
-        <Hero />
-        <Allocation />
-        <AgentConsole />
-        <Performance />
-        <InflationCalc />
-        <Partners />
-        <AlphaBeta />
+      <div className="relative z-10">
+        <Header />
+        <main>
+          <Hero />
+          <SkillGrid />
+          <PublishPanel />
+        </main>
         <Footer />
-      </main>
+      </div>
     </div>
   );
 }
