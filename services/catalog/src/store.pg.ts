@@ -7,17 +7,20 @@ interface UnitRow {
   id: string;
   slug: string;
   version: string;
-  manifest: SkillManifest;
+  // jsonb may arrive parsed (object) or raw (string) depending on the driver.
+  manifest: SkillManifest | string;
   body: string;
   created_at: Date;
 }
 
 function rowToUnit(r: UnitRow): CatalogUnit {
+  const manifest =
+    typeof r.manifest === "string" ? (JSON.parse(r.manifest) as SkillManifest) : r.manifest;
   return {
     id: r.id,
     slug: r.slug,
     version: r.version,
-    manifest: r.manifest,
+    manifest,
     body: r.body,
     createdAt: new Date(r.created_at).toISOString(),
   };
