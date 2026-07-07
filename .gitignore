@@ -42,3 +42,4 @@ target/
 wasm/
 *.wasm
 *.tsbuildinfo
+packages/casper/build/

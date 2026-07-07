@@ -1,4 +1,2 @@
-// @fabric/chain-worker
-// Scaffold entry point. See docs/ROADMAP.md for the build sequence.
-export const NAME = "@fabric/chain-worker";
-console.log(`[${NAME}] scaffold — not yet implemented`);
+/** @fabric/chain-worker — service entry; chain logic lives in @fabric/casper. */
+export * from "@fabric/casper";

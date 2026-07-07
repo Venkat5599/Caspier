@@ -1,16 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { CatalogClient } from "./catalogClient.ts";
-import { getSkill, listSkills } from "./tools.ts";
+import { getSkill, invokeSkill, listSkills } from "./tools.ts";
 
-/**
- * Build the Agent Fabric MCP server. Exposes the catalog as agent-discoverable
- * tools backed by the gateway. Transport is wired by the caller (stdio/HTTP).
- */
-export function createServer(client: CatalogClient): McpServer {
+export function createServer(client: CatalogClient, gatewayUrl: string): McpServer {
   const server = new McpServer({
     name: "agent-fabric",
-    version: "0.1.0",
+    version: "0.2.0",
   });
 
   server.registerTool(
@@ -34,6 +30,21 @@ export function createServer(client: CatalogClient): McpServer {
       },
     },
     async (args) => getSkill(client, args),
+  );
+
+  server.registerTool(
+    "invoke_skill",
+    {
+      title: "Invoke skill",
+      description:
+        "Call a metered skill via POST /s/:slug — handles x402 402 quote and auto-pay, returns result + deploy hash.",
+      inputSchema: {
+        slug: z.string().describe("Skill slug, e.g. 'hello-weather'."),
+        input: z.record(z.unknown()).optional().describe("JSON input matching the skill inputSchema."),
+        version: z.string().optional(),
+      },
+    },
+    async (args) => invokeSkill(gatewayUrl, args),
   );
 
   return server;

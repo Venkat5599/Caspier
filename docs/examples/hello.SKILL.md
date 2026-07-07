@@ -5,7 +5,7 @@ description: Returns a one-line weather summary for a city. Example skill manife
 runtime: code
 pricing:
   pricePerCall: "1000"
-  asset: USDC
+  asset: CSPR
 inputSchema:
   type: object
   required: [city]

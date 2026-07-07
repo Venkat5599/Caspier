@@ -40,7 +40,7 @@ Production build. Feature phases land behind quality gates; two tracks (Infra/De
 
 | Phase | Deliverable | Prod bar |
 |---|---|---|
-| 0 | Monorepo + docs + workspace | ✅ scaffolded |
+| 0 | Monorepo + docs + workspace | scaffolded |
 | 1 | Smart account + scoped session keys (ERC-7702) | audited, fork-tested, revoke verified |
 | 2 | x402 proxies + meter | rate-limited, idempotent settle, ledger |
 | 3 | Workflow fabric | per-step scope enforce, retry/rollback |

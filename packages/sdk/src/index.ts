@@ -1,4 +1,6 @@
-// @fabric/sdk
-// Scaffold entry point. See docs/ROADMAP.md for the build sequence.
-export const NAME = "@fabric/sdk";
-console.log(`[${NAME}] scaffold — not yet implemented`);
+// Caller SDK + on-chain helpers — mirrors kagezks sdk/ layout for Agent Fabric on Casper.
+export { FabricClient, type FabricClientOptions, type InvokeResult, type X402Quote } from "./client.ts";
+export {
+  invokeWithAutoPay,
+  type InvokeWithPayOptions,
+} from "./fabric-onchain.ts";

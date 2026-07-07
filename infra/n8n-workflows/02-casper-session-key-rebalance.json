@@ -1,70 +1,41 @@
 {
-  "name": "Casper · Session-key rebalance agent",
+  "name": "Casper · Session key mint",
   "nodes": [
     {
-      "parameters": {
-        "triggerTimes": { "item": [{ "mode": "everyHour" }] }
-      },
-      "name": "Every hour",
-      "type": "n8n-nodes-base.cron",
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
       "typeVersion": 1,
       "position": [200, 300]
     },
     {
       "parameters": {
-        "requestMethod": "POST",
-        "url": "http://187.127.137.136:8086/s/market-digest",
-        "options": {}
+        "requestMethod": "GET",
+        "url": "http://host.docker.internal:8080/auth/session-keys"
       },
-      "name": "Fetch market-digest skill",
+      "name": "List session keys",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [430, 300]
     },
     {
       "parameters": {
-        "conditions": {
-          "string": [{ "value1": "={{$json[\"risk\"]}}", "operation": "equal", "value2": "high" }]
-        }
-      },
-      "name": "Drift past band?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [660, 300]
-    },
-    {
-      "parameters": {
-        "values": {
-          "string": [
-            { "name": "contract", "value": "cspr.trade" },
-            { "name": "max_spend", "value": "5 CSPR" }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Build scoped deploy",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
-      "position": [890, 200]
-    },
-    {
-      "parameters": {
         "requestMethod": "POST",
-        "url": "http://187.127.137.136:8086/s/casper-rebalance",
-        "options": {}
+        "url": "http://host.docker.internal:8080/auth/session-keys",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"agentPublicKeyHex\":\"0101010101010101010101010101010101010101010101010101010101010102\",\"scope\":{\"maxSpendPerCall\":\"5000000000\",\"expiresAt\":\"2099-01-01T00:00:00.000Z\"}}"
       },
-      "name": "Submit via session key",
+      "name": "Mint scoped key",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [1120, 200]
+      "position": [660, 300]
     }
   ],
   "connections": {
-    "Every hour": { "main": [[{ "node": "Fetch market-digest skill", "type": "main", "index": 0 }]] },
-    "Fetch market-digest skill": { "main": [[{ "node": "Drift past band?", "type": "main", "index": 0 }]] },
-    "Drift past band?": { "main": [[{ "node": "Build scoped deploy", "type": "main", "index": 0 }], []] },
-    "Build scoped deploy": { "main": [[{ "node": "Submit via session key", "type": "main", "index": 0 }]] }
+    "Start": { "main": [[{ "node": "List session keys", "type": "main", "index": 0 }]] },
+    "List session keys": { "main": [[{ "node": "Mint scoped key", "type": "main", "index": 0 }]] }
   },
   "active": false,
-  "settings": {}
+  "settings": {},
+  "tags": []
 }

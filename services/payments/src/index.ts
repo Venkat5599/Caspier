@@ -1,4 +1,7 @@
-// @fabric/payments
-// Scaffold entry point. See docs/ROADMAP.md for the build sequence.
-export const NAME = "@fabric/payments";
-console.log(`[${NAME}] scaffold — not yet implemented`);
+export {
+  PaymentService,
+  x402Body,
+  type PaymentQuote,
+  type UsageRecord,
+  type PaymentVerifyResult,
+} from "./service.ts";

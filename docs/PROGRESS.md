@@ -90,13 +90,13 @@ ssh -i ~/.ssh/agent_fabric_vps root@187.127.137.136 "cd /opt/agent-fabric && bas
 - **VPS web build is OOM-flaky** (2 cores, many stacks). deploy.sh retries 3x.
 - Next.js `/workflows` may briefly 500 right after a web container restart — it's mid-boot, recovers.
 
-## 🔴 SECURITY TODO (do these)
+## SECURITY TODO (do these)
 
 - **Rotate VPS root password** — was pasted in chat earlier.
 - **Rotate the aicredits API key** — `sk-live-fbc0…` pasted in chat. New key goes ONLY into
   `/opt/agent-fabric/.env` (`AICREDITS_API_KEY=…`), then restart the gateway. Never commit it.
 
-## 🎯 HARD REQUIREMENT: REAL TRANSACTIONS (no mocks)
+## HARD REQUIREMENT: REAL TRANSACTIONS (no mocks)
 
 User wants **all on-chain actions to be REAL Casper transactions** — every payment,
 settlement, session-key grant/revoke, and skill-triggered action must produce a real

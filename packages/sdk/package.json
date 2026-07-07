@@ -3,7 +3,15 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "description": "Agent Fabric caller SDK — auto x402 payment on Casper, skill invoke helpers.",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./onchain": "./src/fabric-onchain.ts"
+  },
+  "dependencies": {
+    "@fabric/casper": "workspace:*"
+  },
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",

@@ -1,14 +1,35 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CatalogClient } from "./catalogClient.ts";
-import { createServer } from "./server.ts";
+import { ChainWorker, loadChainConfig } from "@fabric/chain-worker";
+import {
+  buildFabricServer,
+  createCatalogLoader,
+  type WorkflowRunnerDeps,
+} from "@fabric/fabric-core";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const gatewayUrl = process.env.GATEWAY_URL ?? "http://localhost:8080";
+const chain = new ChainWorker(loadChainConfig());
+const catalog = createCatalogLoader(gatewayUrl);
 
-const client = new CatalogClient(gatewayUrl);
-const server = createServer(client);
-const transport = new StdioServerTransport();
+const runnerDeps: WorkflowRunnerDeps = {
+  catalog,
+  gatewayUrl,
+  transfer: async (recipient, amountMotes) => {
+    const tx = await chain.transfer({ recipientPublicKeyHex: recipient, amountMotes });
+    return { deployHash: tx.deployHash, demo: tx.demo };
+  },
+};
 
-await server.connect(transport);
+const { server, registered } = await buildFabricServer(McpServer, {
+  catalog,
+  gatewayUrl,
+  runnerDeps,
+  chainStatus: async () => chain.status(),
+  sessionBudget: async () => ({ remaining: "scoped via session keys", unit: "motes" }),
+});
 
-// stderr so we never corrupt the stdio JSON-RPC channel on stdout.
-process.stderr.write(`agent-fabric mcp-server connected (gateway: ${gatewayUrl})\n`);
+await server.connect(new StdioServerTransport());
+
+process.stderr.write(
+  `caspier fabric mcp-server connected (gateway: ${gatewayUrl}) · ${registered.apis.length} api__* · ${registered.workflows.length} wf__*\n`,
+);

@@ -7,10 +7,10 @@ Agent Fabric's pitch is "SKILL.md served as a REST **and MCP** endpoint." Bricks
 Architecture choice: the MCP server is a **thin read-only client over the gateway** (single source of truth for the catalog), not a second in-memory store. Base URL from env, fetch injectable for tests.
 
 Most of the code is already drafted on disk (pre-plan-mode) and needs finishing + verification:
-- `apps/mcp-server/src/catalogClient.ts` — HTTP client (`list`, `get`), injectable `FetchLike`. ✅ written
-- `apps/mcp-server/src/tools.ts` — pure handlers `listSkills` / `getSkill` returning MCP `ToolResult`. ✅ written
-- `apps/mcp-server/src/server.ts` — `createServer(client)` registers `list_skills` + `get_skill` via `@modelcontextprotocol/sdk` `McpServer.registerTool` + zod input schemas. ✅ written
-- `apps/mcp-server/package.json` / `tsconfig.json` — deps (`@modelcontextprotocol/sdk`, `zod`, `@fabric/catalog`) + extends base. ✅ written
+- `apps/mcp-server/src/catalogClient.ts` — HTTP client (`list`, `get`), injectable `FetchLike`. written
+- `apps/mcp-server/src/tools.ts` — pure handlers `listSkills` / `getSkill` returning MCP `ToolResult`. written
+- `apps/mcp-server/src/server.ts` — `createServer(client)` registers `list_skills` + `get_skill` via `@modelcontextprotocol/sdk` `McpServer.registerTool` + zod input schemas. written
+- `apps/mcp-server/package.json` / `tsconfig.json` — deps (`@modelcontextprotocol/sdk`, `zod`, `@fabric/catalog`) + extends base. written
 
 ## Remaining work
 

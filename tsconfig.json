@@ -1,0 +1,18 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/casper" },
+    { "path": "./packages/sdk" },
+    { "path": "./packages/authz" },
+    { "path": "./packages/manifest" },
+    { "path": "./packages/fabric-core" },
+    { "path": "./services/chain-worker" },
+    { "path": "./services/catalog" },
+    { "path": "./services/execution" },
+    { "path": "./services/payments" },
+    { "path": "./services/identity" },
+    { "path": "./apps/gateway" },
+    { "path": "./apps/mcp-server" },
+    { "path": "./apps/web" }
+  ]
+}

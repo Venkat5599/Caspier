@@ -1,5 +1,5 @@
 {
-  "name": "x402 · Agent pays per-call skill",
+  "name": "x402 · hello-weather skill call",
   "nodes": [
     {
       "parameters": {},
@@ -11,8 +11,10 @@
     {
       "parameters": {
         "requestMethod": "POST",
-        "url": "http://187.127.137.136:8086/s/market-digest",
-        "options": {}
+        "url": "http://host.docker.internal:8080/s/hello-weather",
+        "jsonParameters": true,
+        "options": { "fullResponse": true },
+        "bodyParametersJson": "{\"city\":\"Oslo\"}"
       },
       "name": "Call skill (expect 402)",
       "type": "n8n-nodes-base.httpRequest",
@@ -22,7 +24,7 @@
     {
       "parameters": {
         "conditions": {
-          "number": [{ "value1": 402, "operation": "equal", "value2": 402 }]
+          "number": [{ "value1": "={{$json.statusCode}}", "operation": "equal", "value2": 402 }]
         }
       },
       "name": "Payment required?",
@@ -32,24 +34,24 @@
     },
     {
       "parameters": {
-        "values": {
-          "string": [{ "name": "x402_proof", "value": "casper:settle:0x…" }]
-        },
-        "options": {}
+        "requestMethod": "POST",
+        "url": "http://host.docker.internal:8080/s/hello-weather/auto-pay",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{ JSON.stringify({ nonce: $json.body.nonce, input: { city: 'Oslo' } }) }}"
       },
-      "name": "Attach x402 payment",
-      "type": "n8n-nodes-base.set",
+      "name": "Auto-pay & execute",
+      "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [890, 200]
     },
     {
       "parameters": {
-        "requestMethod": "POST",
-        "url": "http://187.127.137.136:8086/s/market-digest",
-        "options": {}
+        "values": {
+          "string": [{ "name": "weather", "value": "={{$json.result.summary}}" }]
+        }
       },
-      "name": "Retry with proof → 200",
-      "type": "n8n-nodes-base.httpRequest",
+      "name": "Extract result",
+      "type": "n8n-nodes-base.set",
       "typeVersion": 1,
       "position": [1120, 200]
     }
@@ -57,9 +59,12 @@
   "connections": {
     "Agent trigger": { "main": [[{ "node": "Call skill (expect 402)", "type": "main", "index": 0 }]] },
     "Call skill (expect 402)": { "main": [[{ "node": "Payment required?", "type": "main", "index": 0 }]] },
-    "Payment required?": { "main": [[{ "node": "Attach x402 payment", "type": "main", "index": 0 }], []] },
-    "Attach x402 payment": { "main": [[{ "node": "Retry with proof → 200", "type": "main", "index": 0 }]] }
+    "Payment required?": {
+      "main": [[{ "node": "Auto-pay & execute", "type": "main", "index": 0 }], []]
+    },
+    "Auto-pay & execute": { "main": [[{ "node": "Extract result", "type": "main", "index": 0 }]] }
   },
   "active": false,
-  "settings": {}
+  "settings": {},
+  "tags": []
 }

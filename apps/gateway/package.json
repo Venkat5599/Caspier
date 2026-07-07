@@ -11,8 +11,13 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@fabric/authz": "workspace:*",
+    "@fabric/fabric-core": "workspace:*",
     "@fabric/catalog": "workspace:*",
+    "@fabric/chain-worker": "workspace:*",
+    "@fabric/execution": "workspace:*",
     "@fabric/manifest": "workspace:*",
+    "@fabric/payments": "workspace:*",
     "hono": "^4.6.0"
   },
   "devDependencies": {

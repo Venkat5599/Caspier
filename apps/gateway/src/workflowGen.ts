@@ -4,7 +4,7 @@
 const AICREDITS_BASE = process.env.AICREDITS_BASE_URL ?? "https://api.aicredits.in/v1";
 const AICREDITS_MODEL = process.env.AICREDITS_MODEL ?? "deepseek/deepseek-v4-flash";
 const N8N_REST = (process.env.N8N_REST_URL ?? "http://127.0.0.1:5678").replace(/\/+$/, "");
-const GATEWAY_PUBLIC = process.env.GATEWAY_PUBLIC_URL ?? "http://187.127.137.136:8086";
+const GATEWAY_PUBLIC = (process.env.GATEWAY_PUBLIC_URL ?? "http://127.0.0.1:8080").replace(/\/+$/, "");
 
 const SYSTEM_PROMPT = `You are a workflow generator for Agent Fabric — a permissioned execution layer on the Casper blockchain where AI agents call paid "skills" (APIs) metered per call via the x402 protocol, bounded by scoped Casper session keys.
 
@@ -14,6 +14,7 @@ Rules:
 - Output ONLY raw JSON. No markdown, no prose, no code fences.
 - Use n8n 0.148 node types ONLY: "n8n-nodes-base.start", "n8n-nodes-base.cron", "n8n-nodes-base.webhook", "n8n-nodes-base.httpRequest", "n8n-nodes-base.if", "n8n-nodes-base.set", "n8n-nodes-base.function", "n8n-nodes-base.noOp".
 - Skill/API calls use httpRequest with url like "${GATEWAY_PUBLIC}/s/<skill-name>" and requestMethod "POST".
+- For x402 flows, follow with POST "${GATEWAY_PUBLIC}/s/<skill-name>/auto-pay" body { nonce, input }.
 - Lay nodes left-to-right: position x = 220 + 230*index, y around 300 (branch up/down to 200/420).
 - Each node: {"parameters":{...},"name":"...","type":"...","typeVersion":1,"position":[x,y]}.
 - "connections" maps each source node NAME to {"main":[[{"node":"<target name>","type":"main","index":0}]]}. IF nodes have two outputs: [[true...],[false...]].
@@ -87,6 +88,9 @@ function normalize(raw: unknown): N8nWorkflow {
 export interface GenerateResult {
   id: number | string;
   name: string;
+  nodes: unknown[];
+  connections: Record<string, unknown>;
+  active: boolean;
 }
 
 /** Generate a themed workflow from a prompt and create it in n8n. */
@@ -105,5 +109,11 @@ export async function generateWorkflow(prompt: string): Promise<GenerateResult> 
   const created = (await res.json()) as { data?: { id?: number | string; name?: string } };
   const id = created.data?.id;
   if (id === undefined) throw new Error("n8n did not return a workflow id");
-  return { id, name: created.data?.name ?? workflow.name };
+  return {
+    id,
+    name: created.data?.name ?? workflow.name,
+    nodes: workflow.nodes,
+    connections: workflow.connections,
+    active: workflow.active,
+  };
 }

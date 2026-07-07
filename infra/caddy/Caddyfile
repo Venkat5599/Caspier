@@ -1,21 +1,18 @@
-# Agent Fabric — edge reverse proxy (auto-TLS).
-# Scaffold. Replace example.com with the real domain; wire upstreams as services land.
+# Caspier — edge reverse proxy (auto-TLS via Caddy).
+# Web UI is on Vercel (caspier.vercel.app). VPS serves API + n8n only.
+#
+# DNS:
+#   api.caspier.dev  A  -> VPS_IP
+#   n8n.caspier.dev  A  -> VPS_IP
+#
+# Run: caddy run --config infra/caddy/Caddyfile --envfile .env
 
-{$FABRIC_DOMAIN:localhost} {
+{$API_DOMAIN:api.localhost} {
 	encode gzip
+	reverse_proxy 127.0.0.1:{$GATEWAY_PORT:8080}
+}
 
-	# API gateway
-	handle /api/* {
-		reverse_proxy gateway:8080
-	}
-
-	# MCP gateway
-	handle /mcp/* {
-		reverse_proxy mcp-server:8081
-	}
-
-	# Web app (marketplace + dashboards)
-	handle {
-		reverse_proxy web:5173
-	}
+{$N8N_DOMAIN:n8n.localhost} {
+	encode gzip
+	reverse_proxy 127.0.0.1:{$N8N_PROXY_PORT:8089}
 }

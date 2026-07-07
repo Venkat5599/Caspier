@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
-# Seed the self-hosted n8n with Agent Fabric blockchain workflows.
-# Uses the n8n CLI import (REST create is buggy in n8n 0.148). Idempotent-ish:
-# re-importing updates by id.
+# Seed n8n with Agent Fabric workflows. Works with docker compose or VPS container.
 set -euo pipefail
 
-CONTAINER="${N8N_CONTAINER:-agentfabric-n8n}"
 DIR="$(cd "$(dirname "$0")/n8n-workflows" && pwd)"
+CONTAINER="${N8N_CONTAINER:-agentfabric-n8n-1}"
+COMPOSE_DIR="$(cd "$(dirname "$0")/compose" && pwd)"
 
-# Combine workflow objects into a single array file (n8n CLI expects an array).
+if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+  echo "Seeding via container ${CONTAINER}..."
+else
+  echo "Starting n8n via docker compose..."
+  (cd "$COMPOSE_DIR" && docker compose up -d n8n)
+  sleep 5
+  CONTAINER=$(docker ps --format '{{.Names}}' | grep n8n | head -1)
+fi
+
 python3 - "$DIR" <<'PY'
 import json, glob, os, sys
 d = sys.argv[1]
 wfs = [json.load(open(f)) for f in sorted(glob.glob(os.path.join(d, "*.json"))) if "_all" not in f]
+for wf in wfs:
+    wf.setdefault("tags", [])
 json.dump(wfs, open(os.path.join(d, "_all.json"), "w"))
 print(f"combined {len(wfs)} workflows")
 PY
 
 docker cp "$DIR/_all.json" "$CONTAINER:/tmp/_all.json"
-# Run as the node user with N8N_USER_FOLDER=/home/node so the import writes to
-# the SAME database the running n8n process reads (default exec is root → wrong DB).
 docker exec -u node -e N8N_USER_FOLDER=/home/node "$CONTAINER" n8n import:workflow --input=/tmp/_all.json
-docker restart "$CONTAINER" >/dev/null
 docker exec -u node -e N8N_USER_FOLDER=/home/node "$CONTAINER" n8n list:workflow
+echo "Done. n8n proxy: http://localhost:8089"

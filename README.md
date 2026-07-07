@@ -1,85 +1,176 @@
-# Agent Fabric
+# Kairos
 
-> **Permissioned execution layer for AI agents.** Agents act on paid APIs and on-chain workflows with **scoped session keys** — bounded protocols, assets, methods, and spend — **without ever touching a private key**. Autonomy without custody.
->
-> **Flagship feature — Skills as Endpoints:** turn a `SKILL.md` into a live, validated, sandboxed, **x402-metered** REST + MCP endpoint. Humans, apps, and agents call it and **pay per call**.
+> **Permissioned execution for autonomous AI agents on Casper.**
+> Scoped session keys the agent cannot drain — settling metered API calls through **native Casper x402**.
 
 Built from scratch. Production target, not a demo.
 
 ---
 
-## The idea
+## Project Overview
 
-Autonomous agents are unsafe near money and APIs — they need keys to act, but keys mean unbounded blast radius. Agent Fabric fixes this with a **least-privilege rail on Casper**:
+**Kairos** lets an AI agent call paid APIs and on-chain workflows **without holding your private key** and **without unbounded blast radius**. The agent spends under a scoped, revocable session key (Casper native weighted associated keys + action thresholds), and every skill call can settle via **native x402** on Casper testnet — or the in-memory demo chain when `FABRIC_DEMO_CHAIN=true`.
 
-1. **Scoped session keys** — Casper **native weighted associated keys + action thresholds**: the agent gets a low-weight key that can spend but never escalate, remove keys, or drain. No custom contract — it is account-level.
-2. **Spend caps & allowlist** — bounded per-call / daily spend, allowed methods, expiry; killable in one transaction.
-3. **x402 proxies** — wrap any API as a pay-per-call endpoint settled via Casper **native x402**.
-4. **Workflow fabric** — compose x402 calls + on-chain actions + conditionals into reusable, permissionable units.
-5. **MCP servers** — expose every unit as an agent-discoverable tool (Claude, ChatGPT, any MCP client).
+### What It Does
 
-Everything is **TypeScript-only**, driven through `casper-js-sdk` — no Solidity, no EVM.
+- **Autonomy without custody** — delegate a low-weight session key; agent can spend within cap, never escalate or drain
+- **Skills as endpoints** — upload `SKILL.md`, get a validated, sandboxed, x402-metered REST + MCP endpoint
+- **x402 proxies** — wrap any API as pay-per-call; gateway verifies Casper transfer proofs
+- **Workflow fabric** — compose x402 calls, on-chain actions, and conditionals (n8n integration)
+- **MCP gateway** — every unit discoverable as an agent tool
 
-On top of the rail sits the headline product: **a `SKILL.md` becomes a metered endpoint** — another permissionable unit, sold per call.
-
-```
-SKILL.md ─▶ INGEST ─▶ VALIDATE ─▶ SANDBOX ─▶ METER ─▶ REST route + MCP tool
-                                    (isolated)  (x402)   (one skill, two front doors)
-```
-
-## Why it matters
-
-- **Publishers** monetize a skill by uploading one Markdown file.
-- **Callers / agents** discover and invoke capabilities and pay per use — no integration tax.
-- **Account owners** keep custody; the agent gets a low-privilege, revocable key that can spend but never drain or escalate.
-
-## Stack
-
-| Layer | Choice |
-|---|---|
-| Edge | Caddy (auto-TLS) + API gateway |
-| Services | TypeScript on Bun, Hono |
-| Chain / auth | Casper native weighted associated keys + action thresholds, via `casper-js-sdk` (no Solidity) |
-| Sandbox | gVisor (VPS has no KVM) |
-| Data | Postgres · Redis · NATS · MinIO |
-| Payments | Casper native x402 |
-| MCP | `@modelcontextprotocol/sdk` server |
-| Web | Next.js 15 + Tailwind + shadcn/ui |
-| Infra | Docker → k3s, GitHub Actions, Vault |
-| Observability | Prometheus · Grafana · Loki · Tempo |
-
-## Monorepo layout
+### Key Innovation
 
 ```
-/apps
-  /web              Next.js 15 marketplace + dashboards (shadcn/ui)
-  /gateway          API edge: authn, rate-limit, routing
-  /mcp-server       MCP gateway — units as agent tools
-/services
-  /identity         users, orgs, API keys, wallet links
-  /catalog          skill/workflow registry, versions, pricing, validation
-  /execution        orchestrator + sandbox pool
-  /payments         x402 gate, settlement, ledger, payouts
-  /chain-worker     the only signer — Casper deploys + x402, transactional outbox
-/packages
-  /sdk              caller SDK (auto x402 payment)
-  /manifest         SKILL.md spec + parser + validator
-  /authz            Casper session-key + scope library (weighted keys, caps, revoke)
-/infra              compose, caddy, k8s, CI
-/docs               PRD, ARCHITECTURE, ROADMAP, SANDBOX
+Raw key on Casper:     Agent → Account → Ledger   (drainable, full visibility)
+With Kairos:           Agent → Session Key → x402 → Ledger
+                       (can't drain · scoped · metered per call)
 ```
 
-## Develop
+On a transparent ledger, handing an agent a raw key means unbounded risk. Kairos fixes this with **account-level scoped keys** and **per-call x402 metering** — all TypeScript, `casper-client` + JSON-RPC, no EVM.
+
+---
+
+## Deployment Information
+
+### Casper Testnet
+
+| Setting | Value |
+|---------|-------|
+| Network | Casper testnet |
+| RPC | `https://node.testnet.casper.network/rpc` |
+| Node | `https://node.testnet.casper.network:7777` |
+| Chain name | `casper-test` |
+| Explorer | `https://testnet.cspr.live/deploy/` |
+
+Copy `.env.example` to `.env`. With no `CHAIN_WORKER_SECRET_KEY`, `FABRIC_DEMO_CHAIN` auto-enables the demo chain.
+
+### Production deploy (split)
+
+| Surface | Host | Guide |
+|---------|------|-------|
+| Web UI | Vercel | [docs/VERCEL-DEPLOY.md](./docs/VERCEL-DEPLOY.md) |
+| Gateway + backend | VPS | [docs/VPS-DEPLOY.md](./docs/VPS-DEPLOY.md) |
+| MCP (Claude Code) | Local machine → VPS gateway | [docs/CLAUDE-CODE-DEMO.md](./docs/CLAUDE-CODE-DEMO.md) |
+
+Set `NEXT_PUBLIC_GATEWAY_URL=https://user-vps-api-domain` on Vercel before deploy. Overview: [docs/DEPLOYMENT-ARCHITECTURE.md](./docs/DEPLOYMENT-ARCHITECTURE.md).
+
+### Develop locally
 
 ```bash
 bun install
-bun run web:dev      # web app
-bun run gateway:dev  # API edge (stub)
-bun run mcp:dev      # MCP server (stub)
+bun run web:dev          # Next.js dashboard + marketing
+bun run gateway:dev      # API edge (x402, invoke, session keys)
+bun run mcp:dev          # MCP server (alias: agent:serve)
+bun run agent:provision  # mint scoped session key (demo registry)
+bun run flow             # chain status; add --pay for demo transfer
+bun run test
+bun run typecheck
+bun run build            # typecheck + web build
 ```
+
+---
+
+## How to Use
+
+### Invoke a metered skill (SDK)
+
+```typescript
+import { FabricClient } from "@fabric/sdk";
+
+const client = new FabricClient({
+  baseUrl: "http://localhost:8080",
+  autoPay: true, // gateway settles via chain worker / demo chain
+});
+
+const result = await client.invoke("my-skill", { query: "hello" });
+```
+
+### Pay on Casper directly (on-chain engine)
+
+```typescript
+import { payThroughSession } from "@fabric/casper/onchain";
+
+await payThroughSession({
+  recipientPublicKeyHex: "01...",
+  amountMotes: "1000000000",
+  onStep: (s) => console.log(s),
+});
+```
+
+### CLI
+
+```bash
+bun run agent:provision [agentPubKeyHex] [maxSpendMotes] [expiresAtISO]
+bun run flow --pay
+bun run scripts/agent-invoke.ts my-skill http://localhost:8080
+```
+
+---
+
+## Architecture
+
+```
+Owner (custody)
+    │
+    ▼
+Scoped session key (Casper weighted associated keys)
+    │
+    ▼
+API Gateway ── x402 quote ── Chain worker / demo chain
+    │
+    ├── REST /s/:slug
+    ├── MCP tools
+    └── n8n workflows
+```
+
+See [`FABRIC.md`](./FABRIC.md) for the full architecture deep-dive and [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for enterprise design.
+
+---
+
+## Project Structure
+
+```
+agent-fabric/
+├── apps/
+│   ├── web/              # Next.js dashboard (kagezks frontend/ equivalent)
+│   ├── gateway/          # API edge: authn, x402, routing, invoke
+│   └── mcp-server/       # MCP gateway (kagezks agent/mcp-server equivalent)
+├── packages/
+│   ├── casper/           # On-chain engine (kagezks sdk/ equivalent)
+│   ├── sdk/              # Caller SDK + invoke helpers
+│   ├── fabric-core/      # Workflow engine + MCP tool registry (kagezks agent/fabric)
+│   ├── authz/            # Session key scope library
+│   └── manifest/         # SKILL.md parser + validator
+├── services/
+│   ├── chain-worker/     # Signing service entry (re-exports @fabric/casper)
+│   ├── catalog/          # Skill/workflow registry
+│   ├── execution/        # Sandbox orchestrator
+│   ├── payments/         # x402 gate + ledger
+│   └── identity/         # Users, orgs, API keys
+├── scripts/              # provision, flow, agent-invoke CLIs
+├── infra/                # Docker compose, Caddy, k8s
+└── docs/                 # PRD, roadmap, sandbox
+```
+
+---
+
+## Tech Stack
+
+| Layer | Choice |
+|-------|--------|
+| Chain | Casper (native transfers, weighted keys, x402) |
+| Runtime | Bun, TypeScript, Hono |
+| Edge | Caddy + API gateway |
+| MCP | `@modelcontextprotocol/sdk` |
+| Web | Next.js 15 + Tailwind |
+| Workflows | n8n |
+| Data | Postgres, Redis, NATS |
+
+---
 
 ## Status
 
-Pivoted from the previous Casper "Bastion" concept to Agent Fabric. Foundation + architecture landed; services scaffolded. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the build sequence and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full system design.
+Foundation + gateway/MCP/x402 path working. Session keys use demo registry until `casper-client add-associated-key` is wired. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
-> Concept inspired by the public agent_fabric project (permissioned execution + x402) and the "skills served as endpoints" model, **rebuilt for Casper** (native weighted keys + native x402, TypeScript-only). All code original.
+> Concept inspired by [kagezks](https://github.com/Venkat5599/kagezks) (scoped agent payments + ZK on Stellar) and the public agent_fabric model — **rebuilt for Casper** (native keys + native x402, TypeScript-only). All code original.

@@ -1,5 +1,9 @@
 # @fabric/sdk
 
-Caller SDK. fabric.call(unit, input) with automatic x402 payment.
+Caller SDK for Agent Fabric on Casper. Auto-handles x402 402 responses via gateway auto-pay.
 
-> Scaffold. Implementation tracked in [docs/ROADMAP.md](../../docs/ROADMAP.md).
+```typescript
+import { FabricClient, invokeWithAutoPay } from "@fabric/sdk";
+```
+
+See root `README.md` for usage examples.

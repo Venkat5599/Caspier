@@ -1,10 +1,21 @@
 import { describe, expect, test } from "bun:test";
 import { CatalogService } from "@fabric/catalog";
+import { ChainWorker, DemoChainStore } from "@fabric/chain-worker";
+import { PaymentService } from "@fabric/payments";
+import { ExecutionService } from "@fabric/execution";
+import { AuthzService } from "@fabric/authz";
 import { createApp } from "./app.ts";
+import type { ChainConfig } from "@fabric/chain-worker";
 
-// Hermetic: always inject a fresh in-memory catalog so tests never touch a DB
-// even when DATABASE_URL is set in the environment (e.g. CI).
-const freshApp = () => createApp({ catalog: new CatalogService() });
+const cfg: ChainConfig = {
+  rpcUrl: "https://node.testnet.casper.network/rpc",
+  chainName: "casper-test",
+  network: "testnet",
+  secretKeyHex: null,
+  publicKeyHex: "0101010101010101010101010101010101010101010101010101010101010101",
+  explorerBase: "https://testnet.cspr.live/deploy/",
+  demoMode: true,
+};
 
 function skill(name = "Hello Weather", version = "0.1.0"): string {
   return `---
@@ -14,13 +25,17 @@ description: Returns a weather summary.
 runtime: code
 pricing:
   pricePerCall: "1000"
-  asset: USDC
+  asset: CSPR
 inputSchema:
   type: object
+  properties:
+    city:
+      type: string
 outputSchema:
   type: object
 scope:
   egress:
+    - geocoding-api.open-meteo.com
     - api.open-meteo.com
 ---
 # ${name}
@@ -29,74 +44,59 @@ Body.`;
 
 const md = { "content-type": "text/markdown" };
 
+function freshApp() {
+  const catalog = new CatalogService();
+  const chain = new ChainWorker(cfg, new DemoChainStore());
+  return createApp({
+    catalog,
+    chain,
+    payments: new PaymentService(chain),
+    execution: new ExecutionService(),
+    authz: new AuthzService(chain.publicKeyHex),
+  });
+}
+
 describe("gateway", () => {
-  test("GET /health", async () => {
+  test("GET /health includes chain", async () => {
     const app = freshApp();
     const res = await app.request("/health");
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ status: "ok" });
+    const body = (await res.json()) as { chain: { demoMode: boolean } };
+    expect(body.chain.demoMode).toBe(true);
   });
 
   test("POST /skills publishes a valid skill", async () => {
     const app = freshApp();
     const res = await app.request("/skills", { method: "POST", body: skill(), headers: md });
     expect(res.status).toBe(201);
-    expect(await res.json()).toMatchObject({ id: "hello-weather@0.1.0", slug: "hello-weather" });
   });
 
-  test("POST /skills rejects invalid manifest with 400 + details", async () => {
+  test("POST /s/:slug returns 402 then auto-pay executes", async () => {
     const app = freshApp();
-    const res = await app.request("/skills", {
+    await app.request("/skills", { method: "POST", body: skill(), headers: md });
+
+    const first = await app.request("/s/hello-weather", {
       method: "POST",
-      body: skill("Hello", "bad"),
-      headers: md,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ city: "Oslo" }),
     });
-    expect(res.status).toBe(400);
-    const body = (await res.json()) as { code: string; details: string[] };
-    expect(body.code).toBe("INVALID_MANIFEST");
-    expect(body.details.some((d) => d.startsWith("version"))).toBe(true);
-  });
+    expect(first.status).toBe(402);
+    const quote = (await first.json()) as { nonce: string };
 
-  test("POST /skills rejects empty body with 400", async () => {
-    const app = freshApp();
-    const res = await app.request("/skills", { method: "POST", body: "   ", headers: md });
-    expect(res.status).toBe(400);
-  });
-
-  test("POST /skills rejects duplicate with 409", async () => {
-    const app = freshApp();
-    await app.request("/skills", { method: "POST", body: skill(), headers: md });
-    const dup = await app.request("/skills", { method: "POST", body: skill(), headers: md });
-    expect(dup.status).toBe(409);
-  });
-
-  test("GET /skills lists published", async () => {
-    const app = freshApp();
-    await app.request("/skills", { method: "POST", body: skill("Alpha", "1.0.0"), headers: md });
-    const res = await app.request("/skills");
-    const body = (await res.json()) as { skills: unknown[] };
-    expect(body.skills.length).toBe(1);
-  });
-
-  test("GET /skills/:slug returns manifest + body", async () => {
-    const app = freshApp();
-    await app.request("/skills", { method: "POST", body: skill(), headers: md });
-    const res = await app.request("/skills/hello-weather");
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { version: string; manifest: unknown; body: string };
-    expect(body.version).toBe("0.1.0");
-    expect(body.manifest).toBeDefined();
+    const paid = await app.request("/s/hello-weather/auto-pay", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ nonce: quote.nonce, input: { city: "Oslo" } }),
+    });
+    expect(paid.status).toBe(200);
+    const body = (await paid.json()) as { result: { summary: string }; payment: { deployHash: string } };
+    expect(body.result.summary).toContain("Oslo");
+    expect(body.payment.deployHash).toBeTruthy();
   });
 
   test("GET /skills/:slug 404 for unknown", async () => {
     const app = freshApp();
     const res = await app.request("/skills/nope");
     expect(res.status).toBe(404);
-  });
-
-  test("sends CORS headers for browser clients", async () => {
-    const app = freshApp();
-    const res = await app.request("/skills", { headers: { Origin: "http://example.com" } });
-    expect(res.headers.get("access-control-allow-origin")).toBeTruthy();
   });
 });

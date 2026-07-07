@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Agent Fabric — permissioned execution layer for AI agents. Scoped session keys, x402 metering, and SKILL.md served as live REST + MCP endpoints.",
+  "description": "Agent Fabric — permissioned execution for AI agents on Casper. Scoped session keys, native x402 metering, SKILL.md as REST + MCP endpoints.",
   "workspaces": [
     "apps/*",
     "services/*",
@@ -14,11 +14,21 @@
     "bun-types": "latest"
   },
   "scripts": {
+    "build": "bun run typecheck && bun run web:build",
+    "lint": "bun run typecheck",
+    "test": "bun test",
+    "typecheck": "bun --filter '*' typecheck",
     "web:dev": "bun --filter @fabric/web dev",
     "web:build": "bun --filter @fabric/web build",
     "gateway:dev": "bun --filter @fabric/gateway dev",
     "mcp:dev": "bun --filter @fabric/mcp-server dev",
-    "typecheck": "bun --filter '*' typecheck",
-    "test": "bun test"
+    "agent:serve": "bun run mcp:dev",
+    "fabric:serve": "bun --filter @fabric/mcp-server fabric",
+    "fabric:mcp": "bun --filter @fabric/mcp-server fabric",
+    "agent:provision": "bun run scripts/fabric-provision-cli.ts",
+    "flow": "bun run scripts/fabric-flow.ts",
+    "n8n:up": "docker compose -f infra/compose/docker-compose.yml up -d n8n n8n-proxy",
+    "n8n:seed": "bash infra/seed-n8n.sh",
+    "stack:up": "docker compose -f infra/compose/docker-compose.yml up -d"
   }
 }
