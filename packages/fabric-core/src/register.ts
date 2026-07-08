@@ -29,7 +29,7 @@ function registerWorkflowTool(server: McpServer, wf: WorkflowRow, deps: FabricRe
     `wf__${wf.slug ?? wf.id}`,
     {
       title: wf.name,
-      description: `${wf.description ?? wf.name} · runs the fabric workflow engine on Casper.`,
+      description: `${wf.description ?? wf.name} · runs the fabric workflow engine on Sepolia.`,
       inputSchema: wfSchema(wf),
     },
     async (input: Record<string, unknown>) => json(await runWorkflow(wf, input, deps.runnerDeps)),
@@ -38,9 +38,9 @@ function registerWorkflowTool(server: McpServer, wf: WorkflowRow, deps: FabricRe
 
 function registerBuiltins(server: McpServer, deps: FabricRegisterDeps) {
   server.registerTool(
-    "caspier_chain_status",
+    "kairos_chain_status",
     {
-      title: "Casper chain status",
+      title: "Kairos chain status",
       description: "Gateway chain worker status: network, demo mode, public key.",
       inputSchema: {},
     },
@@ -48,7 +48,7 @@ function registerBuiltins(server: McpServer, deps: FabricRegisterDeps) {
   );
 
   server.registerTool(
-    "caspier_budget",
+    "kairos_budget",
     {
       title: "Session budget",
       description: "Remaining scoped spend cap on the calling agent session key.",
@@ -133,7 +133,7 @@ export async function buildFabricServer(
   McpServerCtor: typeof McpServer,
   deps: FabricRegisterDeps,
 ): Promise<{ server: McpServer; registered: { apis: string[]; workflows: string[] } }> {
-  const server = new McpServerCtor({ name: "caspier-fabric", version: "0.2.0" });
+  const server = new McpServerCtor({ name: "kairos-fabric", version: "0.2.0" });
   registerBuiltins(server, deps);
   const registered = await registerCatalog(server, deps);
   return { server, registered };

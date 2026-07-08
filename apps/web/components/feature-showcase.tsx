@@ -80,7 +80,7 @@ export function FeatureShowcase(): ReactNode {
             mock={
               <Mock>
                 <div className="divide-y divide-white/[0.06]">
-                  <Row label="Max per call" value="5 CSPR" tag="scoped" />
+                  <Row label="Max per call" value="5 ETH" tag="scoped" />
                   <Row label="Agent key" value="01ab…c4f2" />
                   <Row label="Expires" value="2026-07-07" />
                 </div>
@@ -103,7 +103,7 @@ export function FeatureShowcase(): ReactNode {
                 <div className="mt-3 space-y-2 font-mono text-xs text-neutral-300">
                   <p>api__hello-weather</p>
                   <p>wf__pay-if-budget</p>
-                  <p>caspier_chain_status</p>
+                  <p>kairos_chain_status</p>
                 </div>
               </Mock>
             }
@@ -118,11 +118,11 @@ export function FeatureShowcase(): ReactNode {
                 <div className="flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.04] p-3">
                   <span className="text-sm font-medium text-white">HTTP 402 quote</span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Casper deploy
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Sepolia deploy
                   </span>
                 </div>
                 <div className="mt-1 divide-y divide-white/[0.06]">
-                  <Row label="Price" value="1000 motes" />
+                  <Row label="Price" value="1000 wei" />
                   <Row label="Nonce" value="a3f9…8c21" tag="one-time" />
                 </div>
               </Mock>
@@ -138,12 +138,12 @@ export function FeatureShowcase(): ReactNode {
                 <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.07] bg-white/[0.04] p-4">
                   <div>
                     <p className="text-[11px] text-neutral-400">Paid</p>
-                    <p className="text-2xl font-semibold tracking-tight text-white">1000 motes</p>
+                    <p className="text-2xl font-semibold tracking-tight text-white">1000 wei</p>
                   </div>
                   <ArrowRight className="h-5 w-5 shrink-0 text-neutral-300" />
                   <div className="min-w-0 text-right">
                     <p className="text-[11px] text-neutral-400">Deploy</p>
-                    <p className="truncate font-mono text-xs text-white">casper:demo:…</p>
+                    <p className="truncate font-mono text-xs text-white">eth:demo:…</p>
                   </div>
                 </div>
               </Mock>

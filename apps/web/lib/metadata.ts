@@ -10,7 +10,7 @@ export const siteConfig = {
   authors: [{ name: "Kairos", url: brand.url }],
   keywords: [
     "Kairos",
-    "Casper",
+    "Sepolia",
     "x402",
     "MCP",
     "SKILL.md",

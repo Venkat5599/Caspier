@@ -1,7 +1,7 @@
 # Kairos
 
-> **Permissioned execution for autonomous AI agents on Casper.**
-> Scoped session keys the agent cannot drain — settling metered API calls through **native Casper x402**.
+> **Permissioned execution for autonomous AI agents on Sepolia.**
+> Scoped session keys the agent cannot drain — settling metered API calls through **native Sepolia x402**.
 
 Built from scratch. Production target, not a demo.
 
@@ -9,39 +9,39 @@ Built from scratch. Production target, not a demo.
 
 ## Project Overview
 
-**Kairos** lets an AI agent call paid APIs and on-chain workflows **without holding your private key** and **without unbounded blast radius**. The agent spends under a scoped, revocable session key (Casper native weighted associated keys + action thresholds), and every skill call can settle via **native x402** on Casper testnet — or the in-memory demo chain when `FABRIC_DEMO_CHAIN=true`.
+**Kairos** lets an AI agent call paid APIs and on-chain workflows **without holding your private key** and **without unbounded blast radius**. The agent spends under a scoped, revocable session key (Sepolia MetaMask-sponsored session EOAs + action thresholds), and every skill call can settle via **native x402** on Sepolia testnet — or the in-memory demo chain when `FABRIC_DEMO_CHAIN=true`.
 
 ### What It Does
 
 - **Autonomy without custody** — delegate a low-weight session key; agent can spend within cap, never escalate or drain
 - **Skills as endpoints** — upload `SKILL.md`, get a validated, sandboxed, x402-metered REST + MCP endpoint
-- **x402 proxies** — wrap any API as pay-per-call; gateway verifies Casper transfer proofs
+- **x402 proxies** — wrap any API as pay-per-call; gateway verifies Sepolia transfer proofs
 - **Workflow fabric** — compose x402 calls, on-chain actions, and conditionals (n8n integration)
 - **MCP gateway** — every unit discoverable as an agent tool
 
 ### Key Innovation
 
 ```
-Raw key on Casper:     Agent → Account → Ledger   (drainable, full visibility)
+Raw key on Sepolia:     Agent → Account → Ledger   (drainable, full visibility)
 With Kairos:           Agent → Session Key → x402 → Ledger
                        (can't drain · scoped · metered per call)
 ```
 
-On a transparent ledger, handing an agent a raw key means unbounded risk. Kairos fixes this with **account-level scoped keys** and **per-call x402 metering** — all TypeScript, `casper-client` + JSON-RPC, no EVM.
+On a transparent ledger, handing an agent a raw key means unbounded risk. Kairos fixes this with **account-level scoped keys** and **per-call x402 metering** — all TypeScript, `ethers` + JSON-RPC, no EVM.
 
 ---
 
 ## Deployment Information
 
-### Casper Testnet
+### Sepolia Testnet
 
 | Setting | Value |
 |---------|-------|
-| Network | Casper testnet |
-| RPC | `https://node.testnet.casper.network/rpc` |
-| Node | `https://node.testnet.casper.network:7777` |
-| Chain name | `casper-test` |
-| Explorer | `https://testnet.cspr.live/deploy/` |
+| Network | Sepolia testnet |
+| RPC | `https://ethereum-sepolia-rpc.publicnode.com` |
+| Node | `(JSON-RPC via Sepolia public endpoint)` |
+| Chain name | `sepolia` |
+| Explorer | `https://sepolia.etherscan.io/tx/` |
 
 Copy `.env.example` to `.env`. With no `CHAIN_WORKER_SECRET_KEY`, `FABRIC_DEMO_CHAIN` auto-enables the demo chain.
 
@@ -86,14 +86,14 @@ const client = new FabricClient({
 const result = await client.invoke("my-skill", { query: "hello" });
 ```
 
-### Pay on Casper directly (on-chain engine)
+### Pay on Sepolia directly (on-chain engine)
 
 ```typescript
-import { payThroughSession } from "@fabric/casper/onchain";
+import { payThroughSession } from "@fabric/evm-chain/onchain";
 
 await payThroughSession({
   recipientPublicKeyHex: "01...",
-  amountMotes: "1000000000",
+  amountWei: "1000000000",
   onStep: (s) => console.log(s),
 });
 ```
@@ -101,7 +101,7 @@ await payThroughSession({
 ### CLI
 
 ```bash
-bun run agent:provision [agentPubKeyHex] [maxSpendMotes] [expiresAtISO]
+bun run agent:provision [agentPubKeyHex] [maxSpendWei] [expiresAtISO]
 bun run flow --pay
 bun run scripts/agent-invoke.ts my-skill http://localhost:8080
 ```
@@ -114,7 +114,7 @@ bun run scripts/agent-invoke.ts my-skill http://localhost:8080
 Owner (custody)
     │
     ▼
-Scoped session key (Casper weighted associated keys)
+Scoped session key (Sepolia MetaMask-sponsored session EOAs)
     │
     ▼
 API Gateway ── x402 quote ── Chain worker / demo chain
@@ -137,13 +137,13 @@ agent-fabric/
 │   ├── gateway/          # API edge: authn, x402, routing, invoke
 │   └── mcp-server/       # MCP gateway (kagezks agent/mcp-server equivalent)
 ├── packages/
-│   ├── casper/           # On-chain engine (kagezks sdk/ equivalent)
+│   ├── Sepolia/           # On-chain engine (kagezks sdk/ equivalent)
 │   ├── sdk/              # Caller SDK + invoke helpers
 │   ├── fabric-core/      # Workflow engine + MCP tool registry (kagezks agent/fabric)
 │   ├── authz/            # Session key scope library
 │   └── manifest/         # SKILL.md parser + validator
 ├── services/
-│   ├── chain-worker/     # Signing service entry (re-exports @fabric/casper)
+│   ├── chain-worker/     # Signing service entry (re-exports @fabric/evm-chain)
 │   ├── catalog/          # Skill/workflow registry
 │   ├── execution/        # Sandbox orchestrator
 │   ├── payments/         # x402 gate + ledger
@@ -159,7 +159,7 @@ agent-fabric/
 
 | Layer | Choice |
 |-------|--------|
-| Chain | Casper (native transfers, weighted keys, x402) |
+| Chain | Sepolia (native transfers, weighted keys, x402) |
 | Runtime | Bun, TypeScript, Hono |
 | Edge | Caddy + API gateway |
 | MCP | `@modelcontextprotocol/sdk` |
@@ -171,6 +171,6 @@ agent-fabric/
 
 ## Status
 
-Foundation + gateway/MCP/x402 path working. Session keys use demo registry until `casper-client add-associated-key` is wired. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+Foundation + gateway/MCP/x402 path working. Session keys use demo registry until `vault registerAgent (session EOA)` is wired. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
-> Concept inspired by [kagezks](https://github.com/Venkat5599/kagezks) (scoped agent payments + ZK on Stellar) and the public agent_fabric model — **rebuilt for Casper** (native keys + native x402, TypeScript-only). All code original.
+> Concept inspired by [kagezks](https://github.com/Venkat5599/kagezks) (scoped agent payments + ZK on Stellar) and the public agent_fabric model — **rebuilt for Sepolia** (native keys + native x402, TypeScript-only). All code original.

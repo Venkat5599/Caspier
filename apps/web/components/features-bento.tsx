@@ -8,7 +8,7 @@ import type { ReactNode } from "react";
 const EASE = [0.23, 1, 0.32, 1] as const;
 const bento = featuresBentoConfig;
 
-const PROTOCOLS = ["MCP", "x402", "CSPR"];
+const PROTOCOLS = ["MCP", "x402", "ETH"];
 
 const cardAnimation = {
   initial: { opacity: 0, y: 40 },

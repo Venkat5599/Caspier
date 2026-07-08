@@ -15,10 +15,10 @@ const footerLinks = {
   company: [
     { label: "MCP", href: "/dashboard/mcp" },
     { label: "Session keys", href: "/dashboard/session-keys" },
-    { label: "GitHub", href: "https://github.com/Venkat5599/Caspier" },
+    { label: "GitHub", href: "https://github.com/Venkat5599/kairos" },
   ],
   social: [
-    { label: "Casper", href: "https://casper.network" },
+    { label: "Sepolia", href: "https://ethereum.org" },
     { label: "x402", href: "https://x402.org" },
   ],
 };

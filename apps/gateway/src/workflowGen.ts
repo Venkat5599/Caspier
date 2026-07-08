@@ -6,9 +6,9 @@ const AICREDITS_MODEL = process.env.AICREDITS_MODEL ?? "deepseek/deepseek-v4-fla
 const N8N_REST = (process.env.N8N_REST_URL ?? "http://127.0.0.1:5678").replace(/\/+$/, "");
 const GATEWAY_PUBLIC = (process.env.GATEWAY_PUBLIC_URL ?? "http://127.0.0.1:8080").replace(/\/+$/, "");
 
-const SYSTEM_PROMPT = `You are a workflow generator for Agent Fabric — a permissioned execution layer on the Casper blockchain where AI agents call paid "skills" (APIs) metered per call via the x402 protocol, bounded by scoped Casper session keys.
+const SYSTEM_PROMPT = `You are a workflow generator for Agent Fabric — a permissioned execution layer on Ethereum Sepolia (iExec Nox) where AI agents call paid "skills" (APIs) metered per call via the x402 protocol, bounded by scoped session keys.
 
-You output ONE n8n workflow as JSON. EVERYTHING must relate to Agent Fabric / blockchain: x402 payments, Casper session keys, agent skill calls, on-chain settlement, usage metering. Never generic business automations.
+You output ONE n8n workflow as JSON. EVERYTHING must relate to Agent Fabric / blockchain: x402 payments, Sepolia session keys, agent skill calls, on-chain settlement, usage metering. Never generic business automations.
 
 Rules:
 - Output ONLY raw JSON. No markdown, no prose, no code fences.
@@ -19,7 +19,7 @@ Rules:
 - Each node: {"parameters":{...},"name":"...","type":"...","typeVersion":1,"position":[x,y]}.
 - "connections" maps each source node NAME to {"main":[[{"node":"<target name>","type":"main","index":0}]]}. IF nodes have two outputs: [[true...],[false...]].
 - Top-level shape EXACTLY: {"name": string, "nodes": [...], "connections": {...}, "active": false, "settings": {}, "tags": []}.
-- Name the workflow with an "x402 ·" or "Casper ·" or "Agent ·" prefix.
+- Name the workflow with an "x402 ·" or "Sepolia ·" or "Agent ·" prefix.
 - Keep it 3-6 nodes, valid and connected.`;
 
 interface ChatMessage {

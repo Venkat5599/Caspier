@@ -11,7 +11,7 @@ export interface InvokeResult<T = unknown> {
     demo: boolean;
     explorerUrl?: string;
   };
-  usage?: { amountMotes: string; slug: string };
+  usage?: { amountWei: string; slug: string };
   runtimeMs?: number;
 }
 

@@ -40,7 +40,7 @@ export async function handleInvoke(
       slug,
       nonce: quote.nonce,
       deployHash: verified.deployHash,
-      amountMotes: quote.priceMotes,
+      amountWei: quote.priceWei,
       demo: verified.demo,
     });
     return c.json({
@@ -76,7 +76,7 @@ export async function handleInvoke(
     slug,
     nonce: quote.nonce,
     deployHash: verified.deployHash,
-    amountMotes: quote.priceMotes,
+    amountWei: quote.priceWei,
     demo: verified.demo,
   });
   return c.json({

@@ -1,7 +1,7 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/casper" },
+    { "path": "./packages/evm-chain" },
     { "path": "./packages/sdk" },
     { "path": "./packages/authz" },
     { "path": "./packages/manifest" },

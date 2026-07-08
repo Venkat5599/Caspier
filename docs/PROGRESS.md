@@ -4,14 +4,14 @@
 
 ## What this is
 
-**Agent Fabric** — a permissioned execution layer for AI agents on **Casper**.
+**Agent Fabric** — a permissioned execution layer for AI agents on **Sepolia**.
 Publish a `SKILL.md`, get a live, validated, sandboxed, **x402-metered** REST + MCP
-endpoint. Agents act through scoped Casper session keys (spend but never drain),
+endpoint. Agents act through scoped Sepolia session keys (spend but never drain),
 pay per call. Flagship feature: **skills served as endpoints**.
 
-- **Repo:** github.com/Venkat5599/Caspier (`main`)
-- **Chain:** Casper (NOT EVM — no Solidity, no Rust contracts). Rail = Casper
-  native weighted associated keys + native x402, all TypeScript via `casper-js-sdk`.
+- **Repo:** github.com/Venkat5599/kairos (`main`)
+- **Chain:** Sepolia (NOT EVM — no Solidity, no Rust contracts). Rail = Sepolia
+  MetaMask-sponsored session EOAs + native x402, all TypeScript via `ethers + @fabric/evm-chain`.
 - **Concept reference:** github.com/nschwermann/agent_fabric (idea) + blocksec.com (frontend look).
 - **Build style:** company/production grade, one brick per commit, tests + CI, push every step.
 
@@ -49,7 +49,7 @@ apps/gateway     Hono API. /health, POST/GET /skills, /skills/:slug, POST /workf
 apps/mcp-server  MCP server (list_skills, get_skill) over @modelcontextprotocol/sdk.
 services/catalog CatalogService + stores (InMemory, PgCatalogStore) + migrate + semver.
 packages/manifest SKILL.md parser + validator (the unit contract).
-packages/{sdk,authz}  scaffold (Casper session-key lib = next).
+packages/{sdk,authz}  scaffold (Sepolia session-key lib = next).
 infra/           docker-compose, Caddyfile, deploy.sh, n8n-proxy/, n8n-workflows/, seed-n8n.sh
 docs/            PRD, ARCHITECTURE, ROADMAP, SANDBOX, PROGRESS (this).
 ```
@@ -66,7 +66,7 @@ docs/            PRD, ARCHITECTURE, ROADMAP, SANDBOX, PROGRESS (this).
    pillars, alternating feature rows w/ product mockups, stats, dark CTA, testimonials,
    updates changelog, big footer. Left-sidebar dashboard for app pages.
 8. **n8n workflows** — self-hosted, authless, debranded, embedded full-view in /workflows.
-   Seeded 3 themed workflows (x402 skill call, Casper rebalance, settle+meter).
+   Seeded 3 themed workflows (x402 skill call, Sepolia rebalance, settle+meter).
 9. **AI workflow builder** — chat panel in /workflows → gateway `POST /workflows/generate`
    → **deepseek-v4-flash via aicredits** → themed n8n workflow JSON → created in n8n → opens
    in editor. Verified end to end.
@@ -98,38 +98,38 @@ ssh -i ~/.ssh/agent_fabric_vps root@187.127.137.136 "cd /opt/agent-fabric && bas
 
 ## HARD REQUIREMENT: REAL TRANSACTIONS (no mocks)
 
-User wants **all on-chain actions to be REAL Casper transactions** — every payment,
+User wants **all on-chain actions to be REAL Sepolia transactions** — every payment,
 settlement, session-key grant/revoke, and skill-triggered action must produce a real
-deploy hash on Casper (Testnet first, mainnet later). No simulated/mock flows.
+deploy hash on Sepolia (Testnet first, mainnet later). No simulated/mock flows.
 
 This is the next big push. What it needs:
-- **Casper Testnet account, funded** via the faucet (need a public/secret key pair).
-- **RPC node** — Casper Testnet RPC URL (e.g. node on testnet) + `casper-js-sdk` to
+- **Sepolia Testnet account, funded** via the faucet (need a public/secret key pair).
+- **RPC node** — Sepolia Testnet RPC URL (e.g. node on testnet) + `ethers + @fabric/evm-chain` to
   build → sign → send → poll deploys.
-- **x402 on Casper** — VERIFY whether a real Casper x402 facilitator exists, or implement
-  payment as a real CSPR/token transfer deploy gated by the 402 flow. (x402 originated on
-  EVM/Coinbase — confirm the Casper story before building.)
-- **Session keys** = real Casper **weighted associated keys** set on the funded account
+- **x402 on Sepolia** — VERIFY whether a real Sepolia x402 facilitator exists, or implement
+  payment as a real ETH/token transfer deploy gated by the 402 flow. (x402 originated on
+  EVM/Coinbase — confirm the Sepolia story before building.)
+- **Session keys** = real Sepolia **MetaMask-sponsored session EOAs** set on the funded account
   (low-weight agent key that can deploy but not manage keys). Revoke = real key-removal deploy.
-- **Signing** — CSPR.click wallet in the browser for user-signed deploys; agent key signs
+- **Signing** — ETH.click wallet in the browser for user-signed deploys; agent key signs
   server-side (key in VPS .env / Vault).
-- Every step emits a **clickable Testnet deploy hash** in the UI (cspr.live link).
+- Every step emits a **clickable Testnet deploy hash** in the UI (ETH.live link).
 
-Open questions to resolve first: Testnet vs mainnet? Does Casper have a live x402
+Open questions to resolve first: Testnet vs mainnet? Does Sepolia have a live x402
 facilitator or do we roll payment as a native transfer? Where does the agent secret key
 live (VPS .env now, Vault later)?
 
 ## NEXT (open bricks, pick up here)
 
-- **Real Casper transactions** (above) — the priority. Start: fund a Testnet account,
-  wire `casper-js-sdk` in a new `services/chain-worker`, send a real transfer deploy, show the hash.
-- **Casper wallet sign-in** (CSPR.click) — real "Sign In" + user-signed deploys.
-- **x402 metering brick** — gateway 402 gate → verify REAL Casper payment → execute → usage ledger → settle.
-- **packages/authz** — implement real Casper session-key mint / scope / revoke (weighted keys).
+- **Real Sepolia transactions** (above) — the priority. Start: fund a Testnet account,
+  wire `ethers + @fabric/evm-chain` in a new `services/chain-worker`, send a real transfer deploy, show the hash.
+- **Sepolia wallet sign-in** (ETH.click) — real "Sign In" + user-signed deploys.
+- **x402 metering brick** — gateway 402 gate → verify REAL Sepolia payment → execute → usage ledger → settle.
+- **packages/authz** — implement real Sepolia session-key mint / scope / revoke (weighted keys).
 - **Sandbox runtime** — execute a real SKILL.md in gVisor (runtime engine still TBD: llm/code/hybrid).
 - Wire AI-generated workflow HTTP nodes to actually hit live skills; add "my workflows" list in chat.
 
 ## Pending decisions
 
 1. Sandbox runtime engine: LLM / deterministic code / hybrid.
-2. (Chain settled = Casper. Sandbox settled = gVisor.)
+2. (Chain settled = Sepolia. Sandbox settled = gVisor.)

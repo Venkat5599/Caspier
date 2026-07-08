@@ -8,12 +8,13 @@ import { createApp } from "./app.ts";
 import type { ChainConfig } from "@fabric/chain-worker";
 
 const cfg: ChainConfig = {
-  rpcUrl: "https://node.testnet.casper.network/rpc",
-  chainName: "casper-test",
+  rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+  chainName: "sepolia",
+  chainId: 11155111,
   network: "testnet",
   secretKeyHex: null,
-  publicKeyHex: "0101010101010101010101010101010101010101010101010101010101010101",
-  explorerBase: "https://testnet.cspr.live/deploy/",
+  publicKeyHex: "0x0101010101010101010101010101010101010101",
+  explorerBase: "https://sepolia.etherscan.io/tx/",
   demoMode: true,
 };
 
@@ -25,7 +26,7 @@ description: Returns a weather summary.
 runtime: code
 pricing:
   pricePerCall: "1000"
-  asset: CSPR
+  asset: ETH
 inputSchema:
   type: object
   properties:

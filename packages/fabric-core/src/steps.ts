@@ -16,7 +16,7 @@ export type StepResult = {
 export type WorkflowRunnerDeps = {
   catalog: CatalogLoader;
   gatewayUrl: string;
-  transfer?: (recipient: string, amountMotes: string) => Promise<{ deployHash: string; demo: boolean }>;
+  transfer?: (recipient: string, amountWei: string) => Promise<{ deployHash: string; demo: boolean }>;
   fetchImpl?: typeof fetch;
 };
 

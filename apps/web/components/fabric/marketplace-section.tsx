@@ -160,7 +160,7 @@ export function MarketplaceSection() {
                 <Panel key={item.row.id}>
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold text-white">{item.row.name}</p>
-                    <Chip accent>{Number(item.row.price).toLocaleString()} motes / call</Chip>
+                    <Chip accent>{Number(item.row.price).toLocaleString()} wei / call</Chip>
                   </div>
                   <p className="mt-1 line-clamp-2 text-sm text-neutral-500">{item.row.description}</p>
                   <div className="mt-2 flex flex-wrap gap-2">

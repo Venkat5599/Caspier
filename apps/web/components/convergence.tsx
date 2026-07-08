@@ -34,7 +34,7 @@ const GROUPS: Group[] = [
     icon: Coins,
     nodes: [
       { icon: KeySquare, label: "Scoped keys" },
-      { icon: Coins, label: "CSPR motes" },
+      { icon: Coins, label: "ETH wei" },
       { icon: Network, label: "Deploy proof" },
     ],
   },

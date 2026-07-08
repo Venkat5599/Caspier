@@ -4,12 +4,13 @@ import { ChainWorker, DemoChainStore } from "@fabric/chain-worker";
 import type { ChainConfig } from "@fabric/chain-worker";
 
 const cfg: ChainConfig = {
-  rpcUrl: "https://node.testnet.casper.network/rpc",
-  chainName: "casper-test",
+  rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
+  chainName: "sepolia",
+  chainId: 11155111,
   network: "testnet",
   secretKeyHex: null,
-  publicKeyHex: "0101010101010101010101010101010101010101010101010101010101010101",
-  explorerBase: "https://testnet.cspr.live/deploy/",
+  publicKeyHex: "0x0101010101010101010101010101010101010101",
+  explorerBase: "https://sepolia.etherscan.io/tx/",
   demoMode: true,
 };
 
@@ -18,7 +19,7 @@ const manifest = {
   version: "0.1.0",
   description: "x",
   runtime: "code" as const,
-  pricing: { pricePerCall: "1000", asset: "CSPR" },
+  pricing: { pricePerCall: "1000", asset: "ETH" },
   inputSchema: { type: "object" },
   outputSchema: { type: "object" },
   scope: { egress: ["api.open-meteo.com"] },
@@ -29,7 +30,7 @@ describe("payments", () => {
     const chain = new ChainWorker(cfg, new DemoChainStore());
     const payments = new PaymentService(chain);
     const quote = payments.createQuote("hello-weather", manifest, "hello-weather@0.1.0")!;
-    expect(quote.priceMotes).toBe("1000");
+    expect(quote.priceWei).toBe("1000");
     const proof = await payments.autoPay(quote);
     const v = await payments.verifyProof(proof, quote);
     expect(v.ok).toBe(true);

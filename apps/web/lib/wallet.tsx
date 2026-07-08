@@ -32,23 +32,23 @@ function bytesToHex(bytes: Uint8Array): string {
     .join("");
 }
 
-async function tryCasperWallet(): Promise<string | null> {
+async function trySepoliaWallet(): Promise<string | null> {
   if (typeof window === "undefined") return null;
   const w = window as unknown as {
-    CasperWalletProvider?: { connect?: () => Promise<string>; getActivePublicKey?: () => Promise<string> };
-    casperWallet?: { connect?: () => Promise<{ publicKey?: string } | string> };
+    SepoliaWalletProvider?: { connect?: () => Promise<string>; getActivePublicKey?: () => Promise<string> };
+    SepoliaWallet?: { connect?: () => Promise<{ publicKey?: string } | string> };
   };
   try {
-    if (w.CasperWalletProvider?.getActivePublicKey) {
-      const pk = await w.CasperWalletProvider.getActivePublicKey();
+    if (w.SepoliaWalletProvider?.getActivePublicKey) {
+      const pk = await w.SepoliaWalletProvider.getActivePublicKey();
       if (pk) return pk;
     }
-    if (w.CasperWalletProvider?.connect) {
-      const pk = await w.CasperWalletProvider.connect();
+    if (w.SepoliaWalletProvider?.connect) {
+      const pk = await w.SepoliaWalletProvider.connect();
       if (pk) return pk;
     }
-    if (w.casperWallet?.connect) {
-      const r = await w.casperWallet.connect();
+    if (w.SepoliaWallet?.connect) {
+      const r = await w.SepoliaWallet.connect();
       const pk = typeof r === "string" ? r : r?.publicKey;
       if (pk) return pk;
     }
@@ -76,7 +76,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const connect = async () => {
     setConnecting(true);
     try {
-      const wallet = await tryCasperWallet();
+      const wallet = await trySepoliaWallet();
       if (wallet) {
         setAddress(wallet);
         setReal(true);
@@ -86,7 +86,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem(SECKEY);
         return;
       }
-      const hex = window.prompt("Casper public key (01… hex) for owner scoping:");
+      const hex = window.prompt("Sepolia public key (01… hex) for owner scoping:");
       if (!hex?.trim()) return;
       const pub = hex.trim();
       setAddress(pub);

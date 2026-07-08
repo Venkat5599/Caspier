@@ -36,7 +36,7 @@ export function DashboardSidebar() {
           </span>
           <div>
             <p className="text-sm font-bold">{siteConfig.name}</p>
-            <p className="text-[10px] text-muted-foreground">{demo ? "Demo chain" : "Casper testnet"}</p>
+            <p className="text-[10px] text-muted-foreground">{demo ? "Demo chain" : "Sepolia testnet"}</p>
           </div>
         </Link>
       </div>

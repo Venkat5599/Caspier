@@ -1,0 +1,41 @@
+{
+  "name": "Sepolia · Session key mint",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "requestMethod": "GET",
+        "url": "http://host.docker.internal:8080/auth/session-keys"
+      },
+      "name": "List session keys",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [430, 300]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://host.docker.internal:8080/auth/session-keys",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\"agentPublicKeyHex\":\"0101010101010101010101010101010101010101010101010101010101010102\",\"scope\":{\"maxSpendPerCall\":\"5000000000\",\"expiresAt\":\"2099-01-01T00:00:00.000Z\"}}"
+      },
+      "name": "Mint scoped key",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [660, 300]
+    }
+  ],
+  "connections": {
+    "Start": { "main": [[{ "node": "List session keys", "type": "main", "index": 0 }]] },
+    "List session keys": { "main": [[{ "node": "Mint scoped key", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "tags": []
+}

@@ -42,7 +42,7 @@ export function SessionKeysSection() {
     <div className="space-y-6">
       <div>
         <h1 className="text-4xl font-semibold tracking-tight text-white">Session keys</h1>
-        <p className="mt-1 text-neutral-400">Scoped Casper agent keys — bound spend per call without custody of your owner key.</p>
+        <p className="mt-1 text-neutral-400">Scoped Sepolia agent keys — bound spend per call without custody of your owner key.</p>
       </div>
 
       <Panel>
@@ -59,7 +59,7 @@ export function SessionKeysSection() {
               className="font-mono"
             />
           </Field>
-          <Field label="Max spend (motes per call)">
+          <Field label="Max spend (wei per call)">
             <Input value={maxSpend} onChange={(e) => setMaxSpend(e.target.value)} className="font-mono" />
           </Field>
           <Button onClick={mint} disabled={busy || !agentKey.trim()}>

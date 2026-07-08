@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Chain worker service — re-exports @fabric/casper for backward compatibility.",
+  "description": "Chain worker service — re-exports @fabric/evm-chain for backward compatibility.",
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun --watch src/index.ts",
@@ -12,6 +12,6 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@fabric/casper": "workspace:*"
+    "@fabric/evm-chain": "workspace:*"
   }
 }

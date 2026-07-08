@@ -42,8 +42,8 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
   const runnerDeps: WorkflowRunnerDeps = {
     catalog: catalogLoader,
     gatewayUrl: deps.gatewayUrl,
-    transfer: async (recipient, amountMotes) => {
-      const tx = await deps.chain.transfer({ recipientPublicKeyHex: recipient, amountMotes });
+    transfer: async (recipient, amountWei) => {
+      const tx = await deps.chain.transfer({ recipientPublicKeyHex: recipient, amountWei });
       return { deployHash: tx.deployHash, demo: tx.demo };
     },
   };
@@ -136,13 +136,13 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
     const address = c.req.query("address");
     if (!address?.trim()) return c.json({ ok: false, error: "address required" }, 400);
     try {
-      const motes = await deps.chain.getBalanceMotes(address.trim());
-      const n = Number(motes);
+      const wei = await deps.chain.getBalanceWei(address.trim());
+      const n = Number(wei);
       return c.json({
         ok: true,
         funded: n > 0,
-        motes,
-        cspr: (n / 1e9).toFixed(4),
+        wei,
+        ETH: (n / 1e18).toFixed(6),
         demo: deps.chain.status().demoMode,
       });
     } catch (e) {
@@ -281,7 +281,7 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
     }
     try {
       const key = deps.authz.mint(body.agentPublicKeyHex, body.scope);
-      const token = `caspier_sk_${key.id.replace(/-/g, "").slice(0, 24)}`;
+      const token = `kairos_sk_${key.id.replace(/-/g, "").slice(0, 24)}`;
       return c.json({ ok: true, sessionId: key.id, token, key });
     } catch (e) {
       return c.json({ ok: false, error: (e as Error).message }, 500);

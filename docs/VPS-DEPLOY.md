@@ -1,6 +1,6 @@
 # VPS deployment guide
 
-Deploy the Caspier **backend** on a Linux VPS: gateway, Postgres, n8n, and optional Caddy TLS. The web UI is hosted on **Vercel** by default (`DEPLOY_WEB=false`).
+Deploy the kairos **backend** on a Linux VPS: gateway, Postgres, n8n, and optional Caddy TLS. The web UI is hosted on **Vercel** by default (`DEPLOY_WEB=false`).
 
 See [DEPLOYMENT-ARCHITECTURE.md](./DEPLOYMENT-ARCHITECTURE.md) for how Vercel + VPS connect.
 
@@ -9,22 +9,22 @@ See [DEPLOYMENT-ARCHITECTURE.md](./DEPLOYMENT-ARCHITECTURE.md) for how Vercel + 
 Use this when you have VPS access:
 
 - [ ] VPS IP and SSH user/key
-- [ ] Domain DNS: `api.caspier.dev` → VPS IP
-- [ ] Domain DNS: `n8n.caspier.dev` → VPS IP (workflow iframe)
-- [ ] `CASPER_PUBLIC_KEY` (testnet account hex)
+- [ ] Domain DNS: `api.kairos.dev` → VPS IP
+- [ ] Domain DNS: `n8n.kairos.dev` → VPS IP (workflow iframe)
+- [ ] `Sepolia_PUBLIC_KEY` (testnet account hex)
 - [ ] `CHAIN_WORKER_SECRET_KEY` (testnet secret key)
-- [ ] Testnet CSPR funded on that account
-- [ ] Vercel env: `NEXT_PUBLIC_GATEWAY_URL=https://api.caspier.dev`
+- [ ] Testnet ETH funded on that account
+- [ ] Vercel env: `NEXT_PUBLIC_GATEWAY_URL=https://api.kairos.dev`
 - [ ] Vercel redeploy after gateway is live
 
 | Item | Example | Used for |
 |------|---------|----------|
 | VPS IP | `203.0.113.10` | SSH, DNS A records |
-| API domain | `api.caspier.dev` | Gateway (Caddy → :8080) |
-| n8n domain | `n8n.caspier.dev` | Workflow embed (Caddy → :8089) |
-| Vercel URL | `caspier.vercel.app` | Dashboard UI |
-| Casper public key | `01abc…` | x402 recipient, session keys |
-| Casper secret key | `secret_key_…` | Chain worker signs transfers |
+| API domain | `api.kairos.dev` | Gateway (Caddy → :8080) |
+| n8n domain | `n8n.kairos.dev` | Workflow embed (Caddy → :8089) |
+| Vercel URL | `kairos.vercel.app` | Dashboard UI |
+| Sepolia public key | `01abc…` | x402 recipient, session keys |
+| Sepolia secret key | `secret_key_…` | Chain worker signs transfers |
 
 Demo without chain: `FABRIC_DEMO_CHAIN=true`, leave secret key empty.
 
@@ -67,7 +67,7 @@ Internal only (localhost):
 ```bash
 sudo mkdir -p /opt/agent-fabric
 sudo chown "$USER:$USER" /opt/agent-fabric
-git clone https://github.com/YOUR_ORG/caspier.git /opt/agent-fabric
+git clone https://github.com/YOUR_ORG/kairos.git /opt/agent-fabric
 cd /opt/agent-fabric
 cp .env.production.example .env
 # Edit .env — keys, passwords, domains
@@ -94,13 +94,13 @@ Copy `.env.production.example` to `.env`. Key values:
 ```bash
 DEPLOY_WEB=false
 GATEWAY_PORT=8080
-GATEWAY_PUBLIC_URL=https://api.caspier.dev
-API_DOMAIN=api.caspier.dev
-N8N_DOMAIN=n8n.caspier.dev
-VERCEL_WEB_URL=https://caspier.vercel.app
+GATEWAY_PUBLIC_URL=https://api.kairos.dev
+API_DOMAIN=api.kairos.dev
+N8N_DOMAIN=n8n.kairos.dev
+VERCEL_WEB_URL=https://kairos.vercel.app
 
 DATABASE_URL=postgres://fabric:<password>@localhost:5432/fabric
-CASPER_PUBLIC_KEY=01<hex>
+Sepolia_PUBLIC_KEY=01<hex>
 CHAIN_WORKER_SECRET_KEY=<secret>
 FABRIC_DEMO_CHAIN=false
 ```
@@ -125,22 +125,22 @@ Set `DEPLOY_WEB=true` only if you want Next.js on the VPS instead of Vercel.
 curl -fsS "http://localhost:8080/health"
 
 # Via Caddy (after DNS + TLS)
-curl -fsS "https://api.caspier.dev/health"
-curl -fsS "https://api.caspier.dev/chain/status"
+curl -fsS "https://api.kairos.dev/health"
+curl -fsS "https://api.kairos.dev/chain/status"
 
 # Seed demo skill
-curl -fsS -X POST "https://api.caspier.dev/skills/seed-demo"
-curl -fsS "https://api.caspier.dev/skills"
+curl -fsS -X POST "https://api.kairos.dev/skills/seed-demo"
+curl -fsS "https://api.kairos.dev/skills"
 
 # n8n (VPS localhost)
 curl -fsS "http://127.0.0.1:5678/healthz"
 ```
 
-From Vercel dashboard: open `https://caspier.vercel.app/dashboard` — skills should load.
+From Vercel dashboard: open `https://kairos.vercel.app/dashboard` — skills should load.
 
 ## MCP + Claude Code
 
-The MCP server (`apps/mcp-server`) uses **stdio** and runs on each developer's machine, not on the VPS. It calls the gateway at `GATEWAY_URL=https://api.caspier.dev`.
+The MCP server (`apps/mcp-server`) uses **stdio** and runs on each developer's machine, not on the VPS. It calls the gateway at `GATEWAY_URL=https://api.kairos.dev`.
 
 See [CLAUDE-CODE-DEMO.md](./CLAUDE-CODE-DEMO.md).
 

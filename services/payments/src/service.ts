@@ -4,7 +4,7 @@ import type { ChainWorker } from "@fabric/chain-worker";
 export interface PaymentQuote {
   nonce: string;
   slug: string;
-  priceMotes: string;
+  priceWei: string;
   asset: string;
   recipientPublicKeyHex: string;
   expiresAt: string;
@@ -16,7 +16,7 @@ export interface UsageRecord {
   slug: string;
   nonce: string;
   deployHash: string;
-  amountMotes: string;
+  amountWei: string;
   demo: boolean;
   createdAt: string;
 }
@@ -32,12 +32,12 @@ const globalQuotes = new Map<string, PaymentQuote>();
 const globalUsage: UsageRecord[] = [];
 const consumedProofs = new Set<string>();
 
-function assetToMotes(manifest: SkillManifest): { amount: string; asset: string } {
+function assetToWei(manifest: SkillManifest): { amount: string; asset: string } {
   const price = manifest.pricing.pricePerCall;
   const asset = manifest.pricing.asset.toUpperCase();
   if (price === "0") return { amount: "0", asset };
-  // Treat price as motes for CSPR; USDC legacy manifests map 1:1 motes for demo.
-  return { amount: price, asset: asset === "USDC" ? "CSPR" : asset };
+  // Treat price as wei for ETH; USDC legacy manifests map 1:1 wei for demo.
+  return { amount: price, asset: asset === "USDC" ? "ETH" : asset };
 }
 
 export class PaymentService {
@@ -47,18 +47,18 @@ export class PaymentService {
   ) {}
 
   createQuote(slug: string, manifest: SkillManifest, skillId: string): PaymentQuote | null {
-    const { amount, asset } = assetToMotes(manifest);
+    const { amount, asset } = assetToWei(manifest);
     if (amount === "0") return null;
 
     const recipient = this.recipientPublicKeyHex;
     if (!recipient) {
-      throw new Error("CASPER_PUBLIC_KEY required for paid skills");
+      throw new Error("SEPOLIA_PUBLIC_KEY required for paid skills");
     }
 
     const quote: PaymentQuote = {
       nonce: crypto.randomUUID(),
       slug,
-      priceMotes: amount,
+      priceWei: amount,
       asset,
       recipientPublicKeyHex: recipient,
       expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
@@ -82,7 +82,7 @@ export class PaymentService {
 
     const status = await this.chain.verifyPayment(proofHeader, {
       recipientPublicKeyHex: quote.recipientPublicKeyHex,
-      amountMotes: quote.priceMotes,
+      amountWei: quote.priceWei,
     });
 
     if (!status.success) {
@@ -102,7 +102,7 @@ export class PaymentService {
     slug: string;
     nonce: string;
     deployHash: string;
-    amountMotes: string;
+    amountWei: string;
     demo: boolean;
   }): UsageRecord {
     const rec: UsageRecord = {
@@ -110,7 +110,7 @@ export class PaymentService {
       slug: input.slug,
       nonce: input.nonce,
       deployHash: input.deployHash,
-      amountMotes: input.amountMotes,
+      amountWei: input.amountWei,
       demo: input.demo,
       createdAt: new Date().toISOString(),
     };
@@ -126,7 +126,7 @@ export class PaymentService {
   async autoPay(quote: PaymentQuote): Promise<string> {
     const result = await this.chain.transfer({
       recipientPublicKeyHex: quote.recipientPublicKeyHex,
-      amountMotes: quote.priceMotes,
+      amountWei: quote.priceWei,
       nonce: quote.nonce,
     });
     return result.proof;
@@ -137,13 +137,13 @@ export function x402Body(quote: PaymentQuote) {
   return {
     x402: true,
     message: "Payment Required",
-    price: quote.priceMotes,
+    price: quote.priceWei,
     asset: quote.asset,
     recipient: quote.recipientPublicKeyHex,
     nonce: quote.nonce,
     expiresAt: quote.expiresAt,
     slug: quote.slug,
     instructions:
-      "Pay via Casper native transfer, then retry with header X-Payment-Proof: casper:deploy:<hash> or POST /s/:slug/auto-pay with { nonce }",
+      "Pay via Sepolia native transfer, then retry with header X-Payment-Proof: eth:tx:<hash> or POST /s/:slug/auto-pay with { nonce }",
   };
 }

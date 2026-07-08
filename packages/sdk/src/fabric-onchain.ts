@@ -5,13 +5,13 @@ export interface InvokeWithPayOptions {
   slug: string;
   input: unknown;
   version?: string;
-  /** Casper public key hex for x402 recipient when auto-paying locally */
-  payerWorker?: import("@fabric/casper").ChainWorker;
+  /** Sepolia public key hex for x402 recipient when auto-paying locally */
+  payerWorker?: import("@fabric/evm-chain").ChainWorker;
   onStep?: (step: string) => void;
 }
 
 /**
- * Invoke a metered skill endpoint: handles 402 quote, pays on Casper, retries with proof.
+ * Invoke a metered skill endpoint: handles 402 quote, pays on Sepolia, retries with proof.
  * Gateway auto-pay path is used when available; otherwise pays locally via payThroughSession.
  */
 export async function invokeWithAutoPay<T = unknown>(
@@ -29,4 +29,4 @@ export async function invokeWithAutoPay<T = unknown>(
   }
 }
 
-export { payThroughSession } from "@fabric/casper/onchain";
+export { payThroughSession } from "@fabric/evm-chain/onchain";

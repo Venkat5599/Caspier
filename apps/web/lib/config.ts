@@ -7,8 +7,8 @@ export const siteConfig = {
   tagline: "Private agent payments on Ethereum",
   description:
     "Kairos lets AI agents call paid APIs without custody or public spend trails. Scoped session budgets and x402 metering — settlement amounts hidden via iExec Nox on Sepolia.",
-  url: "https://caspier.dev",
-  twitter: "@caspier",
+  url: "https://kairos.dev",
+  twitter: "@kairos",
   nav: {
     cta: { text: "Open dashboard", href: "/dashboard" },
     signIn: { text: "Sepolia demo", href: "/dashboard" },
@@ -28,16 +28,16 @@ export const heroConfig = {
 };
 
 export const blurHeadlineConfig = {
-  text: "Kairos brings permissioned execution to Casper — publish SKILL.md, discover skills over MCP, pay with x402, and run inside scoped session keys without giving up custody.",
+  text: "Kairos brings permissioned execution to Sepolia — publish SKILL.md, discover skills over MCP, pay with x402, and run inside scoped session keys without giving up custody.",
 };
 
 export const techStackConfig = {
   title: "Built on open standards",
   description:
-    "Kairos composes Casper, x402, MCP, and n8n — no proprietary lock-in.",
+    "Kairos composes Sepolia, x402, MCP, and n8n — no proprietary lock-in.",
   items: [
     {
-      name: "Casper",
+      name: "Sepolia",
       description: "On-chain settlement and scoped session keys",
     },
     {
@@ -62,7 +62,7 @@ export const howItWorksConfig = {
   steps: [
     { title: "Publish SKILL.md", description: "Define name, pricing, egress allowlist, and runtime. Gateway validates and registers the skill." },
     { title: "Discover via REST or MCP", description: "Agents list skills, read manifests, and call POST /s/:slug or invoke_skill over MCP." },
-    { title: "Pay with x402", description: "Paid skills return HTTP 402 with a quote. Auto-pay settles on Casper and unlocks execution." },
+    { title: "Pay with x402", description: "Paid skills return HTTP 402 with a quote. Auto-pay settles on Sepolia and unlocks execution." },
     { title: "Execute in sandbox", description: "Scoped session keys bound spend. Egress is allowlisted. Every call is metered and logged." },
   ],
 };
@@ -70,22 +70,22 @@ export const howItWorksConfig = {
 export const faqItems = [
   {
     question: "What is a skill?",
-    answer: "A skill is a SKILL.md manifest plus handler. Kairos validates it, registers REST and MCP endpoints, and meters every invocation on Casper.",
+    answer: "A skill is a SKILL.md manifest plus handler. Kairos validates it, registers REST and MCP endpoints, and meters every invocation on Sepolia.",
   },
   {
     question: "How does x402 payment work?",
-    answer: "Paid skills return HTTP 402 with price, asset, nonce, and expiry. Call POST /s/:slug/auto-pay with the nonce to settle on Casper and run the handler.",
+    answer: "Paid skills return HTTP 402 with price, asset, nonce, and expiry. Call POST /s/:slug/auto-pay with the nonce to settle on Sepolia and run the handler.",
   },
   {
     question: "What are session keys?",
-    answer: "Scoped Casper agent keys with max spend per call and expiry. Agents get autonomy without custody of your main wallet.",
+    answer: "Scoped Sepolia agent keys with max spend per call and expiry. Agents get autonomy without custody of your main wallet.",
   },
   {
     question: "Can I use MCP?",
     answer: "Yes. The MCP server exposes list_skills, get_skill, and invoke_skill — same gateway, same metering.",
   },
   {
-    question: "Does it work without Casper keys?",
+    question: "Does it work without Sepolia keys?",
     answer: "Set FABRIC_DEMO_CHAIN=true for local demo mode. Real testnet deploys when CHAIN_WORKER_SECRET_KEY is configured.",
   },
 ];
@@ -95,17 +95,17 @@ export const faqConfig = {
   description: "Can't find the answer? Open the dashboard or check the repo.",
   cta: {
     primary: { text: "Open dashboard", href: "/dashboard" },
-    secondary: { text: "GitHub", href: "https://github.com/Venkat5599/Caspier" },
+    secondary: { text: "GitHub", href: "https://github.com/Venkat5599/kairos" },
   },
 };
 
 export const footerConfig = {
   cta: {
-    headline: "Ship your Casper testnet demo with Kairos.",
+    headline: "Ship your Sepolia testnet demo with Kairos.",
     placeholder: "your@email.com",
     button: "Open dashboard",
   },
-  copyright: `© ${new Date().getFullYear()} Kairos. Built on Casper.`,
+  copyright: `© ${new Date().getFullYear()} Kairos. Built on Sepolia.`,
 };
 
 export const featuresBentoConfig = {
@@ -129,14 +129,14 @@ export const featuresBentoConfig = {
   },
   ecosystem: {
     title: "Agent ecosystem",
-    subtitle: "MCP + x402 + Casper",
+    subtitle: "MCP + x402 + Sepolia",
     rating: "Built for hackathon demos",
   },
   scale: {
     title: "Production paths",
-    description: "Demo chain locally, Casper testnet when keys are set.",
+    description: "Demo chain locally, Sepolia testnet when keys are set.",
     stats: [
-      { tag: "CHAIN", label: "Casper deploys", change: "testnet" },
+      { tag: "CHAIN", label: "Sepolia deploys", change: "testnet" },
       { tag: "KEYS", label: "Session keys", change: "scoped" },
     ],
   },

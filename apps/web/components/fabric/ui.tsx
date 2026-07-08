@@ -23,8 +23,8 @@ export function CopyBtn({ text }: { text: string }) {
 export const short = (s: string | null | undefined, head = 8, tail = 6) =>
   !s ? "—" : s.length > head + tail ? `${s.slice(0, head)}…${s.slice(-tail)}` : s;
 
-export const cspr = (raw: string | number | null | undefined) =>
-  raw == null ? "—" : `${Number(raw).toLocaleString()} CSPR`;
+export const ETH = (raw: string | number | null | undefined) =>
+  raw == null ? "—" : `${Number(raw).toLocaleString()} ETH`;
 
 export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (

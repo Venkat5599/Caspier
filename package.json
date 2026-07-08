@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Agent Fabric — permissioned execution for AI agents on Casper. Scoped session keys, native x402 metering, SKILL.md as REST + MCP endpoints.",
+  "description": "Agent Fabric — permissioned execution for AI agents on Sepolia. Scoped session keys, native x402 metering, SKILL.md as REST + MCP endpoints.",
   "workspaces": [
     "apps/*",
     "services/*",

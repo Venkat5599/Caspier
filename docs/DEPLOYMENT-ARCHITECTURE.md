@@ -1,13 +1,13 @@
 # Deployment architecture
 
-Caspier splits the **web UI** (Vercel) from the **execution backend** (VPS). Anyone can publish skills, build workflows, and connect Claude Code once the VPS gateway is live.
+kairos splits the **web UI** (Vercel) from the **execution backend** (VPS). Anyone can publish skills, build workflows, and connect Claude Code once the VPS gateway is live.
 
 ## Topology
 
 ```
                     ┌─────────────────────────────────────┐
                     │  Vercel                              │
-                    │  caspier.vercel.app / caspier.dev    │
+                    │  kairos.vercel.app / kairos.dev    │
                     │  Next.js 16 dashboard + marketing    │
                     └──────────────┬──────────────────────┘
                                    │ HTTPS (browser)
@@ -35,9 +35,9 @@ Caspier splits the **web UI** (Vercel) from the **execution backend** (VPS). Any
 
 | Surface | Host | Port | Role |
 |---------|------|------|------|
-| Web UI | `caspier.vercel.app` / `caspier.dev` | 443 | Marketing, dashboard, publish UI |
-| Gateway API | `api.caspier.dev` | 443 → 8080 | Skills catalog, invoke, x402, session keys |
-| n8n embed | `n8n.caspier.dev` | 443 → 8089 | Workflow studio iframe in dashboard |
+| Web UI | `kairos.vercel.app` / `kairos.dev` | 443 | Marketing, dashboard, publish UI |
+| Gateway API | `api.kairos.dev` | 443 → 8080 | Skills catalog, invoke, x402, session keys |
+| n8n embed | `n8n.kairos.dev` | 443 → 8089 | Workflow studio iframe in dashboard |
 | Postgres | localhost | 5432 | Catalog persistence (not public) |
 | n8n internal | localhost | 5678 | Workflow engine (gateway calls via `N8N_REST_URL`) |
 
@@ -45,15 +45,15 @@ Caspier splits the **web UI** (Vercel) from the **execution backend** (VPS). Any
 
 ### Dashboard publish / invoke (browser)
 
-1. User opens `https://caspier.vercel.app/dashboard`.
-2. Client-side `fetch` calls `NEXT_PUBLIC_GATEWAY_URL` (e.g. `https://api.caspier.dev/skills`).
+1. User opens `https://kairos.vercel.app/dashboard`.
+2. Client-side `fetch` calls `NEXT_PUBLIC_GATEWAY_URL` (e.g. `https://api.kairos.dev/skills`).
 3. Gateway validates, stores in Postgres, returns skill metadata.
 4. Invoke: `POST /s/:slug` → 402 quote → `POST /s/:slug/auto-pay` → sandbox + on-chain payment.
 
 ### Claude Code + MCP (developer machine)
 
 1. Developer clones repo locally.
-2. `.mcp.json` runs `bun apps/mcp-server/src/index.ts` with `GATEWAY_URL=https://api.caspier.dev`.
+2. `.mcp.json` runs `bun apps/mcp-server/src/index.ts` with `GATEWAY_URL=https://api.kairos.dev`.
 3. MCP tools proxy to the same gateway endpoints as the dashboard.
 4. **MCP does not run on the VPS** — stdio transport requires a local process. Streamable HTTP MCP on VPS is a future option.
 
@@ -66,14 +66,14 @@ Caspier splits the **web UI** (Vercel) from the **execution backend** (VPS). Any
 
 | Where | Variable | Example |
 |-------|----------|---------|
-| Vercel | `NEXT_PUBLIC_GATEWAY_URL` | `https://api.caspier.dev` |
-| Vercel | `NEXT_PUBLIC_N8N_URL` | `https://n8n.caspier.dev` |
-| VPS `.env` | `GATEWAY_PUBLIC_URL` | `https://api.caspier.dev` |
+| Vercel | `NEXT_PUBLIC_GATEWAY_URL` | `https://api.kairos.dev` |
+| Vercel | `NEXT_PUBLIC_N8N_URL` | `https://n8n.kairos.dev` |
+| VPS `.env` | `GATEWAY_PUBLIC_URL` | `https://api.kairos.dev` |
 | VPS `.env` | `GATEWAY_PORT` | `8080` |
 | VPS `.env` | `DEPLOY_WEB` | `false` (Vercel hosts UI) |
 | VPS `.env` | `API_DOMAIN` / `N8N_DOMAIN` | Caddy hostnames |
 | Claude Code `.mcp.json` | `GATEWAY_URL` | Same as `NEXT_PUBLIC_GATEWAY_URL` |
-| VPS `.env` | `CASPER_PUBLIC_KEY` | Testnet account for payments |
+| VPS `.env` | `Sepolia_PUBLIC_KEY` | Testnet account for payments |
 | VPS `.env` | `CHAIN_WORKER_SECRET_KEY` | Signs transfers |
 
 Full VPS template: `.env.production.example`.
@@ -82,13 +82,13 @@ Full VPS template: `.env.production.example`.
 
 1. **Vercel** — deploy web with placeholder gateway URL ([VERCEL-DEPLOY.md](./VERCEL-DEPLOY.md)).
 2. **VPS** — provision Docker, copy `.env.production.example` → `.env`, run `infra/deploy.sh` ([VPS-DEPLOY.md](./VPS-DEPLOY.md)).
-3. **DNS** — point `api.caspier.dev` and `n8n.caspier.dev` at VPS IP; start Caddy.
+3. **DNS** — point `api.kairos.dev` and `n8n.kairos.dev` at VPS IP; start Caddy.
 4. **Vercel redeploy** — set real `NEXT_PUBLIC_GATEWAY_URL` and redeploy.
 5. **Claude Code** — configure MCP per [CLAUDE-CODE-DEMO.md](./CLAUDE-CODE-DEMO.md).
 
 ## Security notes
 
-- Gateway CORS is open (`cors()`) so the Vercel origin can call the API. Tighten to `https://caspier.vercel.app` and your custom domain in production if desired.
+- Gateway CORS is open (`cors()`) so the Vercel origin can call the API. Tighten to `https://kairos.vercel.app` and your custom domain in production if desired.
 - Chain worker secret key lives only on the VPS `.env`.
 - Session keys scope agent spend; owner key never leaves the VPS.
 

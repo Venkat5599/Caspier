@@ -357,7 +357,7 @@ export async function provisionFabricSession(body: Record<string, unknown>) {
 
 export async function getFabricWalletStatus(address: string) {
   const res = await fetch(`${BASE}/fabric/wallet-status?address=${encodeURIComponent(address)}`);
-  return res.json() as Promise<{ ok: boolean; funded?: boolean; cspr?: string; motes?: string; demo?: boolean; error?: string }>;
+  return res.json() as Promise<{ ok: boolean; funded?: boolean; ETH?: string; wei?: string; demo?: boolean; error?: string }>;
 }
 
 export const fabricMcpUrl = process.env.NEXT_PUBLIC_FABRIC_MCP_URL ?? "http://localhost:8403";

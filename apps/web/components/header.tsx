@@ -17,8 +17,8 @@ const menus = {
   ],
   developers: [
     { label: "Gateway API", href: process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://localhost:8080", description: "REST catalog + invoke" },
-    { label: "Session keys", href: "/dashboard/session-keys", description: "Scoped Casper keys" },
-    { label: "GitHub", href: "https://github.com/Venkat5599/Caspier", description: "Source code" },
+    { label: "Session keys", href: "/dashboard/session-keys", description: "Scoped Sepolia keys" },
+    { label: "GitHub", href: "https://github.com/Venkat5599/kairos", description: "Source code" },
   ],
 };
 

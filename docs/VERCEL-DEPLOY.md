@@ -1,4 +1,4 @@
-# Deploy Caspier web on Vercel
+# Deploy kairos web on Vercel
 
 **Split deployment:** the Next.js marketing site and dashboard run on **Vercel**. The **gateway**, Postgres, n8n, and chain worker run on your **VPS**. The **MCP server** runs on your developer machine (stdio) and points at the VPS gateway URL — same API the dashboard uses.
 
@@ -12,7 +12,7 @@ See [DEPLOYMENT-ARCHITECTURE.md](./DEPLOYMENT-ARCHITECTURE.md) for request flows
 
 ## 1. Import project
 
-1. Go to [vercel.com/new](https://vercel.com/new) and import the Caspier repository.
+1. Go to [vercel.com/new](https://vercel.com/new) and import the kairos repository.
 2. Set **Root Directory** to `apps/web` (monorepo subfolder).
 3. Framework Preset: **Next.js** (auto-detected).
 
@@ -54,20 +54,20 @@ Click **Deploy** or push to `main` if Git integration is enabled.
 
 Production URL examples:
 
-- `https://caspier.vercel.app` (default Vercel subdomain)
-- Custom domain: `https://caspier.dev` (add in Vercel → Domains)
+- `https://kairos.vercel.app` (default Vercel subdomain)
+- Custom domain: `https://kairos.dev` (add in Vercel → Domains)
 
 ## 4. Verify
 
 ```bash
 # Site loads
-curl -fsS -o /dev/null -w "%{http_code}\n" https://caspier.vercel.app/
+curl -fsS -o /dev/null -w "%{http_code}\n" https://kairos.vercel.app/
 
 # Dashboard reaches gateway (after VPS is live)
-curl -fsS https://api.caspier.dev/health
+curl -fsS https://api.kairos.dev/health
 ```
 
-Open `https://caspier.vercel.app/dashboard` and confirm skills load when the gateway is reachable.
+Open `https://kairos.vercel.app/dashboard` and confirm skills load when the gateway is reachable.
 
 ## 5. Redeploy after VPS URL changes
 

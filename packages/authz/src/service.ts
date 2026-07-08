@@ -25,10 +25,10 @@ export class AuthzService {
     return keys.filter((k) => !k.revoked);
   }
 
-  /** Mint a scoped session key (demo: records intent; prod: casper-client add-associated-key). */
+  /** Mint a scoped session key (demo: records intent; prod: vault contract delegate). */
   mint(agentPublicKeyHex: string, scope: SessionScope): SessionKeyRecord {
     if (!this.ownerPublicKeyHex) {
-      throw new Error("CASPER_PUBLIC_KEY required to mint session keys");
+      throw new Error("SEPOLIA_PUBLIC_KEY required to mint session keys");
     }
     const deployHash = crypto.randomUUID().replace(/-/g, "");
     const rec: SessionKeyRecord = {
@@ -37,7 +37,7 @@ export class AuthzService {
       ownerPublicKeyHex: this.ownerPublicKeyHex,
       scope,
       deployHash,
-      explorerUrl: `https://testnet.cspr.live/deploy/${deployHash}`,
+      explorerUrl: `https://sepolia.etherscan.io/tx/${deployHash}`,
       demo: true,
       revoked: false,
       createdAt: new Date().toISOString(),
@@ -53,8 +53,8 @@ export class AuthzService {
     return rec;
   }
 
-  validateScope(spendMotes: string, scope: SessionScope): boolean {
+  validateScope(spendWei: string, scope: SessionScope): boolean {
     if (new Date(scope.expiresAt).getTime() < Date.now()) return false;
-    return BigInt(spendMotes) <= BigInt(scope.maxSpendPerCall);
+    return BigInt(spendWei) <= BigInt(scope.maxSpendPerCall);
   }
 }

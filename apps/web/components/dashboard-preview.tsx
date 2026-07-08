@@ -16,7 +16,7 @@ const SKILLS = [
     name: "hello-weather",
     slug: "hello-weather@0.1",
     description: "Weather lookup via allowlisted egress — x402 metered.",
-    price: "1000 CSPR",
+    price: "1000 ETH",
   },
   {
     name: "echo-skill",
@@ -40,7 +40,7 @@ export function DashboardPreview(): ReactNode {
             </span>
             <div>
               <p className="text-xs font-bold leading-tight">{siteConfig.name}</p>
-              <p className="text-[9px] text-muted-foreground">Casper testnet</p>
+              <p className="text-[9px] text-muted-foreground">Sepolia testnet</p>
             </div>
           </div>
         </div>

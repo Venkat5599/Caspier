@@ -1,14 +1,14 @@
 # Claude Code live demo guide
 
-End-to-end flow: deploy Caspier, publish a skill, mint a scoped session key, connect Claude Code to the MCP server, and invoke paid skills with x402 settlement.
+End-to-end flow: deploy kairos, publish a skill, mint a scoped session key, connect Claude Code to the MCP server, and invoke paid skills with x402 settlement.
 
 ## Architecture for the demo
 
 ```
-Vercel (caspier.vercel.app) — dashboard UI
+Vercel (kairos.vercel.app) — dashboard UI
         │
         ▼ HTTPS
-VPS gateway (api.caspier.dev) — catalog, x402, chain
+VPS gateway (api.kairos.dev) — catalog, x402, chain
         ▲
         │ HTTPS (GATEWAY_URL)
 Claude Code (your laptop)
@@ -34,7 +34,7 @@ bun run web:dev       # terminal 2 — port 5173
 
 Note your gateway URL:
 
-- Production: `https://api.caspier.dev` (VPS + Caddy)
+- Production: `https://api.kairos.dev` (VPS + Caddy)
 - Vercel dashboard: set `NEXT_PUBLIC_GATEWAY_URL` to the same value
 - Local: `http://localhost:8080`
 
@@ -49,8 +49,8 @@ curl -fsS "$GATEWAY_URL/chain/status"
 
 ### Option A: Dashboard
 
-1. Open `https://caspier.vercel.app/dashboard` (or local `http://localhost:5173/dashboard`).
-2. Go to **Create** and publish with defaults (`hello-weather`, price `1000` motes), or
+1. Open `https://kairos.vercel.app/dashboard` (or local `http://localhost:5173/dashboard`).
+2. Go to **Create** and publish with defaults (`hello-weather`, price `1000` wei), or
 3. Open **APIs → hello-weather** after seeding.
 
 ### Option B: API seed
@@ -89,7 +89,7 @@ Session keys let an agent public key spend within bounds (max per call, expiry) 
 
 1. Open **Session keys**.
 2. Enter the **agent public key** (the key your agent or demo wallet will use).
-3. Set **max spend** in motes (e.g. `5000000000` = 5 CSPR).
+3. Set **max spend** in wei (e.g. `5000000000` = 5 ETH).
 4. Click **Mint**.
 
 ### API
@@ -106,7 +106,7 @@ curl -fsS -X POST "$GATEWAY_URL/auth/session-keys" \
   }'
 ```
 
-Response includes `deployHash` and `explorerUrl`. In demo mode (`FABRIC_DEMO_CHAIN=true`), the hash is synthetic. With real keys and `FABRIC_DEMO_CHAIN=false`, the gateway records on-chain associated-key intent.
+Response includes `deployHash` and `explorerUrl`. In demo mode (`FABRIC_DEMO_CHAIN=true`), the hash is synthetic. With real keys and `FABRIC_DEMO_CHAIN=false`, the gateway records on-chain session-key / vault registerAgent intent.
 
 List keys:
 
@@ -119,17 +119,17 @@ curl -fsS "$GATEWAY_URL/auth/session-keys"
 Prerequisites on your laptop:
 
 - [Bun](https://bun.sh) installed
-- Caspier repo cloned (MCP server runs from the repo)
+- kairos repo cloned (MCP server runs from the repo)
 - Claude Code installed
 
 ### Project config (`.mcp.json` in repo root)
 
-Create or edit `.mcp.json` at the Caspier repo root:
+Create or edit `.mcp.json` at the kairos repo root:
 
 ```json
 {
   "mcpServers": {
-    "caspier": {
+    "kairos": {
       "command": "bun",
       "args": ["apps/mcp-server/src/index.ts"],
       "env": {
@@ -149,9 +149,9 @@ Same `mcpServers` block under the top-level key in `~/.claude.json` if you prefe
 ```json
 {
   "mcpServers": {
-    "caspier": {
+    "kairos": {
       "command": "bun",
-      "args": ["/opt/caspier/apps/mcp-server/src/index.ts"],
+      "args": ["/opt/kairos/apps/mcp-server/src/index.ts"],
       "env": {
         "GATEWAY_URL": "http://YOUR_VPS_IP:8086"
       }
@@ -165,7 +165,7 @@ Same `mcpServers` block under the top-level key in `~/.claude.json` if you prefe
 From the repo root:
 
 ```bash
-claude mcp add caspier -- env GATEWAY_URL=http://YOUR_VPS_IP:8086 bun apps/mcp-server/src/index.ts
+claude mcp add kairos -- env GATEWAY_URL=http://YOUR_VPS_IP:8086 bun apps/mcp-server/src/index.ts
 ```
 
 Restart Claude Code after changing MCP config. On connect, the MCP server logs to stderr:
@@ -188,7 +188,7 @@ After MCP is connected, try these prompts.
 
 ### List catalog
 
-> Use the caspier MCP server to list all published skills.
+> Use the kairos MCP server to list all published skills.
 
 Expected: JSON with `hello-weather` and pricing.
 
@@ -196,7 +196,7 @@ Expected: JSON with `hello-weather` and pricing.
 
 > Call get_skill for slug `hello-weather` and summarize the input schema.
 
-Expected: manifest with `inputSchema.properties.city` and pricing `1000` CSPR motes.
+Expected: manifest with `inputSchema.properties.city` and pricing `1000` ETH wei.
 
 ### Invoke with x402 (paid call)
 
@@ -217,7 +217,7 @@ Expected response shape:
   "payment": {
     "deployHash": "<hash>",
     "demo": false,
-    "explorerUrl": "https://testnet.cspr.live/deploy/<hash>"
+    "explorerUrl": "https://sepolia.etherscan.io/tx/<hash>"
   },
   "runtimeMs": 42
 }
@@ -231,11 +231,11 @@ Open `http://YOUR_VPS_IP:8087/dashboard/apis/hello-weather`, invoke with the sam
 
 ### x402 payment (invoke_skill / auto-pay)
 
-1. **Quote** — Gateway creates a payment quote: price in motes, recipient (`CASPER_PUBLIC_KEY`), nonce, 15-minute expiry.
+1. **Quote** — Gateway creates a payment quote: price in wei, recipient (`SEPOLIA_PUBLIC_KEY`), nonce, 15-minute expiry.
 2. **402 response** — Caller (MCP `invoke_skill`) receives the quote without executing the skill.
-3. **Auto-pay** — Gateway chain worker submits a **native CSPR transfer** from the worker account to the recipient for `priceMotes`.
+3. **Auto-pay** — Gateway chain worker submits a **native ETH transfer** from the worker account to the recipient for `priceWei`.
    - **Demo mode** (`FABRIC_DEMO_CHAIN=true`): in-memory demo chain; `payment.demo: true`.
-   - **Testnet** (`FABRIC_DEMO_CHAIN=false`): real `casper-client` transfer deploy; hash viewable on testnet explorer.
+   - **Testnet** (`FABRIC_DEMO_CHAIN=false`): real `ethers` transfer deploy; hash viewable on testnet explorer.
 4. **Verify** — Payment proof is checked (deploy hash, amount, recipient).
 5. **Execute** — Skill runs in sandbox (e.g. hello-weather fetches Open-Meteo).
 6. **Usage record** — Gateway logs slug, nonce, deploy hash, amount for metering.
@@ -244,13 +244,13 @@ Free skills (`pricePerCall: "0"`) skip steps 1–4 and run immediately.
 
 ### Session key mint (separate from invoke)
 
-Minting a session key records a scoped **associated key** for an agent public key:
+Minting a session key records a scoped **session key** for an agent public key:
 
 - `maxSpendPerCall` caps per-call spend the agent may authorize
 - `expiresAt` bounds key lifetime
 - Owner retains custody; agent key cannot escalate privileges
 
-In the current build, session-key mint is recorded with deploy metadata; full `casper-client add-associated-key` on testnet requires `CASPER_PUBLIC_KEY` and `CHAIN_WORKER_SECRET_KEY` with `FABRIC_DEMO_CHAIN=false`.
+In the current build, session-key mint is recorded with deploy metadata; full `vault registerAgent (session EOA)` on testnet requires `SEPOLIA_PUBLIC_KEY` and `CHAIN_WORKER_SECRET_KEY` with `FABRIC_DEMO_CHAIN=false`.
 
 ## Demo checklist
 
@@ -258,7 +258,7 @@ In the current build, session-key mint is recorded with deploy metadata; full `c
 - [ ] `/chain/status` shows expected `demoMode`
 - [ ] `hello-weather` appears in `/skills`
 - [ ] Session key minted for demo agent key
-- [ ] Claude Code shows `caspier` MCP server connected
+- [ ] Claude Code shows `kairos` MCP server connected
 - [ ] `list_skills` returns catalog in Claude Code
 - [ ] `invoke_skill` returns weather summary + `payment.deployHash`
 - [ ] Explorer link opens (testnet) or `demo: true` in demo mode
@@ -270,5 +270,5 @@ In the current build, session-key mint is recorded with deploy metadata; full `c
 | MCP tools missing | Restart Claude Code; check `bun` on PATH |
 | `failed to list skills` | Wrong `GATEWAY_URL`; firewall blocking VPS port |
 | `auto-pay failed` | Fund chain worker account; set `FABRIC_DEMO_CHAIN=false` and keys |
-| `CASPER_PUBLIC_KEY required` | Set public key in VPS `.env`, redeploy gateway |
+| `SEPOLIA_PUBLIC_KEY required` | Set public key in VPS `.env`, redeploy gateway |
 | 402 but no auto-pay | Use `invoke_skill` (handles auto-pay), not raw HTTP without pay step |

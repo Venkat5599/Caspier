@@ -1,4 +1,4 @@
-// Caspier Fabric MCP server — catalog-driven dynamic tools (api__*, wf__*) + builtins.
+// kairos fabric MCP server — catalog-driven dynamic tools (api__*, wf__*) + builtins.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -23,8 +23,8 @@ const catalog = createCatalogLoader(gatewayUrl);
 const runnerDeps: WorkflowRunnerDeps = {
   catalog,
   gatewayUrl,
-  transfer: async (recipient, amountMotes) => {
-    const tx = await chain.transfer({ recipientPublicKeyHex: recipient, amountMotes });
+  transfer: async (recipient, amountWei) => {
+    const tx = await chain.transfer({ recipientPublicKeyHex: recipient, amountWei });
     return { deployHash: tx.deployHash, demo: tx.demo };
   },
 };
@@ -34,7 +34,7 @@ const fabricDeps = {
   gatewayUrl,
   runnerDeps,
   chainStatus: async () => chain.status(),
-  sessionBudget: async () => ({ remaining: "scoped via session keys", unit: "motes" }),
+  sessionBudget: async () => ({ remaining: "scoped via session keys", unit: "wei" }),
 };
 
 const { server, registered } = await buildFabricServer(McpServer, fabricDeps);
@@ -46,7 +46,7 @@ async function findWorkflow(slug: string) {
 if (process.argv.includes("--stdio")) {
   await server.connect(new StdioServerTransport());
   process.stderr.write(
-    `caspier fabric MCP (stdio) · ${registered.apis.length} api__* · ${registered.workflows.length} wf__*\n`,
+    `kairos fabric MCP (stdio) · ${registered.apis.length} api__* · ${registered.workflows.length} wf__*\n`,
   );
 } else {
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
@@ -102,6 +102,6 @@ if (process.argv.includes("--stdio")) {
 
   Bun.serve({ port: PORT, fetch: app.fetch });
   process.stderr.write(
-    `caspier fabric MCP on http://localhost:${PORT}/mcp  (${registered.apis.length} api__*, ${registered.workflows.length} wf__*)\n`,
+    `kairos fabric MCP on http://localhost:${PORT}/mcp  (${registered.apis.length} api__*, ${registered.workflows.length} wf__*)\n`,
   );
 }

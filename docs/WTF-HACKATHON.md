@@ -58,11 +58,11 @@ Public on-chain: contract address, function names, agent wallet.
 
 1. `contracts/` — `KairosAgentVault.sol` (deposit budget, register agent cap, private debit)
 2. `packages/nox-chain/` — deploy helpers + encrypt/decrypt via `@iexec-nox/nox-handle-sdk`
-3. Gateway — Sepolia verifier replaces Casper demo chain for WTF track
+3. Gateway — Sepolia verifier replaces Sepolia demo chain for WTF track
 4. Web — MetaMask Sepolia, vault fund UI, session provision
 5. Record demo: fund vault → publish skill → MCP invoke → private settlement
 
-## What we reuse from Casper build
+## What we reuse from Sepolia build
 
 - Fabric dashboard (APIs, MCP, workflows, marketplace)
 - SKILL.md catalog + MCP `api__*` / `wf__*` tools
@@ -70,8 +70,8 @@ Public on-chain: contract address, function names, agent wallet.
 
 ## What we replace
 
-- `packages/casper` → `packages/nox-chain` (Sepolia + Nox SDK)
-- Casper session keys → Nox ACL-scoped encrypted caps
+- `packages/evm-chain` → `packages/nox-chain` (Sepolia + Nox SDK)
+- Sepolia session keys → Nox ACL-scoped encrypted caps
 - `FABRIC_DEMO_CHAIN` → real Sepolia + Nox handles only for submission
 
 ## Links

@@ -14,7 +14,7 @@ export type CmpOp = ">=" | ">" | "<=" | "<" | "==" | "!=";
 
 export type WfStep =
   | { id: string; kind: "http"; api?: string; url?: string; method?: string; body?: unknown; with?: Record<string, unknown> }
-  | { id: string; kind: "onchain"; action?: "casper_transfer"; recipient: string; amount: string }
+  | { id: string; kind: "onchain"; action?: "vault_settle" | "eth_transfer"; recipient: string; amount: string }
   | { id: string; kind: "condition"; left: string; op: CmpOp; right: string };
 
 export type WorkflowRow = {

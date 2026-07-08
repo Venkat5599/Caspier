@@ -70,7 +70,7 @@ export default function InvokePage() {
           <p className="mt-1 font-mono text-sm text-muted-foreground">POST /s/{slug} · {demo ? "demo chain" : "testnet"}</p>
         </div>
         <span className="rounded-full bg-accent/20 px-3 py-1 text-sm font-medium">
-          {skill.manifest.pricing.pricePerCall === "0" ? "Free" : `${skill.manifest.pricing.pricePerCall} CSPR`}
+          {skill.manifest.pricing.pricePerCall === "0" ? "Free" : `${skill.manifest.pricing.pricePerCall} wei`}
         </span>
       </div>
 

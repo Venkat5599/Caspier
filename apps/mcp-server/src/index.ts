@@ -14,8 +14,8 @@ const catalog = createCatalogLoader(gatewayUrl);
 const runnerDeps: WorkflowRunnerDeps = {
   catalog,
   gatewayUrl,
-  transfer: async (recipient, amountMotes) => {
-    const tx = await chain.transfer({ recipientPublicKeyHex: recipient, amountMotes });
+  transfer: async (recipient, amountWei) => {
+    const tx = await chain.transfer({ recipientPublicKeyHex: recipient, amountWei });
     return { deployHash: tx.deployHash, demo: tx.demo };
   },
 };
@@ -25,11 +25,11 @@ const { server, registered } = await buildFabricServer(McpServer, {
   gatewayUrl,
   runnerDeps,
   chainStatus: async () => chain.status(),
-  sessionBudget: async () => ({ remaining: "scoped via session keys", unit: "motes" }),
+  sessionBudget: async () => ({ remaining: "scoped via session keys", unit: "wei" }),
 });
 
 await server.connect(new StdioServerTransport());
 
 process.stderr.write(
-  `caspier fabric mcp-server connected (gateway: ${gatewayUrl}) · ${registered.apis.length} api__* · ${registered.workflows.length} wf__*\n`,
+  `kairos fabric mcp-server connected (gateway: ${gatewayUrl}) · ${registered.apis.length} api__* · ${registered.workflows.length} wf__*\n`,
 );

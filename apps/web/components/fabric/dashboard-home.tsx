@@ -16,7 +16,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { Panel, CopyBtn, cspr, short } from "./ui";
+import { Panel, CopyBtn, ETH, short } from "./ui";
 import {
   getFabricActivity,
   getFabricLogs,
@@ -53,11 +53,11 @@ export function DashboardHome({
   const [period, setPeriod] = useState("all");
   const [chain, setChain] = useState("testnet");
   const [skills, setSkills] = useState<SkillSummary[] | null>(null);
-  const [wstat, setWstat] = useState<{ funded: boolean; cspr: string } | null>(null);
+  const [wstat, setWstat] = useState<{ funded: boolean; ETH: string } | null>(null);
   const [showSec, setShowSec] = useState(false);
   const [prov, setProv] = useState<{ sessionId: string; token: string } | null>(null);
   const [provBusy, setProvBusy] = useState(false);
-  const [capMotes, setCapMotes] = useState("5000000000");
+  const [capWei, setCapWei] = useState("5000000000");
   const [agentKey, setAgentKey] = useState("");
   const { address, secret, real, connecting, connect, generate, disconnect } = useWallet();
 
@@ -80,7 +80,7 @@ export function DashboardHome({
     }
     setWstat(null);
     getFabricWalletStatus(address)
-      .then((d) => setWstat(d.ok ? { funded: Boolean(d.funded), cspr: d.cspr ?? "0" } : null))
+      .then((d) => setWstat(d.ok ? { funded: Boolean(d.funded), ETH: d.ETH ?? "0" } : null))
       .catch(() => setWstat(null));
   }, [address]);
 
@@ -103,7 +103,7 @@ export function DashboardHome({
       const d = await provisionFabricSession({
         agentPublicKeyHex: pk,
         scope: {
-          maxSpendPerCall: String(Math.max(1, Math.round(Number(capMotes || "0")))),
+          maxSpendPerCall: String(Math.max(1, Math.round(Number(capWei || "0")))),
           expiresAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
         },
       });
@@ -127,7 +127,7 @@ export function DashboardHome({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-semibold tracking-tight text-white">Dashboard</h1>
-          <p className="mt-1 text-neutral-400">Manage your creations and track performance — live on Casper {chain}.</p>
+          <p className="mt-1 text-neutral-400">Manage your creations and track performance — live on Sepolia {chain}.</p>
         </div>
         <div className="flex gap-1 rounded-xl border border-white/[0.08] p-1">
           {TOGGLE.map((x) => (
@@ -146,7 +146,7 @@ export function DashboardHome({
         <Stat icon={Layers} label="Total APIs" value={skills?.length ?? t?.apis ?? "—"} sub="x402 payment-gated skills" />
         <Stat icon={Activity} label="Total Requests" value={t?.requests ?? "—"} sub="all-time API calls" />
         <Stat icon={CheckCircle2} label="Success Rate" value={t ? `${t.successRate}%` : "—"} sub={`${t?.success ?? 0} successful`} />
-        <Stat icon={DollarSign} label="Total Earnings" value={t?.earnings ?? "—"} sub="CSPR motes earned" />
+        <Stat icon={DollarSign} label="Total Earnings" value={t?.earnings ?? "—"} sub="ETH wei earned" />
       </div>
 
       <Panel>
@@ -159,14 +159,14 @@ export function DashboardHome({
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm text-neutral-500">Scoped session keys for automated, metered agent payments on Casper.</p>
+        <p className="mt-1 text-sm text-neutral-500">Scoped session keys for automated, metered agent payments on Sepolia.</p>
 
         <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
           <div className="min-w-0">
             <p className="font-semibold text-white">{address ? "Your wallet" : "Session key required"}</p>
             <p className="mt-1 text-sm text-neutral-400">
-              Unlike handing an agent your owner key, agents pay through scoped, revocable Casper session keys — capped per call,
+              Unlike handing an agent your owner key, agents pay through scoped, revocable Sepolia session keys — capped per call,
               before expiry.{" "}
               <span className="inline-flex items-center gap-1 text-accent">
                 <Lock className="h-3 w-3" /> zero custody
@@ -176,8 +176,8 @@ export function DashboardHome({
               <p className="mt-2 font-mono text-xs text-neutral-500">
                 {short(address, 8, 6)}
                 {" · "}
-                {wstat === null ? "…" : wstat.funded ? `${wstat.cspr} CSPR` : "unfunded"}
-                {real && " · Casper Wallet"}
+                {wstat === null ? "…" : wstat.funded ? `${wstat.ETH} ETH` : "unfunded"}
+                {real && " · Sepolia Wallet"}
               </p>
             )}
           </div>
@@ -186,7 +186,7 @@ export function DashboardHome({
         {secret && (
           <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
             <p className="text-sm font-medium text-amber-200">Save your secret key — shown once</p>
-            <p className="mt-1 text-xs text-neutral-500">Import into Casper Wallet, then fund via the testnet faucet.</p>
+            <p className="mt-1 text-xs text-neutral-500">Import into Sepolia Wallet, then fund via the testnet faucet.</p>
             <div className="mt-3 flex items-center gap-2">
               <code className="flex-1 overflow-x-auto rounded-lg bg-black/40 px-3 py-2 font-mono text-xs text-neutral-300">
                 {showSec ? secret : "•".repeat(56)}
@@ -197,7 +197,7 @@ export function DashboardHome({
               <CopyBtn text={secret} />
             </div>
             <a
-              href="https://testnet.cspr.live/tools/faucet"
+              href="https://www.alchemy.com/faucets/ethereum-sepolia"
               target="_blank"
               rel="noreferrer"
               className="mt-3 inline-block text-xs text-accent underline underline-offset-2"
@@ -222,7 +222,7 @@ export function DashboardHome({
               disabled={connecting}
               className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] px-4 py-3 text-sm font-semibold text-neutral-300 transition hover:border-accent/40 hover:text-white"
             >
-              Connect Casper Wallet
+              Connect Sepolia Wallet
             </button>
           </div>
         ) : (
@@ -230,7 +230,7 @@ export function DashboardHome({
             <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
               <p className="text-xs text-neutral-500">Your wallet balance</p>
               <p className="mt-1 text-2xl font-semibold text-white">
-                {wstat === null ? "—" : `${wstat.cspr} CSPR`}
+                {wstat === null ? "—" : `${wstat.ETH} ETH`}
               </p>
               <p className="text-xs text-neutral-600">{wstat?.funded ? "funded on testnet" : "fund via faucet"}</p>
             </div>
@@ -238,9 +238,9 @@ export function DashboardHome({
               <p className="text-xs text-neutral-500">
                 Demo agent session {sess?.live && "· live"}
               </p>
-              <p className="mt-1 text-2xl font-semibold text-white">{remaining != null ? cspr(remaining) : "—"}</p>
+              <p className="mt-1 text-2xl font-semibold text-white">{remaining != null ? ETH(remaining) : "—"}</p>
               <p className="text-xs text-neutral-600">
-                of {cap != null ? cspr(cap) : "—"} cap · shared demo
+                of {cap != null ? ETH(cap) : "—"} cap · shared demo
               </p>
               {pct != null && (
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
@@ -296,7 +296,7 @@ export function DashboardHome({
             ) : (
               <div className="rounded-xl border border-white/[0.08] p-4">
                 <p className="text-sm text-neutral-400">
-                  Mint a scoped session key for agent <span className="font-mono text-neutral-300">{short(address, 6, 4)}</span> — capped per call on Casper.
+                  Mint a scoped session key for agent <span className="font-mono text-neutral-300">{short(address, 6, 4)}</span> — capped per call on Sepolia.
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <label className="block text-sm">
@@ -309,10 +309,10 @@ export function DashboardHome({
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-neutral-500">Spend cap (motes per call)</span>
+                    <span className="text-neutral-500">Spend cap (wei per call)</span>
                     <input
-                      value={capMotes}
-                      onChange={(e) => setCapMotes(e.target.value)}
+                      value={capWei}
+                      onChange={(e) => setCapWei(e.target.value)}
                       className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 font-mono text-sm text-white outline-none focus:border-accent/60"
                     />
                   </label>

@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@fabric/casper": "workspace:*"
+    "@fabric/evm-chain": "workspace:*"
   },
   "scripts": {
     "dev": "bun --watch src/index.ts",

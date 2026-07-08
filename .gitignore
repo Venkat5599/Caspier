@@ -37,9 +37,9 @@ secrets.*
 .DS_Store
 Thumbs.db
 
-# casper / contracts build artifacts
+# evm / contracts build artifacts
 target/
 wasm/
 *.wasm
 *.tsbuildinfo
-packages/casper/build/
+packages/evm-chain/build/

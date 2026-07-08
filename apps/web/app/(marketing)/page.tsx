@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = createMetadata({
-  title: "Kairos for Casper skills, pay-per-call",
+  title: "Kairos for Sepolia skills, pay-per-call",
   description: siteConfig.description,
   path: "/",
 });

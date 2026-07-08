@@ -190,7 +190,7 @@ export function WorkflowStudio() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="border-b border-border px-6 py-4">
           <h1 className="text-lg font-semibold">Kairos Workflows</h1>
-          <p className="text-sm text-muted-foreground">Workflow automation — x402 skills, session keys, settlement on Casper</p>
+          <p className="text-sm text-muted-foreground">Workflow automation — x402 skills, session keys, settlement on Sepolia</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">

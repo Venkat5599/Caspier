@@ -120,7 +120,7 @@ export function templateX402SkillCall(slug = "hello-weather"): N8nCreatePayload 
 
 export function templateSettlementMeter(): N8nCreatePayload {
   return {
-    name: "Casper · Settlement meter",
+    name: "Sepolia · Settlement meter",
     nodes: [
       { parameters: {}, name: "Start", type: "n8n-nodes-base.start", typeVersion: 1, position: [200, 300] },
       {
@@ -150,7 +150,7 @@ export function templateSettlementMeter(): N8nCreatePayload {
 
 export function templateSessionKeyRebalance(): N8nCreatePayload {
   return {
-    name: "Casper · Session key rebalance",
+    name: "Sepolia · Session key rebalance",
     nodes: [
       { parameters: {}, name: "Start", type: "n8n-nodes-base.start", typeVersion: 1, position: [200, 300] },
       {

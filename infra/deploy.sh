@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Caspier — VPS backend deploy. Idempotent: pulls latest, installs, migrates,
+# Kairos — VPS backend deploy. Idempotent: pulls latest, installs, migrates,
 # optionally rebuilds web, and (re)starts gateway (+ web when DEPLOY_WEB=true).
 # Frontend default: Vercel (set DEPLOY_WEB=false in .env).
 set -euo pipefail

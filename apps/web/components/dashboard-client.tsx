@@ -1,6 +1,6 @@
 "use client";
 
-import { CaspierDashboard, type SectionKey } from "@/components/caspier-dashboard";
+import { KairosDashboard, type SectionKey } from "@/components/kairos-dashboard";
 import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -38,7 +38,7 @@ export function DashboardClient(): ReactNode {
           backgroundSize: "44px 44px",
         }}
       />
-      <CaspierDashboard {...(initialTab ? { initialTab } : {})} />
+      <KairosDashboard {...(initialTab ? { initialTab } : {})} />
     </main>
   );
 }

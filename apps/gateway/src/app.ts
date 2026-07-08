@@ -108,7 +108,7 @@ description: Returns a one-line weather summary for a city.
 runtime: code
 pricing:
   pricePerCall: "1000"
-  asset: CSPR
+  asset: ETH
 inputSchema:
   type: object
   properties:

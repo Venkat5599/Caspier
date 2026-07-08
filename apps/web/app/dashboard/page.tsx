@@ -6,7 +6,7 @@ import { Suspense, type ReactNode } from "react";
 export const metadata: Metadata = createMetadata({
   title: "Kairos — Dashboard",
   description:
-    "Live dashboard for Kairos on Casper: skills catalog, MCP servers, workflows, marketplace, and scoped session keys.",
+    "Live dashboard for Kairos on Sepolia: skills catalog, MCP servers, workflows, marketplace, and scoped session keys.",
   path: "/dashboard",
 });
 

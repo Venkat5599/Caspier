@@ -1,7 +1,7 @@
 {
   "name": "Kairos",
   "short_name": "Kairos",
-  "description": "Kairos — permissioned SKILL.md endpoints on Casper. Scoped session keys, x402 micropayments, REST and MCP invoke.",
+  "description": "Kairos — permissioned SKILL.md endpoints on Ethereum Sepolia. Scoped session keys, x402 micropayments, REST and MCP invoke.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
