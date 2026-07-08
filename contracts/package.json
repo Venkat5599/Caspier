@@ -1,0 +1,19 @@
+{
+  "name": "@kairos/contracts",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@iexec-nox/nox-hardhat-plugin": "latest",
+    "@iexec-nox/nox-protocol-contracts": "latest",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.0",
+    "typescript": "^5.5.3"
+  }
+}

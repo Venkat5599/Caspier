@@ -75,6 +75,11 @@ export class ChainWorker {
     };
   }
 
+  async getBalanceMotes(publicKeyHex: string): Promise<string> {
+    if (this.config.demoMode) return "1000000000000";
+    return this.rpc.getBalanceMotes(publicKeyHex);
+  }
+
   /** Send CSPR transfer (real via casper-client when configured, else demo chain). */
   async transfer(req: TransferRequest): Promise<TransferResult> {
     const sender = this.requirePublicKey();

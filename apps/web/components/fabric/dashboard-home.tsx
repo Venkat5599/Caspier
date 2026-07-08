@@ -12,14 +12,19 @@ import {
   Server,
   Workflow,
   Clock,
+  Wallet,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import { Panel } from "./ui";
+import { Panel, CopyBtn, cspr, short } from "./ui";
 import {
   getFabricActivity,
   getFabricLogs,
   getFabricStats,
   getChainStatus,
+  getFabricWalletStatus,
   listSkills,
+  provisionFabricSession,
   gatewayUrl,
   type SkillSummary,
 } from "@/lib/api";
@@ -48,13 +53,35 @@ export function DashboardHome({
   const [period, setPeriod] = useState("all");
   const [chain, setChain] = useState("testnet");
   const [skills, setSkills] = useState<SkillSummary[] | null>(null);
-  const { address } = useWallet();
+  const [wstat, setWstat] = useState<{ funded: boolean; cspr: string } | null>(null);
+  const [showSec, setShowSec] = useState(false);
+  const [prov, setProv] = useState<{ sessionId: string; token: string } | null>(null);
+  const [provBusy, setProvBusy] = useState(false);
+  const [capMotes, setCapMotes] = useState("5000000000");
+  const [agentKey, setAgentKey] = useState("");
+  const { address, secret, real, connecting, connect, generate, disconnect } = useWallet();
 
   useEffect(() => {
-    getFabricStats().then(setS).catch(() => {});
+    getFabricStats(address ?? undefined)
+      .then(setS)
+      .catch(() => {});
     getFabricActivity().then(setAct).catch(() => setAct([]));
     getChainStatus().then((c) => setChain(c.demoMode ? "demo" : c.network)).catch(() => {});
     listSkills().then(setSkills).catch(() => setSkills([]));
+    const t = localStorage.getItem("kairos_session_token");
+    const sid = localStorage.getItem("kairos_session_id");
+    if (t && sid) setProv({ token: t, sessionId: sid });
+  }, [address]);
+
+  useEffect(() => {
+    if (!address) {
+      setWstat(null);
+      return;
+    }
+    setWstat(null);
+    getFabricWalletStatus(address)
+      .then((d) => setWstat(d.ok ? { funded: Boolean(d.funded), cspr: d.cspr ?? "0" } : null))
+      .catch(() => setWstat(null));
   }, [address]);
 
   const TOGGLE = [
@@ -64,6 +91,36 @@ export function DashboardHome({
   ];
   const t = s?.totals;
   const sess = s?.session;
+  const cap = sess?.cap ? Number(sess.cap) : null;
+  const remaining = sess?.remaining ? Number(sess.remaining) : null;
+  const pct = cap && remaining != null ? Math.max(0, Math.min(100, (remaining / cap) * 100)) : null;
+
+  const provision = async () => {
+    const pk = agentKey.trim() || address;
+    if (!pk) return;
+    setProvBusy(true);
+    try {
+      const d = await provisionFabricSession({
+        agentPublicKeyHex: pk,
+        scope: {
+          maxSpendPerCall: String(Math.max(1, Math.round(Number(capMotes || "0")))),
+          expiresAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+        },
+      });
+      if (d.ok) {
+        setProv({ sessionId: d.sessionId, token: d.token });
+        localStorage.setItem("kairos_session_token", d.token);
+        localStorage.setItem("kairos_session_id", d.sessionId);
+        getFabricStats().then(setS).catch(() => {});
+      } else {
+        alert(`Provision failed: ${d.error}`);
+      }
+    } catch (e) {
+      alert(`Provision failed: ${String((e as Error).message)}`);
+    } finally {
+      setProvBusy(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -102,20 +159,176 @@ export function DashboardHome({
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm text-neutral-500">Scoped session keys for automated agent payments on Casper.</p>
+        <p className="mt-1 text-sm text-neutral-500">Scoped session keys for automated, metered agent payments on Casper.</p>
 
         <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
           <div className="min-w-0">
-            <p className="font-semibold text-white">Session keys</p>
+            <p className="font-semibold text-white">{address ? "Your wallet" : "Session key required"}</p>
             <p className="mt-1 text-sm text-neutral-400">
-              Agents pay through scoped, revocable session keys — capped per call, with sandboxed execution.{" "}
+              Unlike handing an agent your owner key, agents pay through scoped, revocable Casper session keys — capped per call,
+              before expiry.{" "}
               <span className="inline-flex items-center gap-1 text-accent">
                 <Lock className="h-3 w-3" /> zero custody
               </span>
             </p>
+            {address && (
+              <p className="mt-2 font-mono text-xs text-neutral-500">
+                {short(address, 8, 6)}
+                {" · "}
+                {wstat === null ? "…" : wstat.funded ? `${wstat.cspr} CSPR` : "unfunded"}
+                {real && " · Casper Wallet"}
+              </p>
+            )}
           </div>
         </div>
+
+        {secret && (
+          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <p className="text-sm font-medium text-amber-200">Save your secret key — shown once</p>
+            <p className="mt-1 text-xs text-neutral-500">Import into Casper Wallet, then fund via the testnet faucet.</p>
+            <div className="mt-3 flex items-center gap-2">
+              <code className="flex-1 overflow-x-auto rounded-lg bg-black/40 px-3 py-2 font-mono text-xs text-neutral-300">
+                {showSec ? secret : "•".repeat(56)}
+              </code>
+              <button type="button" onClick={() => setShowSec((v) => !v)} className="text-neutral-400 hover:text-white">
+                {showSec ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+              <CopyBtn text={secret} />
+            </div>
+            <a
+              href="https://testnet.cspr.live/tools/faucet"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-block text-xs text-accent underline underline-offset-2"
+            >
+              Fund on testnet faucet →
+            </a>
+          </div>
+        )}
+
+        {!address ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              onClick={() => generate()}
+              disabled={connecting}
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
+            >
+              <Wallet className="h-4 w-4" />
+              {connecting ? "Generating…" : "Generate Session Wallet"}
+            </button>
+            <button
+              onClick={() => connect()}
+              disabled={connecting}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] px-4 py-3 text-sm font-semibold text-neutral-300 transition hover:border-accent/40 hover:text-white"
+            >
+              Connect Casper Wallet
+            </button>
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+              <p className="text-xs text-neutral-500">Your wallet balance</p>
+              <p className="mt-1 text-2xl font-semibold text-white">
+                {wstat === null ? "—" : `${wstat.cspr} CSPR`}
+              </p>
+              <p className="text-xs text-neutral-600">{wstat?.funded ? "funded on testnet" : "fund via faucet"}</p>
+            </div>
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+              <p className="text-xs text-neutral-500">
+                Demo agent session {sess?.live && "· live"}
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-white">{remaining != null ? cspr(remaining) : "—"}</p>
+              <p className="text-xs text-neutral-600">
+                of {cap != null ? cspr(cap) : "—"} cap · shared demo
+              </p>
+              {pct != null && (
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {address && !secret && !prov && (
+          <div className="mt-4 rounded-xl border border-white/[0.08] p-4 text-sm text-neutral-400">
+            External wallet connected — provision a scoped session key for your agent below, or generate a session wallet to
+            manage keys locally.
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => generate()}
+                disabled={connecting}
+                className="rounded-xl border border-white/[0.12] px-3 py-2 text-xs font-semibold text-neutral-300 hover:border-accent/40"
+              >
+                Generate session wallet
+              </button>
+              <button onClick={disconnect} className="rounded-xl px-3 py-2 text-xs text-neutral-500 underline">
+                Disconnect
+              </button>
+            </div>
+          </div>
+        )}
+
+        {address && (
+          <div className="mt-4">
+            {prov ? (
+              <div className="rounded-xl border border-accent/30 bg-accent/5 p-4">
+                <p className="font-semibold text-white">Your session key is live</p>
+                <p className="mt-1 font-mono text-xs text-neutral-500">{prov.sessionId}</p>
+                <p className="mt-3 text-sm text-neutral-400">Personal agent token — use as Bearer when settling through your session:</p>
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-white/[0.08] bg-black/40 px-3 py-2">
+                  <span className="flex-1 truncate font-mono text-xs text-white">{prov.token}</span>
+                  <CopyBtn text={prov.token} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProv(null);
+                    localStorage.removeItem("kairos_session_token");
+                    localStorage.removeItem("kairos_session_id");
+                  }}
+                  className="mt-3 text-xs text-neutral-500 underline underline-offset-2 hover:text-neutral-300"
+                >
+                  Provision a new session (different limits)
+                </button>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-white/[0.08] p-4">
+                <p className="text-sm text-neutral-400">
+                  Mint a scoped session key for agent <span className="font-mono text-neutral-300">{short(address, 6, 4)}</span> — capped per call on Casper.
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <label className="block text-sm">
+                    <span className="text-neutral-500">Agent public key (optional)</span>
+                    <input
+                      value={agentKey}
+                      onChange={(e) => setAgentKey(e.target.value)}
+                      placeholder="defaults to your wallet"
+                      className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 font-mono text-sm text-white outline-none focus:border-accent/60"
+                    />
+                  </label>
+                  <label className="block text-sm">
+                    <span className="text-neutral-500">Spend cap (motes per call)</span>
+                    <input
+                      value={capMotes}
+                      onChange={(e) => setCapMotes(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 font-mono text-sm text-white outline-none focus:border-accent/60"
+                    />
+                  </label>
+                </div>
+                <button
+                  onClick={provision}
+                  disabled={provBusy}
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
+                >
+                  <KeyRound className="h-4 w-4" />
+                  {provBusy ? "Provisioning…" : "Provision Session Key"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button

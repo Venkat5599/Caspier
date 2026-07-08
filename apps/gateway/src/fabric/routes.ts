@@ -14,6 +14,10 @@ import {
   listWorkflows,
   getWorkflow,
   createWorkflow,
+  listApis,
+  getApi,
+  createApi,
+  bumpApiStats,
   listMcpServers,
   getMcpServer,
   createMcpServer,
@@ -23,6 +27,7 @@ import {
   fabricStats,
   recentActivity,
   seedBuiltinWorkflows,
+  seedMarketplaceTemplates,
 } from "./store.ts";
 
 export type FabricRouteDeps = {
@@ -42,6 +47,26 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
       return { deployHash: tx.deployHash, demo: tx.demo };
     },
   };
+
+  app.get("/fabric/apis", async (c) => {
+    const scope = c.req.query("scope");
+    const owner = c.req.query("owner");
+    return c.json({ apis: listApis(scope, owner) });
+  });
+
+  app.post("/fabric/apis", async (c) => {
+    const body = await c.req.json();
+    if (!body?.name || !body?.target_url) return c.json({ ok: false, error: "name and target_url required" }, 400);
+    const api = createApi(body);
+    catalogLoader.invalidateCache();
+    return c.json({ ok: true, api }, 201);
+  });
+
+  app.get("/fabric/apis/:slug", async (c) => {
+    const api = getApi(c.req.param("slug"));
+    if (!api) return c.json({ error: "not found" }, 404);
+    return c.json(api);
+  });
 
   app.get("/fabric/workflows", async (c) => {
     const scope = c.req.query("scope");
@@ -67,6 +92,12 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
     const created = seedBuiltinWorkflows();
     catalogLoader.invalidateCache();
     return c.json({ created }, 201);
+  });
+
+  app.post("/fabric/marketplace/seed", async (c) => {
+    const created = seedMarketplaceTemplates();
+    catalogLoader.invalidateCache();
+    return c.json({ ok: true, ...created }, 201);
   });
 
   app.get("/fabric/mcp-servers", async (c) => {
@@ -98,7 +129,25 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
   app.get("/fabric/stats", async (c) => {
     const owner = c.req.query("owner");
     const skills = await deps.catalog.list();
-    return c.json(fabricStats(skills.length, owner));
+    return c.json(fabricStats(skills.length, owner, deps.authz.list()));
+  });
+
+  app.get("/fabric/wallet-status", async (c) => {
+    const address = c.req.query("address");
+    if (!address?.trim()) return c.json({ ok: false, error: "address required" }, 400);
+    try {
+      const motes = await deps.chain.getBalanceMotes(address.trim());
+      const n = Number(motes);
+      return c.json({
+        ok: true,
+        funded: n > 0,
+        motes,
+        cspr: (n / 1e9).toFixed(4),
+        demo: deps.chain.status().demoMode,
+      });
+    } catch (e) {
+      return c.json({ ok: false, error: (e as Error).message }, 502);
+    }
   });
 
   app.get("/fabric/activity", async (c) => c.json({ activity: recentActivity() }));
@@ -139,6 +188,52 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
   app.post("/fabric/run/api", async (c) => {
     const { slug, args } = (await c.req.json()) as { slug?: string; args?: Record<string, unknown> };
     if (!slug) return c.json({ ok: false, error: "slug required" }, 400);
+    const proxy = getApi(slug);
+    if (proxy) {
+      try {
+        let url = proxy.target_url;
+        const params = new URLSearchParams();
+        for (const v of proxy.variables) {
+          const val = args?.[v.name];
+          if (val == null) continue;
+          if (v.in === "query") params.set(v.name, String(val));
+          else if (v.in === "path") url = url.replace(`{${v.name}}`, encodeURIComponent(String(val)));
+        }
+        const qs = proxy.query_params ?? params.toString();
+        if (qs) url += (url.includes("?") ? "&" : "?") + qs;
+        const headers: Record<string, string> = { accept: "application/json" };
+        if (proxy.content_type) headers["content-type"] = proxy.content_type;
+        for (const h of proxy.auth_headers) {
+          if (h.name) headers[h.name] = h.value;
+        }
+        const init: RequestInit = { method: proxy.http_method, headers };
+        if (proxy.http_method !== "GET" && proxy.http_method !== "HEAD") {
+          init.body = JSON.stringify(args ?? {});
+        }
+        const upstream = await fetch(url, init);
+        const body = await upstream.text();
+        let parsed: unknown = body;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          /* text */
+        }
+        const ok = upstream.ok;
+        bumpApiStats(slug, ok, false, Number(proxy.price));
+        appendLog({
+          api_slug: slug,
+          api_name: proxy.name,
+          kind: "api",
+          status: upstream.status,
+          ok,
+          paid: false,
+          price: Number(proxy.price),
+        });
+        return c.json({ ok, status: upstream.status, body: parsed });
+      } catch (e) {
+        return c.json({ ok: false, error: (e as Error).message }, 500);
+      }
+    }
     try {
       const out = await invokeSkillViaGateway(deps.gatewayUrl, slug, args ?? {});
       appendLog({

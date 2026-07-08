@@ -166,14 +166,64 @@ export const gatewayUrl = BASE;
 
 // --- Fabric (kage-parity) ---
 
+export interface FabricApi {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+  payment_address: string | null;
+  target_url: string;
+  http_method: string;
+  content_type?: string;
+  query_params?: string | null;
+  example_response?: string | null;
+  price: string;
+  is_public: boolean;
+  variables?: { name: string; type: string; in: string; description: string; required: boolean }[];
+  auth_headers?: { name: string; value: string }[];
+  owner_address: string | null;
+  request_count: number;
+  success_count?: number;
+  earnings?: string;
+  created_at?: string;
+}
+
+export async function listFabricApis(owner?: string): Promise<FabricApi[]> {
+  const q = owner ? `?owner=${encodeURIComponent(owner)}` : "";
+  const res = await fetch(`${BASE}/fabric/apis${q}`);
+  if (!res.ok) throw new Error(`apis failed: ${res.status}`);
+  return ((await res.json()) as { apis: FabricApi[] }).apis;
+}
+
+export async function listFabricApisPublic(): Promise<FabricApi[]> {
+  const res = await fetch(`${BASE}/fabric/apis?scope=public`);
+  if (!res.ok) throw new Error(`apis failed: ${res.status}`);
+  return ((await res.json()) as { apis: FabricApi[] }).apis;
+}
+
+export async function createFabricApi(body: Record<string, unknown>) {
+  const res = await fetch(`${BASE}/fabric/apis`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok || !(data as { ok?: boolean }).ok) throw new Error((data as { error?: string }).error ?? "create failed");
+  return data;
+}
+
 export interface FabricWorkflow {
   id: string;
   name: string;
   slug: string | null;
   description: string | null;
   is_public: boolean;
-  input_variables: { name: string; required?: boolean; description?: string }[];
+  input_variables: { name: string; type?: string; required?: boolean; description?: string }[];
   steps: unknown[];
+  output_mapping?: { name: string; from: string }[];
+  allowed_contracts?: string[];
   tags: string[];
 }
 
@@ -225,10 +275,17 @@ export async function seedFabricWorkflows() {
   return res.json();
 }
 
-export async function runFabricWorkflow(slug: string, input: Record<string, unknown>) {
+export async function seedFabricMarketplace() {
+  const res = await fetch(`${BASE}/fabric/marketplace/seed`, { method: "POST" });
+  return res.json();
+}
+
+export async function runFabricWorkflow(slug: string, input: Record<string, unknown>, token?: string) {
+  const headers: Record<string, string> = { "content-type": "application/json" };
+  if (token) headers.authorization = `Bearer ${token}`;
   const res = await fetch(`${BASE}/fabric/run/workflow`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers,
     body: JSON.stringify({ slug, input }),
   });
   return res.json();
@@ -270,8 +327,9 @@ export async function patchFabricMcpServer(slug: string, body: Record<string, un
   return res.json();
 }
 
-export async function getFabricStats(): Promise<FabricStats> {
-  const res = await fetch(`${BASE}/fabric/stats`);
+export async function getFabricStats(owner?: string): Promise<FabricStats> {
+  const q = owner ? `?owner=${encodeURIComponent(owner)}` : "";
+  const res = await fetch(`${BASE}/fabric/stats${q}`);
   if (!res.ok) throw new Error("stats failed");
   return (await res.json()) as FabricStats;
 }
@@ -295,6 +353,11 @@ export async function provisionFabricSession(body: Record<string, unknown>) {
     body: JSON.stringify(body),
   });
   return res.json();
+}
+
+export async function getFabricWalletStatus(address: string) {
+  const res = await fetch(`${BASE}/fabric/wallet-status?address=${encodeURIComponent(address)}`);
+  return res.json() as Promise<{ ok: boolean; funded?: boolean; cspr?: string; motes?: string; demo?: boolean; error?: string }>;
 }
 
 export const fabricMcpUrl = process.env.NEXT_PUBLIC_FABRIC_MCP_URL ?? "http://localhost:8403";

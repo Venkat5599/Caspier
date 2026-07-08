@@ -37,6 +37,15 @@ export class CasperRpc {
   putDeploy(deploy: unknown): Promise<{ deploy_hash: string }> {
     return this.call("account_put_deploy", { deploy });
   }
+
+  /** Main purse balance in motes for a public key hex (01…). */
+  async getBalanceMotes(publicKeyHex: string): Promise<string> {
+    const result = await this.call<{ balance_value?: string; API_version?: string }>("state_get_balance", {
+      state_root_hash: null,
+      purse_identifier: { main_purse_under_public_key: publicKeyHex },
+    });
+    return result.balance_value ?? "0";
+  }
 }
 
 export interface CasperDeployResult {

@@ -4,26 +4,26 @@
 
 export const siteConfig = {
   name: "Kairos",
-  tagline: "Permissioned skills on Casper",
+  tagline: "Private agent payments on Ethereum",
   description:
-    "Kairos publishes SKILL.md as live REST and MCP endpoints on Casper. Scoped session keys, sandboxed execution, and x402 micropayments settle every invoke on-chain.",
+    "Kairos lets AI agents call paid APIs without custody or public spend trails. Scoped session budgets and x402 metering — settlement amounts hidden via iExec Nox on Sepolia.",
   url: "https://caspier.dev",
   twitter: "@caspier",
   nav: {
     cta: { text: "Open dashboard", href: "/dashboard" },
-    signIn: { text: "Casper testnet demo", href: "/dashboard/apis/hello-weather" },
+    signIn: { text: "Sepolia demo", href: "/dashboard" },
   },
 };
 
 export const heroConfig = {
-  badge: "Kairos · Casper testnet · x402 · MCP",
+  badge: "Kairos · iExec Nox · Sepolia · MCP",
   headline: {
-    line1: "Kairos for",
-    line2: "Casper skills,",
-    accent: "pay-per-call",
+    line1: "Private payments for",
+    line2: "autonomous agents,",
+    accent: "on Ethereum",
   },
   subheadline:
-    "Publish SKILL.md. Invoke over REST or MCP. Kairos scopes session keys and settles every call on Casper via x402.",
+    "Scoped session budgets and metered API calls. Settlement amounts stay confidential with Nox — while your agents keep using MCP and x402.",
   cta: { text: "Publish SKILL.md", href: "/dashboard/create" },
 };
 
