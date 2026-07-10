@@ -388,5 +388,121 @@ export function seedMarketplaceTemplates(): {
     );
   }
 
+  // Extra working templates — all real, key-free public endpoints.
+  const extraApis: {
+    name: string;
+    slug: string;
+    description: string;
+    category: string;
+    tags: string[];
+    target_url: string;
+    price: string;
+    variables: { name: string; type: string; in: string; description: string; required: boolean }[];
+  }[] = [
+    {
+      name: "CoinGecko Price",
+      slug: "coingecko-price",
+      description: "Live crypto spot price in USD — free CoinGecko proxy, metered per call.",
+      category: "Finance",
+      tags: ["crypto", "price", "defi"],
+      target_url: "https://api.coingecko.com/api/v3/simple/price?ids={id}&vs_currencies=usd",
+      price: "1500",
+      variables: [{ name: "id", type: "string", in: "path", description: "Coin id (e.g. ethereum)", required: true }],
+    },
+    {
+      name: "Exchange Rates",
+      slug: "exchange-rates",
+      description: "Fiat FX rates against a base currency — open.er-api.com, no key required.",
+      category: "Finance",
+      tags: ["forex", "rates"],
+      target_url: "https://open.er-api.com/v6/latest/{base}",
+      price: "800",
+      variables: [{ name: "base", type: "string", in: "path", description: "Base currency (e.g. USD)", required: true }],
+    },
+    {
+      name: "IP Geolocation",
+      slug: "ip-geolocation",
+      description: "Geolocate any IPv4/IPv6 address — city, region, ASN. ipapi.co free tier.",
+      category: "Data",
+      tags: ["geoip", "enrichment"],
+      target_url: "https://ipapi.co/{ip}/json/",
+      price: "1000",
+      variables: [{ name: "ip", type: "string", in: "path", description: "IP address", required: true }],
+    },
+    {
+      name: "Random User",
+      slug: "random-user",
+      description: "Synthetic user profiles for test data — randomuser.me, agent-friendly.",
+      category: "Utility",
+      tags: ["mock", "testdata"],
+      target_url: "https://randomuser.me/api/?results={count}",
+      price: "300",
+      variables: [{ name: "count", type: "number", in: "path", description: "How many profiles", required: true }],
+    },
+  ];
+
+  for (const a of extraApis) {
+    if (!apis.some((x) => x.slug === a.slug)) {
+      created.apis.push(
+        createApi({
+          name: a.name,
+          slug: a.slug,
+          description: a.description,
+          category: a.category,
+          tags: a.tags,
+          target_url: a.target_url,
+          http_method: "GET",
+          price: a.price,
+          is_public: true,
+          owner_address: KAIROS_OWNER,
+          variables: a.variables,
+        }),
+      );
+    }
+  }
+
+  if (!mcpServers.some((m) => m.slug === "agent-toolkit")) {
+    created.mcps.push(
+      createMcpServer({
+        slug: "agent-toolkit",
+        display_name: "Agent Toolkit",
+        description: "Everyday agent tools — crypto prices, FX, geo-IP, and test data over metered x402.",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        tools: [
+          "api__coingecko-price",
+          "api__exchange-rates",
+          "api__ip-geolocation",
+          "api__random-user",
+        ],
+        workflows: ["crypto-price-check"],
+      }),
+    );
+  }
+
+  if (!workflows.some((w) => w.slug === "crypto-price-check")) {
+    created.workflows.push(
+      createWorkflow({
+        name: "Crypto price check",
+        slug: "crypto-price-check",
+        description: "Budget gate → CoinGecko USD price lookup — template for on-demand market data.",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        input_variables: [{ name: "coin", required: true, description: "Coin id (e.g. bitcoin)" }],
+        steps: [
+          { id: "gate", kind: "condition", left: "{{input.coin}}", op: "!=", right: "" },
+          {
+            id: "price",
+            kind: "http",
+            method: "GET",
+            url: "https://api.coingecko.com/api/v3/simple/price?ids={{input.coin}}&vs_currencies=usd",
+          },
+        ],
+        output_mapping: [{ name: "price", from: "{{steps.price.output.body}}" }],
+        tags: ["http", "template"],
+      }),
+    );
+  }
+
   return created;
 }
