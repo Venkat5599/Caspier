@@ -53,6 +53,11 @@ export const VAULT_ABI = [
   "function registerAgent(address agent, bytes32 capHandle_, bytes capProof)",
   "function settle(address recipient, bytes32 amountHandle, bytes amountProof)",
   "function revokeAgent(address agent)",
+  "function safe() view returns (address)",
+  "function setSafe(address safe_)",
+  "function isInstalledOnSafe() view returns (bool)",
+  "function executeBatch(uint256 closedEpoch, address to, uint256 amount)",
+  "function closedEpochTotalHandle(uint256 closedEpoch) view returns (bytes32)",
   "function flushEpoch()",
   "function epoch() view returns (uint256)",
   "function epochCount() view returns (uint256)",
@@ -82,6 +87,11 @@ interface VaultMethods {
   registerAgent(agent: string, handle: Hex, proof: Hex): Promise<TxResponse>;
   settle(recipient: string, handle: Hex, proof: Hex): Promise<TxResponse>;
   revokeAgent(agent: string): Promise<TxResponse>;
+  safe(): Promise<string>;
+  setSafe(safe: string): Promise<TxResponse>;
+  isInstalledOnSafe(): Promise<boolean>;
+  executeBatch(closedEpoch: bigint, to: string, amount: bigint): Promise<TxResponse>;
+  closedEpochTotalHandle(closedEpoch: bigint): Promise<Hex>;
   flushEpoch(): Promise<TxResponse>;
   epoch(): Promise<bigint>;
   epochCount(): Promise<bigint>;
@@ -219,6 +229,41 @@ export class NoxVaultClient {
    */
   async flushEpoch(): Promise<TxReceiptSummary> {
     return this.send(this.vault.flushEpoch());
+  }
+
+  // --- Safe Module ---------------------------------------------------------
+  // Kairos installs on an existing Safe via `enableModule`. Safe is never
+  // forked or modified, and funds never migrate out of it.
+
+  /** Safe this vault spends from, or the zero address when standalone. */
+  safeAddress(): Promise<string> {
+    return this.vault.safe();
+  }
+
+  /** Whether the Safe has this vault enabled as a module. */
+  isInstalledOnSafe(): Promise<boolean> {
+    return this.vault.isInstalledOnSafe();
+  }
+
+  /** Owner: attach the vault to a Safe. */
+  async setSafe(safe: string): Promise<TxReceiptSummary> {
+    return this.send(this.vault.setSafe(safe));
+  }
+
+  /**
+   * Owner: move a closed epoch's aggregate out of the Safe in one transfer.
+   *
+   * `amount` is the publicly decryptable total released by `flushEpoch`. It
+   * covers every settlement in the batch, and cannot be decomposed back into
+   * the individual payments.
+   */
+  async executeBatch(closedEpoch: bigint, to: string, amount: bigint): Promise<TxReceiptSummary> {
+    return this.send(this.vault.executeBatch(closedEpoch, to, amount));
+  }
+
+  /** Publicly decryptable aggregate for a closed epoch. */
+  async readClosedEpochTotal(closedEpoch: bigint): Promise<bigint> {
+    return this.decryptUint(await this.vault.closedEpochTotalHandle(closedEpoch));
   }
 
   /** Current epoch number and how many settlements it has absorbed. */

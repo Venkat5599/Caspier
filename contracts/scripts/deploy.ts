@@ -23,10 +23,16 @@ if (balance === 0n) {
   throw new Error("deployer has 0 ETH — fund it from a Sepolia faucet first");
 }
 
-const vault = await viem.deployContract("KairosAgentVault");
+// Safe to spend from. Zero address runs the vault standalone; set SAFE_ADDRESS
+// to an existing Safe and enable this vault on it with `enableModule`.
+const ZERO = "0x0000000000000000000000000000000000000000";
+const safe = (process.env.SAFE_ADDRESS ?? ZERO) as `0x${string}`;
+
+const vault = await viem.deployContract("KairosAgentVault", [safe]);
 
 console.log("");
 console.log("KairosAgentVault deployed:", vault.address);
+console.log("Safe    :", safe === ZERO ? "(standalone — set SAFE_ADDRESS to attach)" : safe);
 console.log("Network: Ethereum Sepolia (11155111)");
 console.log("Explorer: https://sepolia.etherscan.io/address/" + vault.address);
 console.log("");
