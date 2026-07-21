@@ -91,6 +91,31 @@ Hardhat `3.11.0`, solc `0.8.35`, Ethereum Sepolia (`11155111`).
    values" page with exactly this worked example would prevent a whole class of
    quiet authorization bugs.
 
+6. **Handles are computed asynchronously, and reading too early fails with a
+   misleading error.** After a settlement transaction was mined we immediately
+   decrypted the resulting handle and got:
+
+   ```
+   403 {"error":"access_denied","message":"Access denied: not a viewer"}
+   ```
+
+   That reads as an ACL/permissions bug, and we spent time auditing our
+   `Nox.allow` calls looking for a mistake. The contract was correct — the TEE
+   simply had not finished computing the handle yet, so it had no ACL to check
+   against. Re-reading the same handles a minute later returned the right
+   values.
+
+   This is made worse by fail-closed error handling, which is the correct
+   pattern for a payment gate: our `catch` turned "not computed yet" into
+   `authorized: false`, silently reporting a *successful* settlement as
+   rejected. We fixed it with retry-and-backoff around `decrypt`.
+
+   Two suggestions: distinguish "handle not yet computed" from "caller is not
+   a viewer" in the gateway's error response (the SDK already exports
+   `NotYetComputedHandleError`, but this path returned a plain 403), and
+   document the expected compute latency so integrators know to poll rather
+   than assuming a permission problem.
+
 ## Documentation gaps
 
 - No end-to-end example that goes **contract → encrypt → call → decrypt result**
