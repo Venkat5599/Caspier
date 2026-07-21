@@ -32,6 +32,7 @@
     "flow": "bun run scripts/fabric-flow.ts",
     "n8n:up": "docker compose -f infra/compose/docker-compose.yml up -d n8n n8n-proxy",
     "n8n:seed": "bash infra/seed-n8n.sh",
-    "stack:up": "docker compose -f infra/compose/docker-compose.yml up -d"
+    "stack:up": "docker compose -f infra/compose/docker-compose.yml up -d",
+    "nox:demo": "bun run scripts/nox-demo.ts"
   }
 }

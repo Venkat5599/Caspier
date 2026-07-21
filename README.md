@@ -1,176 +1,173 @@
 # Kairos
 
-> **Permissioned execution for autonomous AI agents on Sepolia.**
-> Scoped session keys the agent cannot drain — settling metered API calls through **native Sepolia x402**.
+**Confidential spending controls for AI agents, on Ethereum Sepolia.**
 
-Built from scratch. Production target, not a demo.
+An AI agent that pays for things needs a budget it cannot exceed. Enforcing that
+budget on a public chain means publishing it — the cap, the running total, and
+every payment. Kairos keeps the enforcement and drops the disclosure: budgets and
+caps live as encrypted values inside [iExec Nox](https://docs.iex.ec/nox-protocol/getting-started/welcome),
+compared inside a TEE, and never appear on-chain in plaintext.
 
----
-
-## Project Overview
-
-**Kairos** lets an AI agent call paid APIs and on-chain workflows **without holding your private key** and **without unbounded blast radius**. The agent spends under a scoped, revocable session key (Sepolia MetaMask-sponsored session EOAs + action thresholds), and every skill call can settle via **native x402** on Sepolia testnet — or the in-memory demo chain when `FABRIC_DEMO_CHAIN=true`.
-
-### What It Does
-
-- **Autonomy without custody** — delegate a low-weight session key; agent can spend within cap, never escalate or drain
-- **Skills as endpoints** — upload `SKILL.md`, get a validated, sandboxed, x402-metered REST + MCP endpoint
-- **x402 proxies** — wrap any API as pay-per-call; gateway verifies Sepolia transfer proofs
-- **Workflow fabric** — compose x402 calls, on-chain actions, and conditionals (n8n integration)
-- **MCP gateway** — every unit discoverable as an agent tool
-
-### Key Innovation
-
-```
-Raw key on Sepolia:     Agent → Account → Ledger   (drainable, full visibility)
-With Kairos:           Agent → Session Key → x402 → Ledger
-                       (can't drain · scoped · metered per call)
-```
-
-On a transparent ledger, handing an agent a raw key means unbounded risk. Kairos fixes this with **account-level scoped keys** and **per-call x402 metering** — all TypeScript, `ethers` + JSON-RPC, no EVM.
+| | Live |
+|---|---|
+| Vault contract | [`0xc32b31b03ad745598b790fb8cd8a94a47d893829`](https://sepolia.etherscan.io/address/0xc32b31b03ad745598b790fb8cd8a94a47d893829) |
+| Network | Ethereum Sepolia (`11155111`) |
+| NoxCompute | `0x24ef36ec5b626d7dcd09a98f3083c2758f0f77bf` |
 
 ---
 
-## Deployment Information
+## The problem
 
-### Sepolia Testnet
+x402 is an open payment standard: a server answers `402 Payment Required` with a
+price, the caller pays on-chain, retries with proof, and gets the resource. It is
+public by design, and that is the right default for a settlement standard.
 
-| Setting | Value |
-|---------|-------|
-| Network | Sepolia testnet |
-| RPC | `https://ethereum-sepolia-rpc.publicnode.com` |
-| Node | `(JSON-RPC via Sepolia public endpoint)` |
-| Chain name | `sepolia` |
-| Explorer | `https://sepolia.etherscan.io/tx/` |
+It is the wrong default for an agent's budget. Run a fleet of agents against
+metered APIs over x402 and the chain publishes an operational diary: which agent
+is active, how often, against which vendor, for how much, and how much of its
+allowance remains. Anyone can read it. For a company that is a competitive leak
+before it is a privacy problem.
 
-Copy `.env.example` to `.env`. With no `CHAIN_WORKER_SECRET_KEY`, `FABRIC_DEMO_CHAIN` auto-enables the demo chain.
+Kairos leaves x402 and MCP exactly as they are — the gateway still speaks plain
+HTTP 402, agents still discover tools over MCP — and moves only the *authorization
+and accounting* into Nox.
 
-### Production deploy (split)
+## What is hidden, and what is not
 
-| Surface | Host | Guide |
-|---------|------|-------|
-| Web UI | Vercel | [docs/VERCEL-DEPLOY.md](./docs/VERCEL-DEPLOY.md) |
-| Gateway + backend | VPS | [docs/VPS-DEPLOY.md](./docs/VPS-DEPLOY.md) |
-| MCP (Claude Code) | Local machine → VPS gateway | [docs/CLAUDE-CODE-DEMO.md](./docs/CLAUDE-CODE-DEMO.md) |
+Being precise about this matters more than the feature list.
 
-Set `NEXT_PUBLIC_GATEWAY_URL=https://user-vps-api-domain` on Vercel before deploy. Overview: [docs/DEPLOYMENT-ARCHITECTURE.md](./docs/DEPLOYMENT-ARCHITECTURE.md).
+**Private** — encrypted handles, decryptable only by permitted accounts:
+- the treasury budget and what remains of it
+- each agent's per-call spending cap
+- each agent's cumulative spend
+- the amount of any individual settlement
+- **whether a given settlement was authorized or rejected**
 
-### Develop locally
+**Public:**
+- that a settlement occurred, and in which epoch
+- how many settlements a batch contained
+- the relayer address that submitted the transaction
+
+Two design choices produce the counterparty privacy. Settlement events carry
+**no addresses and no amount** — only an epoch number — so logs cannot be used to
+build a payment graph. And debits **batch**: they accumulate into an encrypted
+epoch total that the owner flushes as one aggregate event, so there is no
+one-transaction-per-API-call trail to correlate by timing.
+
+**Known limitation, stated plainly:** `msg.sender` is inherently public. Kairos
+routes settlements through a single gateway relayer, so on-chain every settlement
+shares one sender and per-agent activity is not distinguishable — but the relayer
+itself is visible, and it learns what it relays.
+
+## How the encrypted authorization works
+
+An `ebool` cannot gate a `require`. Reverting on an encrypted comparison would
+leak the comparison result, which defeats the purpose. So authorization is
+branchless:
+
+```solidity
+ebool  withinCap = Nox.le(amount, s.capPerCall);
+euint256 requested = Nox.select(withinCap, amount, zero);
+
+// safeSub reports underflow as an encrypted flag rather than reverting,
+// which would leak whether the treasury covered the payment.
+(ebool funded, euint256 remaining) = Nox.safeSub(budget, requested);
+
+euint256 debited = Nox.select(funded, requested, zero);
+budget          = Nox.select(funded, remaining, budget);
+```
+
+An over-cap call debits zero and the transaction still succeeds — indistinguishable
+on-chain from an authorized one. The outcome is written to an encrypted flag that
+only the owner and that agent can decrypt, and the gateway **fails closed** on it:
+if the flag cannot be read, the paid action does not proceed.
+
+## Try it
 
 ```bash
 bun install
-bun run web:dev          # Next.js dashboard + marketing
-bun run gateway:dev      # API edge (x402, invoke, session keys)
-bun run mcp:dev          # MCP server (alias: agent:serve)
-bun run agent:provision  # mint scoped session key (demo registry)
-bun run flow             # chain status; add --pay for demo transfer
-bun run test
-bun run typecheck
-bun run build            # typecheck + web build
+cp .env.example .env          # add SEPOLIA_RPC_URL + a funded key
+
+cd contracts && bun install
+bun run deploy:sepolia        # prints VAULT_CONTRACT_ADDRESS
+
+cd .. && bun run nox:demo     # full lifecycle against the live vault
+bun run gateway:dev           # API on :8080
+bun run web:dev               # dashboard on :5173 → /dashboard?tab=vault
 ```
+
+`bun run nox:demo` funds an encrypted budget, registers an agent with an
+encrypted cap, settles once within cap (authorized) and once over it (rejected),
+shows the owner-decrypted balance moving by exactly the authorized amount, then
+flushes the epoch. Every step prints a real Sepolia transaction.
+
+## API
+
+```
+GET    /nox/status           vault address, relayer, current epoch
+GET    /nox/budget           owner-decrypted budget + epoch total
+POST   /nox/fund             fund with an encrypted amount
+POST   /nox/agents           register an agent with an encrypted cap
+GET    /nox/agents/:agent    ACL-gated decrypted cap and spend
+DELETE /nox/agents/:agent    revoke in one transaction
+POST   /nox/settle           settle; 402 when not authorized
+GET    /nox/epoch            batching state
+POST   /nox/epoch/flush      close the batch
+```
+
+The x402 surface is unchanged: `POST /s/:slug` still returns a 402 quote and
+executes on retry with proof.
+
+## Layout
+
+```
+contracts/            KairosAgentVault.sol — the confidential vault
+packages/nox-chain/   NoxVaultClient over @iexec-nox/handle
+packages/{manifest,fabric-core,authz,sdk,evm-chain}
+apps/gateway/         Hono API: x402, catalog, /nox/*
+apps/web/             Next.js dashboard
+apps/mcp-server/      MCP gateway — skills as agent tools
+services/{catalog,payments,execution,identity}
+scripts/nox-demo.ts   end-to-end confidential settlement
+```
+
+## Stack
+
+Solidity 0.8.35 · Hardhat 3 · `@iexec-nox/nox-protocol-contracts` ·
+`@iexec-nox/handle` · Bun · TypeScript · Hono · Next.js 16 · ethers v6
 
 ---
 
-## How to Use
+## Prior work and what was built for this hackathon
 
-### Invoke a metered skill (SDK)
+This repository has history before the WTF hackathon, and the brief asks that
+this be stated explicitly.
 
-```typescript
-import { FabricClient } from "@fabric/sdk";
+**Pre-existing:** the x402 gateway and quote/settle flow, the SKILL.md manifest
+parser and catalog, the MCP server, the Next.js dashboard shell and marketplace,
+and the n8n workflow integration. Earlier iterations of this project targeted
+other chains; that lineage is in the git history.
 
-const client = new FabricClient({
-  baseUrl: "http://localhost:8080",
-  autoPay: true, // gateway settles via chain worker / demo chain
-});
+**Built during this hackathon:**
+- `contracts/KairosAgentVault.sol` — the confidential vault, including the
+  branchless encrypted authorization, `safeSub`-based debiting, the
+  address-free settlement event, and epoch batching
+- `packages/nox-chain` — the entire Nox client layer
+- `apps/gateway/src/nox.ts` — the `/nox/*` API
+- `apps/web/components/fabric/nox-vault-section.tsx` — the vault dashboard
+- `scripts/nox-demo.ts`, the Hardhat 3 migration, and `feedback.md`
 
-const result = await client.invoke("my-skill", { query: "hello" });
-```
+No part of this project was submitted to the previous VIBE Coding Hackathon.
 
-### Pay on Sepolia directly (on-chain engine)
+## Honest status
 
-```typescript
-import { payThroughSession } from "@fabric/evm-chain/onchain";
+- Sepolia testnet only. Not audited. Do not put real funds behind it.
+- The vault is accounting, not custody: it authorizes and records encrypted
+  debits. Wiring the flush to an actual aggregate ERC-20 or ETH transfer is the
+  next step.
+- `apps/gateway/src/fabric/store.ts` is still in-memory, so the marketplace
+  catalog resets on restart.
+- Skill execution supports one built-in handler; arbitrary SKILL.md bodies are
+  not yet sandboxed.
 
-await payThroughSession({
-  recipientPublicKeyHex: "01...",
-  amountWei: "1000000000",
-  onStep: (s) => console.log(s),
-});
-```
-
-### CLI
-
-```bash
-bun run agent:provision [agentPubKeyHex] [maxSpendWei] [expiresAtISO]
-bun run flow --pay
-bun run scripts/agent-invoke.ts my-skill http://localhost:8080
-```
-
----
-
-## Architecture
-
-```
-Owner (custody)
-    │
-    ▼
-Scoped session key (Sepolia MetaMask-sponsored session EOAs)
-    │
-    ▼
-API Gateway ── x402 quote ── Chain worker / demo chain
-    │
-    ├── REST /s/:slug
-    ├── MCP tools
-    └── n8n workflows
-```
-
-See [`FABRIC.md`](./FABRIC.md) for the full architecture deep-dive and [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for enterprise design.
-
----
-
-## Project Structure
-
-```
-agent-fabric/
-├── apps/
-│   ├── web/              # Next.js dashboard (kagezks frontend/ equivalent)
-│   ├── gateway/          # API edge: authn, x402, routing, invoke
-│   └── mcp-server/       # MCP gateway (kagezks agent/mcp-server equivalent)
-├── packages/
-│   ├── Sepolia/           # On-chain engine (kagezks sdk/ equivalent)
-│   ├── sdk/              # Caller SDK + invoke helpers
-│   ├── fabric-core/      # Workflow engine + MCP tool registry (kagezks agent/fabric)
-│   ├── authz/            # Session key scope library
-│   └── manifest/         # SKILL.md parser + validator
-├── services/
-│   ├── chain-worker/     # Signing service entry (re-exports @fabric/evm-chain)
-│   ├── catalog/          # Skill/workflow registry
-│   ├── execution/        # Sandbox orchestrator
-│   ├── payments/         # x402 gate + ledger
-│   └── identity/         # Users, orgs, API keys
-├── scripts/              # provision, flow, agent-invoke CLIs
-├── infra/                # Docker compose, Caddy, k8s
-└── docs/                 # PRD, roadmap, sandbox
-```
-
----
-
-## Tech Stack
-
-| Layer | Choice |
-|-------|--------|
-| Chain | Sepolia (native transfers, weighted keys, x402) |
-| Runtime | Bun, TypeScript, Hono |
-| Edge | Caddy + API gateway |
-| MCP | `@modelcontextprotocol/sdk` |
-| Web | Next.js 15 + Tailwind |
-| Workflows | n8n |
-| Data | Postgres, Redis, NATS |
-
----
-
-## Status
-
-Foundation + gateway/MCP/x402 path working. Session keys use demo registry until `vault registerAgent (session EOA)` is wired. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
-
-> Concept inspired by [kagezks](https://github.com/Venkat5599/kagezks) (scoped agent payments + ZK on Stellar) and the public agent_fabric model — **rebuilt for Sepolia** (native keys + native x402, TypeScript-only). All code original.
+Builder feedback on the iExec tooling is in [`feedback.md`](./feedback.md).
