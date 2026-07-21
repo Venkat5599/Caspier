@@ -9,6 +9,9 @@
     "services/*",
     "packages/*"
   ],
+  "dependencies": {
+    "@fabric/nox-chain": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.5.3",
     "bun-types": "latest"

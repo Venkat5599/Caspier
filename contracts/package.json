@@ -2,18 +2,28 @@
   "name": "@kairos/contracts",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "compile": "hardhat compile",
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@iexec-nox/nox-hardhat-plugin": "latest",
-    "@iexec-nox/nox-protocol-contracts": "latest",
-    "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@iexec-nox/nox-hardhat-plugin": "^0.1.0",
+    "@iexec-nox/nox-protocol-contracts": "^0.2.4",
+    "@nomicfoundation/hardhat-ignition": "^3.0.7",
+    "@nomicfoundation/hardhat-ignition-viem": "^3.0.7",
+    "@nomicfoundation/hardhat-keystore": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
+    "@nomicfoundation/hardhat-node-test-runner": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.3",
+    "@nomicfoundation/hardhat-verify": "^3.0.0",
+    "@nomicfoundation/hardhat-viem": "^3.0.4",
+    "@nomicfoundation/hardhat-viem-assertions": "^3.0.5",
+    "@nomicfoundation/ignition-core": "^3.0.7",
     "dotenv": "^16.4.5",
-    "hardhat": "^2.22.0",
-    "typescript": "^5.5.3"
+    "hardhat": "^3.9.0",
+    "typescript": "^5.5.3",
+    "viem": "^2.47.6"
   }
 }

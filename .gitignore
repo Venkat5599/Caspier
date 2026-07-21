@@ -43,3 +43,10 @@ wasm/
 *.wasm
 *.tsbuildinfo
 packages/evm-chain/build/
+
+.vercel
+.env*.local
+
+# hardhat build output
+contracts/artifacts/
+contracts/cache/

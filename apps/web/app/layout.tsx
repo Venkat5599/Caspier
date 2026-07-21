@@ -23,7 +23,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }): ReactNode {
   return (
     <html lang="en" suppressHydrationWarning>
+      {/* suppressHydrationWarning on <body> too: browser extensions commonly
+          inject attributes here before React hydrates, which is otherwise
+          reported as a mismatch we cannot control. */}
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
       >
         <Providers>{children}</Providers>
