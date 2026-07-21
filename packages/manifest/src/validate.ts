@@ -75,6 +75,25 @@ export function validateManifest(manifest: SkillManifest): ValidationResult {
     errors.push("tools: must be an array of strings when present");
   }
 
+  // endpoint (optional) — must be an absolute http(s) URL once placeholders
+  // are stripped, so the sandbox can check its host against scope.egress.
+  if (m.endpoint !== undefined) {
+    if (typeof m.endpoint !== "string" || m.endpoint.trim() === "") {
+      errors.push("endpoint: must be a non-empty URL string when present");
+    } else {
+      const probe = m.endpoint.replace(/\{[^}]+\}/g, "x");
+      let parsed: URL | null = null;
+      try {
+        parsed = new URL(probe);
+      } catch {
+        parsed = null;
+      }
+      if (!parsed || (parsed.protocol !== "http:" && parsed.protocol !== "https:")) {
+        errors.push("endpoint: must be an absolute http(s) URL");
+      }
+    }
+  }
+
   // scope
   if (!isPlainObject(m.scope)) {
     errors.push("scope: required object { egress: string[] }");

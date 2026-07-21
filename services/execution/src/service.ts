@@ -61,6 +61,35 @@ const HANDLERS: Record<string, (input: unknown, ctx: SandboxContext) => Promise<
   "hello-weather": (input, ctx) => runHelloWeather(input as { city?: string }, ctx),
 };
 
+/**
+ * Build the upstream URL for an endpoint-declaring skill.
+ *
+ * `{name}` placeholders are filled from the input and URL-encoded; any input
+ * key not consumed by a placeholder is appended as a query parameter. A missing
+ * placeholder is an error rather than a silent empty segment, so a misdeclared
+ * skill fails loudly instead of calling the wrong URL.
+ */
+export function buildEndpointUrl(template: string, input: Record<string, unknown>): string {
+  const consumed = new Set<string>();
+
+  const path = template.replace(/\{([^}]+)\}/g, (_, rawName: string) => {
+    const name = rawName.trim();
+    const value = input[name];
+    if (value == null) {
+      throw new Error(`endpoint requires input '${name}'`);
+    }
+    consumed.add(name);
+    return encodeURIComponent(String(value));
+  });
+
+  const url = new URL(path);
+  for (const [key, value] of Object.entries(input)) {
+    if (consumed.has(key) || value == null) continue;
+    url.searchParams.set(key, String(value));
+  }
+  return url.toString();
+}
+
 /** Sandboxed skill execution with egress allowlist enforcement. */
 export class ExecutionService {
   async run(unit: CatalogUnit, input: unknown): Promise<ExecutionResult> {
@@ -69,12 +98,23 @@ export class ExecutionService {
     const ctx = makeCtx(allowlist);
 
     const handler = HANDLERS[unit.slug];
-    if (!handler) {
-      throw new Error(`no runtime handler for slug: ${unit.slug}`);
+    const endpoint = unit.manifest.endpoint;
+
+    if (!handler && !endpoint) {
+      throw new Error(
+        `skill '${unit.slug}' declares no endpoint and has no built-in handler — ` +
+          `add an 'endpoint' to its SKILL.md frontmatter`,
+      );
     }
 
+    // A built-in handler wins when present; otherwise proxy the declared
+    // endpoint through the same egress allowlist.
+    const work = handler
+      ? handler(input, ctx)
+      : ctx.http.get(buildEndpointUrl(endpoint!, (input ?? {}) as Record<string, unknown>));
+
     const output = await Promise.race([
-      handler(input, ctx),
+      work,
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("sandbox wall timeout")), DEFAULT_WALL_MS),
       ),
@@ -83,7 +123,7 @@ export class ExecutionService {
     return {
       output,
       runtimeMs: Date.now() - start,
-      sandbox: "builtin",
+      sandbox: handler ? "builtin" : "isolated-fetch",
     };
   }
 }

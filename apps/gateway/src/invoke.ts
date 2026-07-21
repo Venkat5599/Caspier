@@ -6,7 +6,44 @@ import type { ChainWorker } from "@fabric/chain-worker";
 import { explorerUrl } from "@fabric/chain-worker";
 import { x402Body } from "@fabric/payments";
 
+/**
+ * Map sandbox failures to meaningful status codes. An egress violation or a
+ * misdeclared endpoint is the caller's problem, not a server fault, and saying
+ * so beats a bare 500.
+ */
+function executionError(err: unknown): { status: 400 | 403 | 502 | 504; error: string } {
+  const message = (err as Error)?.message ?? String(err);
+  if (message.startsWith("egress denied")) {
+    return { status: 403, error: `${message} — host is not in the skill's scope.egress` };
+  }
+  if (message.startsWith("endpoint requires input") || message.includes("no built-in handler")) {
+    return { status: 400, error: message };
+  }
+  if (message === "sandbox wall timeout") {
+    return { status: 504, error: message };
+  }
+  return { status: 502, error: `skill execution failed: ${message}` };
+}
+
+/** Wraps the invoke path so sandbox failures become typed responses. */
 export async function handleInvoke(
+  c: Context,
+  unit: CatalogUnit,
+  slug: string,
+  payments: PaymentService,
+  execution: ExecutionService,
+  chain: ChainWorker,
+  autoPay: boolean,
+) {
+  try {
+    return await runInvoke(c, unit, slug, payments, execution, chain, autoPay);
+  } catch (err) {
+    const { status, error } = executionError(err);
+    return c.json({ error }, status);
+  }
+}
+
+async function runInvoke(
   c: Context,
   unit: CatalogUnit,
   slug: string,

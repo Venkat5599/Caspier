@@ -37,6 +37,14 @@ export interface SkillManifest {
   outputSchema: Record<string, unknown>;
   /** Tools the skill declares it will use. */
   tools?: string[];
+  /**
+   * Upstream URL this skill proxies, with `{name}` placeholders filled from the
+   * input payload. Unreferenced input keys are appended as query parameters.
+   * The host must appear in `scope.egress`; the sandbox rejects it otherwise.
+   *
+   * Skills without an endpoint need a built-in handler registered by slug.
+   */
+  endpoint?: string;
   scope: SkillScope;
 }
 
