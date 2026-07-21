@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 
 const TAB_ALIASES: Record<string, SectionKey> = {
   dashboard: "dashboard",
+  vault: "vault",
+  nox: "vault",
   apis: "apis",
   mcp: "mcp",
   workflows: "workflows",

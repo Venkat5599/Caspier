@@ -361,3 +361,88 @@ export async function getFabricWalletStatus(address: string) {
 }
 
 export const fabricMcpUrl = process.env.NEXT_PUBLIC_FABRIC_MCP_URL ?? "http://localhost:8403";
+
+// --- Nox (confidential settlement) ---
+
+export interface NoxStatus {
+  configured: boolean;
+  reason?: string;
+  vaultAddress?: string;
+  relayer?: string;
+  network: number;
+  explorer?: string;
+  epoch?: number;
+  epochCount?: number;
+}
+
+export interface NoxBudget {
+  budgetWei: string;
+  epochTotalWei: string;
+  epoch: number;
+  epochCount: number;
+}
+
+export interface NoxAgent {
+  agent: string;
+  active: boolean;
+  capWei?: string;
+  spentWei?: string;
+  error?: string;
+}
+
+export interface NoxTx {
+  ok: boolean;
+  txHash?: string;
+  explorerUrl?: string;
+  blockNumber?: number | null;
+  error?: string;
+}
+
+export interface NoxSettlement extends NoxTx {
+  authorized: boolean;
+  spentWei?: string;
+}
+
+async function noxJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, init);
+  const body = (await res.json()) as T & { error?: string };
+  // 402 is a meaningful answer here (settlement not authorized), not a failure.
+  if (!res.ok && res.status !== 402) {
+    throw new Error(body.error ?? `${path} failed: ${res.status}`);
+  }
+  return body;
+}
+
+export function getNoxStatus(): Promise<NoxStatus> {
+  return noxJson<NoxStatus>("/nox/status");
+}
+
+export function getNoxBudget(): Promise<NoxBudget> {
+  return noxJson<NoxBudget>("/nox/budget");
+}
+
+export function getNoxAgent(agent: string): Promise<NoxAgent> {
+  return noxJson<NoxAgent>(`/nox/agents/${encodeURIComponent(agent)}`);
+}
+
+const postJson = (body: unknown): RequestInit => ({
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+export function noxFund(amountWei: string): Promise<NoxTx> {
+  return noxJson<NoxTx>("/nox/fund", postJson({ amountWei }));
+}
+
+export function noxRegisterAgent(agent: string, capWei: string): Promise<NoxTx> {
+  return noxJson<NoxTx>("/nox/agents", postJson({ agent, capWei }));
+}
+
+export function noxSettle(recipient: string, amountWei: string): Promise<NoxSettlement> {
+  return noxJson<NoxSettlement>("/nox/settle", postJson({ recipient, amountWei }));
+}
+
+export function noxFlushEpoch(): Promise<NoxTx & { epoch?: number }> {
+  return noxJson<NoxTx & { epoch?: number }>("/nox/epoch/flush", { method: "POST" });
+}
