@@ -162,12 +162,14 @@ No part of this project was submitted to the previous VIBE Coding Hackathon.
 ## Honest status
 
 - Sepolia testnet only. Not audited. Do not put real funds behind it.
-- The vault is accounting, not custody: it authorizes and records encrypted
-  debits. Wiring the flush to an actual aggregate ERC-20 or ETH transfer is the
-  next step.
-- `apps/gateway/src/fabric/store.ts` is still in-memory, so the marketplace
-  catalog resets on restart.
-- Skill execution supports one built-in handler; arbitrary SKILL.md bodies are
-  not yet sandboxed.
+- Skills execute in-process against their declared `scope.egress` allowlist.
+  That bounds where a skill can reach, but it is not a sandbox: arbitrary code
+  execution is out of scope, which is why skills declare an endpoint rather than
+  ship a body.
+- Fabric state persists to a JSON snapshot on disk, which is durable for a
+  single node. Multi-node deployments want the Postgres path (`DATABASE_URL`),
+  which the catalog already uses.
+- The relayer is trusted: it submits every settlement, so it learns what it
+  relays even though the chain does not.
 
 Builder feedback on the iExec tooling is in [`feedback.md`](./feedback.md).

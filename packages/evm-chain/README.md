@@ -1,6 +1,6 @@
 # @fabric/evm-chain
 
-Sepolia on-chain engine for Agent Fabric. Mirrors the role of `sdk/kage-onchain.ts` in [kagezks](https://github.com/Venkat5599/kagezks).
+Ethereum Sepolia chain engine for Kairos: signing, JSON-RPC, and a demo chain for local development.
 
 ## Exports
 

@@ -1,4 +1,4 @@
-// Caller SDK + on-chain helpers — mirrors kagezks sdk/ layout for Agent Fabric on Sepolia.
+// Caller SDK + on-chain helpers for Kairos on Ethereum Sepolia.
 export { FabricClient, type FabricClientOptions, type InvokeResult, type X402Quote } from "./client.ts";
 export {
   invokeWithAutoPay,

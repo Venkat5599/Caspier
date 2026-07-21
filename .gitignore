@@ -50,3 +50,6 @@ packages/evm-chain/build/
 # hardhat build output
 contracts/artifacts/
 contracts/cache/
+
+# local fabric state snapshot
+.data/

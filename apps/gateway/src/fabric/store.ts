@@ -1,4 +1,5 @@
 import type { WorkflowRow } from "@fabric/fabric-core";
+import { flushSave, loadSnapshot, scheduleSave, type FabricSnapshot } from "./persist.ts";
 
 export type McpServerRow = {
   id: string;
@@ -53,6 +54,42 @@ const mcpServers: McpServerRow[] = [];
 const apis: FabricApiRow[] = [];
 const logs: RequestLogRow[] = [];
 
+// Hydrate from the previous process before any handler runs, so a restart or
+// redeploy does not silently empty the marketplace.
+const restored = loadSnapshot();
+if (restored) {
+  apis.push(...(restored.apis as FabricApiRow[]));
+  workflows.push(...(restored.workflows as WorkflowRow[]));
+  mcpServers.push(...(restored.mcpServers as McpServerRow[]));
+  logs.push(...(restored.logs as RequestLogRow[]));
+}
+
+function snapshot(): FabricSnapshot {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    apis,
+    workflows,
+    mcpServers,
+    logs,
+  };
+}
+
+/** Persist after a mutation. Debounced inside the persistence layer. */
+function save(): void {
+  scheduleSave(snapshot);
+}
+
+/** Write any pending snapshot immediately. Exposed for shutdown hooks. */
+export function persistNow(): void {
+  flushSave();
+}
+
+/** True when state was restored from disk on boot. */
+export function wasRestored(): boolean {
+  return restored !== null;
+}
+
 function id(): string {
   return crypto.randomUUID();
 }
@@ -104,6 +141,7 @@ export function createApi(
     created_at: new Date().toISOString(),
   };
   apis.unshift(row);
+  save();
   return row;
 }
 
@@ -113,6 +151,7 @@ export function bumpApiStats(slug: string, ok: boolean, paid: boolean, price: nu
   row.request_count += 1;
   if (ok) row.success_count += 1;
   if (paid) row.earnings = String(Number(row.earnings) + price);
+  save();
 }
 
 export function listWorkflows(scope?: string, owner?: string): WorkflowRow[] {
@@ -144,6 +183,7 @@ export function createWorkflow(
     owner_address: body.owner_address,
   };
   workflows.unshift(row);
+  save();
   return row;
 }
 
@@ -180,6 +220,7 @@ export function createMcpServer(body: {
     created_at: new Date().toISOString(),
   };
   mcpServers.unshift(row);
+  save();
   return row;
 }
 
@@ -188,6 +229,7 @@ export function patchMcpServer(slug: string, patch: Partial<Pick<McpServerRow, "
   if (!row) return undefined;
   if (patch.tools) row.tools = patch.tools;
   if (patch.workflows) row.workflows = patch.workflows;
+  save();
   return row;
 }
 
@@ -195,6 +237,7 @@ export function appendLog(entry: Omit<RequestLogRow, "id" | "created_at">): Requ
   const row: RequestLogRow = { ...entry, id: id(), created_at: new Date().toISOString() };
   logs.unshift(row);
   if (logs.length > 500) logs.length = 500;
+  save();
   return row;
 }
 
