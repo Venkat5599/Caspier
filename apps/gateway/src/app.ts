@@ -17,6 +17,7 @@ import {
   createWorkflow,
 } from "./n8n.ts";
 import { mountFabricRoutes } from "./fabric/routes.ts";
+import { mountNoxRoutes } from "./nox.ts";
 
 export function defaultCatalog(): CatalogService {
   if (process.env.DATABASE_URL) {
@@ -212,6 +213,7 @@ Demo skill for hackathon invoke flow.`;
 
   const gatewayUrl = process.env.GATEWAY_PUBLIC_URL ?? "http://localhost:8080";
   mountFabricRoutes(app, { catalog, chain, authz, gatewayUrl });
+  mountNoxRoutes(app);
 
   app.post("/workflows/generate", async (c) => {
     let prompt = "";

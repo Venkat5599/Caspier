@@ -17,6 +17,7 @@
     "@fabric/chain-worker": "workspace:*",
     "@fabric/execution": "workspace:*",
     "@fabric/manifest": "workspace:*",
+    "@fabric/nox-chain": "workspace:*",
     "@fabric/payments": "workspace:*",
     "hono": "^4.6.0"
   },

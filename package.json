@@ -23,7 +23,7 @@
     "typecheck": "bun --filter '*' typecheck",
     "web:dev": "bun --filter @fabric/web dev",
     "web:build": "bun --filter @fabric/web build",
-    "gateway:dev": "bun --filter @fabric/gateway dev",
+    "gateway:dev": "bun --watch apps/gateway/src/index.ts",
     "mcp:dev": "bun --filter @fabric/mcp-server dev",
     "agent:serve": "bun run mcp:dev",
     "fabric:serve": "bun --filter @fabric/mcp-server fabric",
