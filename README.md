@@ -2,6 +2,7 @@
 
 # Kairos
 
+[![MIT](https://img.shields.io/badge/license-MIT-black)](LICENSE)
 ![tests](https://img.shields.io/badge/tests-68%20passing%20·%205%20skipped-2FA46A)
 ![network](https://img.shields.io/badge/network-Ethereum%20Sepolia%20(11155111)-FFCC33)
 [![live](https://img.shields.io/badge/live-dashboard-5BA4FF)](https://kairos-frontend-v969.vercel.app/dashboard)
@@ -391,3 +392,7 @@ This repository has history before the WTF hackathon, and the brief asks that th
 No part of this project was submitted to the previous VIBE Coding Hackathon.
 
 Builder feedback on the iExec tooling is in [`feedback.md`](./feedback.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE).

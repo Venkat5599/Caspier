@@ -50,6 +50,7 @@ Public on-chain: contract address, function names, agent wallet.
 - [ ] Confidential contract deployed on **Ethereum Sepolia** (`11155111`)
 - [ ] NoxCompute: `0x24ef36ec5b626d7dcd09a98f3083c2758f0f77bf`
 - [ ] Functional dashboard (`apps/web`) + gateway (`apps/gateway`)
+- [ ] Graph workflow engine + drag-and-drop canvas (`packages/fabric-core`, `apps/web`)
 - [ ] End-to-end demo **without mock settlement** (real Sepolia txs + Nox handles)
 - [ ] Demo video ≤ 4 minutes
 - [ ] X post tagging `@iEx_ec` with description, video, repo link
@@ -60,11 +61,14 @@ Public on-chain: contract address, function names, agent wallet.
 2. `packages/nox-chain/` — deploy helpers + encrypt/decrypt via `@iexec-nox/nox-handle-sdk`
 3. Gateway — Sepolia verifier replaces Sepolia demo chain for WTF track
 4. Web — MetaMask Sepolia, vault fund UI, session provision
-5. Record demo: fund vault → publish skill → MCP invoke → private settlement
+5. Record demo: fund vault → publish skill → build the flow on the canvas →
+   MCP invoke → private settlement
 
 ## What we reuse from Sepolia build
 
 - Fabric dashboard (APIs, MCP, workflows, marketplace)
+- The workflow surface, since rebuilt on a graph engine (branching, retries,
+  parallelism, run history) with a drag-and-drop canvas
 - SKILL.md catalog + MCP `api__*` / `wf__*` tools
 - x402 quote → pay → retry flow (adapt proofs to Nox handles)
 
