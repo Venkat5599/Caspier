@@ -95,6 +95,38 @@ export function WorkflowCanvas({
   const pos = useCallback((n: WfNode) => n.position ?? { x: 0, y: 0 }, []);
   const nodeById = useMemo(() => new Map(graph.nodes.map((n) => [n.id, n])), [graph.nodes]);
 
+  /**
+   * Frame the whole graph on first paint. Without this a wide flow opens with
+   * its right-hand nodes sliced off by the canvas edge, which reads as broken.
+   * Runs once per mount so it never fights the user's own panning.
+   */
+  const framed = useRef(false);
+  const fit = useCallback(() => {
+    const box = surface.current?.getBoundingClientRect();
+    if (!box || graph.nodes.length === 0) return;
+
+    const xs = graph.nodes.map((n) => pos(n).x);
+    const ys = graph.nodes.map((n) => pos(n).y);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    const w = Math.max(...xs) + NODE_W - minX;
+    const h = Math.max(...ys) + NODE_H - minY;
+
+    const pad = 28;
+    const scale = Math.min(1, (box.width - pad * 2) / w, (box.height - pad * 2) / h);
+    setView({
+      scale,
+      x: (box.width - w * scale) / 2 - minX * scale,
+      y: (box.height - h * scale) / 2 - minY * scale,
+    });
+  }, [graph.nodes, pos]);
+
+  useEffect(() => {
+    if (framed.current || graph.nodes.length === 0) return;
+    framed.current = true;
+    fit();
+  }, [fit, graph.nodes.length]);
+
   /** Pointer event -> canvas-space coordinates. */
   const toCanvas = useCallback(
     (e: { clientX: number; clientY: number }) => {
@@ -332,7 +364,7 @@ export function WorkflowCanvas({
       <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-lg border border-white/[0.1] bg-black/50 px-1 py-1">
         {[
           { label: "−", fn: () => setView((v) => ({ ...v, scale: Math.max(0.4, v.scale - 0.15) })) },
-          { label: "Reset", fn: () => setView({ x: 24, y: 24, scale: 1 }) },
+          { label: "Fit", fn: fit },
           { label: "+", fn: () => setView((v) => ({ ...v, scale: Math.min(1.6, v.scale + 0.15) })) },
         ].map((b) => (
           <button
