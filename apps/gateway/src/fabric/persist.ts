@@ -22,6 +22,8 @@ export interface FabricSnapshot {
   workflows: unknown[];
   mcpServers: unknown[];
   logs: unknown[];
+  /** Optional so snapshots written before run history remain loadable. */
+  runs?: unknown[];
 }
 
 /** Read the snapshot written by a previous process. Null when absent or unusable. */

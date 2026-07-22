@@ -8,12 +8,18 @@ import {
   invokeSkillViaGateway,
   resolveScope,
   withScope,
+  validateGraph,
   type WorkflowRunnerDeps,
+  type GraphRun,
 } from "@fabric/fabric-core";
 import {
   listWorkflows,
   getWorkflow,
   createWorkflow,
+  updateWorkflowGraph,
+  recordRun,
+  listRuns,
+  getRun,
   listApis,
   getApi,
   createApi,
@@ -36,6 +42,30 @@ export type FabricRouteDeps = {
   authz: AuthzService;
   gatewayUrl: string;
 };
+
+/** Persist a completed run so the dashboard can show execution history. */
+function saveRun(wf: { slug: string | null; name: string }, run: GraphRun) {
+  recordRun({
+    id: run.id,
+    workflow_slug: wf.slug ?? wf.name,
+    workflow_name: wf.name,
+    status: run.status,
+    completed: run.completed,
+    created_at: run.startedAt,
+    duration_ms: run.durationMs,
+    node_count: run.nodes.length,
+    ...(run.error ? { error: run.error } : {}),
+    nodes: run.nodes.map((n) => ({
+      id: n.id,
+      kind: n.kind,
+      status: n.status,
+      attempts: n.attempts,
+      ...(n.detail ? { detail: n.detail } : {}),
+    })),
+    ...(run.output ? { output: run.output } : {}),
+  });
+  return run;
+}
 
 export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
   const catalogLoader = createCatalogLoader(deps.gatewayUrl);
@@ -77,9 +107,49 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
   app.post("/fabric/workflows", async (c) => {
     const body = await c.req.json();
     if (!body?.name) return c.json({ ok: false, error: "name required" }, 400);
+
+    // Reject a structurally broken graph at publish time rather than letting it
+    // fail mid-run: a cycle or a dangling edge is always an authoring mistake.
+    if (body.graph) {
+      const errors = validateGraph(body.graph).filter((i) => i.level === "error");
+      if (errors.length > 0) {
+        return c.json({ ok: false, error: errors.map((e) => e.message).join("; ") }, 400);
+      }
+    }
+
     const wf = createWorkflow(body);
     catalogLoader.invalidateCache();
     return c.json({ ok: true, workflow: wf }, 201);
+  });
+
+  /** Replace a workflow's graph — what the canvas editor saves. */
+  app.put("/fabric/workflows/:slug/graph", async (c) => {
+    const graph = (await c.req.json()) as { nodes?: unknown; edges?: unknown };
+    if (!Array.isArray(graph?.nodes) || !Array.isArray(graph?.edges)) {
+      return c.json({ ok: false, error: "expected { nodes: [], edges: [] }" }, 400);
+    }
+    const issues = validateGraph(graph as never);
+    const errors = issues.filter((i) => i.level === "error");
+    if (errors.length > 0) {
+      return c.json({ ok: false, error: errors.map((e) => e.message).join("; "), issues }, 400);
+    }
+    const wf = updateWorkflowGraph(c.req.param("slug"), graph as never);
+    if (!wf) return c.json({ ok: false, error: "not found" }, 404);
+    catalogLoader.invalidateCache();
+    return c.json({ ok: true, workflow: wf, issues });
+  });
+
+  /** Execution history, newest first. `?workflow=slug` narrows to one flow. */
+  app.get("/fabric/runs", async (c) => {
+    const slug = c.req.query("workflow");
+    const limit = Math.min(200, Math.max(1, Number(c.req.query("limit") ?? 50)));
+    return c.json({ runs: listRuns(slug, limit) });
+  });
+
+  app.get("/fabric/runs/:id", async (c) => {
+    const run = getRun(c.req.param("id"));
+    if (!run) return c.json({ error: "not found" }, 404);
+    return c.json(run);
   });
 
   app.get("/fabric/workflows/:slug", async (c) => {
@@ -178,7 +248,8 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
     const wf = getWorkflow(slug);
     if (!wf) return c.json({ ok: false, error: `no workflow '${slug}'` }, 404);
     try {
-      const run = await withScope(scope, () => runWorkflow(wf, input ?? {}, runnerDeps));
+      const run = (await withScope(scope, () => runWorkflow(wf, input ?? {}, runnerDeps))) as GraphRun;
+      saveRun(wf, run);
       return c.json({ ok: true, run });
     } catch (e) {
       return c.json({ ok: false, error: (e as Error).message }, 500);
@@ -263,7 +334,8 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
       if (!body.slug) return c.json({ ok: false, error: "slug required" }, 400);
       const wf = getWorkflow(body.slug);
       if (!wf) return c.json({ ok: false, error: "not found" }, 404);
-      const run = await withScope(scope, () => runWorkflow(wf, body.input ?? {}, runnerDeps));
+      const run = (await withScope(scope, () => runWorkflow(wf, body.input ?? {}, runnerDeps))) as GraphRun;
+      saveRun(wf, run);
       return c.json({ ok: true, run });
     }
     if (!body.slug) return c.json({ ok: false, error: "slug required" }, 400);

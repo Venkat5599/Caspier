@@ -53,6 +53,7 @@ const workflows: WorkflowRow[] = [];
 const mcpServers: McpServerRow[] = [];
 const apis: FabricApiRow[] = [];
 const logs: RequestLogRow[] = [];
+const runs: WorkflowRunRow[] = [];
 
 // Hydrate from the previous process before any handler runs, so a restart or
 // redeploy does not silently empty the marketplace.
@@ -62,6 +63,8 @@ if (restored) {
   workflows.push(...(restored.workflows as WorkflowRow[]));
   mcpServers.push(...(restored.mcpServers as McpServerRow[]));
   logs.push(...(restored.logs as RequestLogRow[]));
+  // Absent in snapshots written before run history existed.
+  runs.push(...((restored.runs ?? []) as WorkflowRunRow[]));
 }
 
 function snapshot(): FabricSnapshot {
@@ -72,6 +75,7 @@ function snapshot(): FabricSnapshot {
     workflows,
     mcpServers,
     logs,
+    runs,
   };
 }
 
@@ -177,6 +181,9 @@ export function createWorkflow(
     is_public: body.is_public ?? false,
     input_variables: body.input_variables ?? [],
     steps: body.steps ?? [],
+    // Only store a graph when one was supplied. Absent means "derive from
+    // steps at run time", which leaves legacy rows exactly as they were.
+    ...(body.graph ? { graph: body.graph } : {}),
     output_mapping: body.output_mapping ?? [],
     allowed_contracts: body.allowed_contracts ?? [],
     tags: body.tags ?? [],
@@ -185,6 +192,47 @@ export function createWorkflow(
   workflows.unshift(row);
   save();
   return row;
+}
+
+/** Replace a workflow's graph in place. Returns null when the slug is unknown. */
+export function updateWorkflowGraph(slug: string, graph: WorkflowRow["graph"]): WorkflowRow | null {
+  const row = workflows.find((w) => w.slug === slug || w.id === slug);
+  if (!row) return null;
+  row.graph = graph;
+  save();
+  return row;
+}
+
+/** One execution of a workflow, trimmed for storage. */
+export type WorkflowRunRow = {
+  id: string;
+  workflow_slug: string;
+  workflow_name: string;
+  status: "completed" | "failed" | "halted";
+  completed: boolean;
+  created_at: string;
+  duration_ms: number;
+  node_count: number;
+  error?: string;
+  nodes: { id: string; kind: string; status: string; attempts: number; detail?: string }[];
+  output?: Record<string, unknown>;
+};
+
+export function recordRun(run: WorkflowRunRow): WorkflowRunRow {
+  runs.unshift(run);
+  // Runs carry per-node detail, so keep a shorter tail than request logs.
+  if (runs.length > 200) runs.length = 200;
+  save();
+  return run;
+}
+
+export function listRuns(slug?: string, limit = 50): WorkflowRunRow[] {
+  const rows = slug ? runs.filter((r) => r.workflow_slug === slug) : runs;
+  return rows.slice(0, limit);
+}
+
+export function getRun(runId: string): WorkflowRunRow | undefined {
+  return runs.find((r) => r.id === runId);
 }
 
 export function listMcpServers(scope?: string, owner?: string): McpServerRow[] {
