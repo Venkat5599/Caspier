@@ -157,11 +157,16 @@ export function WorkflowCanvas({
     if (!drag) return;
     const p = toCanvas(e);
     if (drag.mode === "node") {
+      const node = nodeById.get(drag.id);
+      if (!node) return;
+      const next = { x: Math.round(p.x - drag.dx), y: Math.round(p.y - drag.dy) };
+      const now = pos(node);
+      // A plain click still emits a sub-pixel move. Without this guard that
+      // reports the graph as edited and the panel shows "unsaved" for nothing.
+      if (next.x === now.x && next.y === now.y) return;
       commit({
         ...graph,
-        nodes: graph.nodes.map((n) =>
-          n.id === drag.id ? { ...n, position: { x: Math.round(p.x - drag.dx), y: Math.round(p.y - drag.dy) } } : n,
-        ),
+        nodes: graph.nodes.map((n) => (n.id === drag.id ? { ...n, position: next } : n)),
       });
     } else if (drag.mode === "edge") {
       setDrag({ ...drag, x: p.x, y: p.y });
