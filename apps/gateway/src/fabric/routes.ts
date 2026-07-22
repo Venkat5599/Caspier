@@ -9,8 +9,13 @@ import {
   resolveScope,
   withScope,
   validateGraph,
+  rankCandidates,
+  matchesCapability,
+  p50,
   type WorkflowRunnerDeps,
   type GraphRun,
+  type RouteCandidate,
+  type RouteStrategy,
 } from "@fabric/fabric-core";
 import {
   listWorkflows,
@@ -21,6 +26,7 @@ import {
   listRuns,
   getRun,
   listApis,
+  latencySamples,
   getApi,
   createApi,
   bumpApiStats,
@@ -77,6 +83,97 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
       return { deployHash: tx.deployHash, demo: tx.demo };
     },
   };
+
+
+  /**
+   * Build the routable candidate set from what is actually published.
+   * Price comes from the manifest; latency and success rate from recorded
+   * calls, so an unproven service is reported as unmeasured rather than good.
+   */
+  const buildCandidates = async (capability: string | null): Promise<RouteCandidate[]> => {
+    const out: RouteCandidate[] = [];
+
+    for (const api of listApis("public")) {
+      if (!matchesCapability({ slug: api.slug ?? api.name, name: api.name, description: api.description }, capability)) {
+        continue;
+      }
+      const slug = api.slug ?? api.name;
+      const median = p50(latencySamples(slug));
+      out.push({
+        slug,
+        name: api.name,
+        kind: "api",
+        priceWei: String(api.price ?? "0"),
+        samples: api.request_count,
+        successRate: api.request_count > 0 ? api.success_count / api.request_count : 1,
+        ...(median !== undefined ? { p50LatencyMs: median } : {}),
+      });
+    }
+
+    for (const skill of await deps.catalog.list()) {
+      const unit = skill as unknown as { slug?: string; name?: string; description?: string; pricePerCall?: string };
+      const slug = unit.slug ?? unit.name ?? "";
+      if (!slug || out.some((c) => c.slug === slug)) continue;
+      if (!matchesCapability({ slug, name: unit.name ?? slug, description: unit.description ?? null }, capability)) {
+        continue;
+      }
+      const median = p50(latencySamples(slug));
+      out.push({
+        slug,
+        name: unit.name ?? slug,
+        kind: "skill",
+        priceWei: String(unit.pricePerCall ?? "0"),
+        samples: 0,
+        successRate: 1,
+        ...(median !== undefined ? { p50LatencyMs: median } : {}),
+      });
+    }
+
+    return out;
+  };
+
+  const readStrategy = (v: string | undefined): RouteStrategy =>
+    v === "cheapest" || v === "fastest" || v === "balanced" ? v : "balanced";
+
+  /** Discover + compare, without spending anything. */
+  app.get("/route/candidates", async (c) => {
+    const capability = c.req.query("capability") ?? null;
+    const strategy = readStrategy(c.req.query("strategy"));
+    const decision = rankCandidates(await buildCandidates(capability), strategy, capability);
+    return c.json(decision);
+  });
+
+  /** Discover, compare, then invoke the winner through the paid path. */
+  app.post("/route", async (c) => {
+    const body = (await c.req.json().catch(() => ({}))) as {
+      capability?: string;
+      strategy?: string;
+      args?: Record<string, unknown>;
+      dryRun?: boolean;
+    };
+    const capability = body.capability ?? null;
+    const strategy = readStrategy(body.strategy);
+    const decision = rankCandidates(await buildCandidates(capability), strategy, capability);
+
+    if (!decision.chosen) return c.json({ ok: false, ...decision }, 404);
+    if (body.dryRun) return c.json({ ok: true, ...decision });
+
+    const started = Date.now();
+    const out = await invokeSkillViaGateway(deps.gatewayUrl, decision.chosen.slug, body.args ?? {});
+    const ok = out.status >= 200 && out.status < 300;
+    appendLog({
+      api_slug: decision.chosen.slug,
+      api_name: decision.chosen.name,
+      kind: decision.chosen.kind === "api" ? "api" : "skill",
+      status: out.status,
+      ok,
+      paid: true,
+      price: Number(decision.chosen.priceWei),
+      duration_ms: Date.now() - started,
+    });
+
+    return c.json({ ok, routedTo: decision.chosen.slug, strategy, rationale: decision.rationale, ranked: decision.ranked, status: out.status, body: out.body });
+  });
 
   app.get("/fabric/apis", async (c) => {
     const scope = c.req.query("scope");
@@ -281,7 +378,9 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
         if (proxy.http_method !== "GET" && proxy.http_method !== "HEAD") {
           init.body = JSON.stringify(args ?? {});
         }
+        const startedAt = Date.now();
         const upstream = await fetch(url, init);
+        const durationMs = Date.now() - startedAt;
         const body = await upstream.text();
         let parsed: unknown = body;
         try {
@@ -299,6 +398,7 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
           ok,
           paid: false,
           price: Number(proxy.price),
+          duration_ms: durationMs,
         });
         return c.json({ ok, status: upstream.status, body: parsed });
       } catch (e) {

@@ -46,8 +46,17 @@ export type RequestLogRow = {
   ok: boolean;
   paid: boolean;
   price: number;
+  /** Wall-clock duration of the upstream call. Absent on older rows. */
+  duration_ms?: number;
   created_at: string;
 };
+
+/** Median upstream latency per api slug, from recorded calls. */
+export function latencySamples(slug: string): number[] {
+  return logs
+    .filter((l) => l.api_slug === slug && typeof l.duration_ms === "number")
+    .map((l) => l.duration_ms!);
+}
 
 const workflows: WorkflowRow[] = [];
 const mcpServers: McpServerRow[] = [];

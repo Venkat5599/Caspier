@@ -19,3 +19,12 @@ export {
 } from "./graph.ts";
 export { resolveScope, withScope, currentScope, type AgentScope } from "./auth.ts";
 export { registerCatalog, buildFabricServer, type FabricRegisterDeps } from "./register.ts";
+export {
+  rankCandidates,
+  matchesCapability,
+  p50,
+  type RouteStrategy,
+  type RouteCandidate,
+  type RankedCandidate,
+  type RouteDecision,
+} from "./router.ts";
