@@ -22,6 +22,8 @@ import {
   seedFabricWorkflows,
   type FabricWorkflow,
 } from "@/lib/api";
+import { type RunState } from "./workflow-canvas";
+import { GraphEditor } from "./workflow-graph-editor";
 
 type WfStep =
   | { id: string; kind: "http"; url?: string; method?: string; body?: string; api?: string }
@@ -128,7 +130,7 @@ export function WorkflowsSection() {
 }
 
 function WorkflowDetail({ wf, onBack }: { wf: FabricWorkflow; onBack: () => void }) {
-  const steps = (wf.steps ?? []) as WfStep[];
+  const [runState, setRunState] = useState<RunState>({});
   const inputs = wf.input_variables ?? [];
   const allowed = (wf as { allowed_contracts?: string[] }).allowed_contracts ?? [];
   const outputs = (wf as { output_mapping?: Output[] }).output_mapping ?? [];
@@ -137,14 +139,6 @@ function WorkflowDetail({ wf, onBack }: { wf: FabricWorkflow; onBack: () => void
     null,
     2,
   );
-
-  const stepColor = (k: string) => (k === "onchain" ? "text-accent" : k === "condition" ? "text-amber-400" : "text-sky-400");
-  const stepLabel = (s: WfStep) =>
-    s.kind === "onchain"
-      ? `Sepolia transfer → ${s.amount} wei`
-      : s.kind === "condition"
-        ? `${s.left} ${s.op} ${s.right}`
-        : `${s.method ?? "GET"} ${s.url ?? s.api ?? ""}`;
 
   return (
     <div className="space-y-6">
@@ -168,24 +162,7 @@ function WorkflowDetail({ wf, onBack }: { wf: FabricWorkflow; onBack: () => void
         <p className="mt-3 text-sm text-neutral-400">{wf.description}</p>
       </div>
 
-      <Panel>
-        <p className="font-semibold text-white">Steps</p>
-        <div className="mt-4 space-y-2">
-          {steps.map((s, i) => (
-            <div key={s.id} className="flex items-center gap-3 rounded-xl border border-white/[0.08] px-4 py-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-xs font-semibold text-white">
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-sm text-white">{s.id}</p>
-                <p className="truncate text-xs text-neutral-500">{stepLabel(s)}</p>
-              </div>
-              <span className={`text-xs font-medium uppercase ${stepColor(s.kind)}`}>{s.kind}</span>
-            </div>
-          ))}
-          {steps.length === 0 && <p className="text-sm text-neutral-500">no steps</p>}
-        </div>
-      </Panel>
+      <GraphEditor wf={wf} onRunState={setRunState} runState={runState} />
 
       {inputs.length > 0 && (
         <Panel>
@@ -241,12 +218,12 @@ function WorkflowDetail({ wf, onBack }: { wf: FabricWorkflow; onBack: () => void
         </div>
       </Panel>
 
-      <RunWorkflow wf={wf} />
+      <RunWorkflow wf={wf} onRunState={setRunState} />
     </div>
   );
 }
 
-function RunWorkflow({ wf }: { wf: FabricWorkflow }) {
+function RunWorkflow({ wf, onRunState }: { wf: FabricWorkflow; onRunState?: (s: RunState) => void }) {
   const inputs = wf.input_variables ?? [];
   const [vals, setVals] = useState<Record<string, string>>({});
   const [token, setToken] = useState("");
@@ -257,8 +234,11 @@ function RunWorkflow({ wf }: { wf: FabricWorkflow }) {
     setBusy(true);
     setRes(null);
     try {
-      const body = await runFabricWorkflow(wf.slug ?? wf.name, vals, token || undefined);
-      setRes(body as RunResp);
+      const body = (await runFabricWorkflow(wf.slug ?? wf.name, vals, token || undefined)) as RunResp;
+      setRes(body);
+      const next: RunState = {};
+      for (const st of body.run?.steps ?? []) next[st.id] = st.status;
+      onRunState?.(next);
     } catch (e) {
       setRes({ ok: false, error: String((e as Error).message) });
     } finally {

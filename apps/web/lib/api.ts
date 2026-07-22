@@ -114,53 +114,6 @@ export async function autoPayInvoke(slug: string, input: unknown, nonce: string)
   return body as InvokeResult;
 }
 
-export interface WorkflowSummary {
-  id: number | string;
-  name: string;
-  active?: boolean;
-}
-
-export interface WorkflowNode {
-  name: string;
-  type: string;
-  parameters?: Record<string, unknown>;
-  position?: number[];
-}
-
-export interface WorkflowDetail {
-  id?: number | string;
-  name: string;
-  active?: boolean;
-  nodes?: WorkflowNode[];
-  connections?: Record<string, unknown>;
-}
-
-export async function seedWorkflows() {
-  const res = await fetch(`${BASE}/workflows/seed`, { method: "POST" });
-  return res.json();
-}
-
-export async function listWorkflows() {
-  const res = await fetch(`${BASE}/workflows`);
-  return (await res.json()) as { workflows: WorkflowSummary[] };
-}
-
-export async function getWorkflow(id: number | string): Promise<WorkflowDetail> {
-  const res = await fetch(`${BASE}/workflows/${encodeURIComponent(String(id))}`);
-  if (!res.ok) throw new Error(`workflow fetch failed: ${res.status}`);
-  return (await res.json()) as WorkflowDetail;
-}
-
-export async function generateWorkflow(prompt: string) {
-  const res = await fetch(`${BASE}/workflows/generate`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt }),
-  });
-  const body = await res.json();
-  if (!res.ok) throw new Error((body as { error?: string }).error ?? "generate failed");
-  return body as WorkflowDetail & { id: number | string };
-}
 
 export const gatewayUrl = BASE;
 
@@ -445,4 +398,69 @@ export function noxSettle(recipient: string, amountWei: string): Promise<NoxSett
 
 export function noxFlushEpoch(): Promise<NoxTx & { epoch?: number }> {
   return noxJson<NoxTx & { epoch?: number }>("/nox/epoch/flush", { method: "POST" });
+}
+
+// --- Workflow graphs and run history ---
+
+export type WfNode = {
+  id: string;
+  kind: "trigger" | "http" | "condition" | "onchain" | "delay" | "transform" | "loop";
+  label?: string;
+  position?: { x: number; y: number };
+  retry?: { max: number; backoffMs?: number };
+  timeoutMs?: number;
+  config?: Record<string, unknown>;
+};
+
+export type WfEdge = { from: string; to: string; branch?: "true" | "false" };
+
+export type WorkflowGraph = { nodes: WfNode[]; edges: WfEdge[] };
+
+export type RunNode = {
+  id: string;
+  kind: string;
+  status: "ok" | "skipped" | "error";
+  attempts: number;
+  detail?: string;
+};
+
+export type WorkflowRunRecord = {
+  id: string;
+  workflow_slug: string;
+  workflow_name: string;
+  status: "completed" | "failed" | "halted";
+  completed: boolean;
+  created_at: string;
+  duration_ms: number;
+  node_count: number;
+  error?: string;
+  nodes: RunNode[];
+  output?: Record<string, unknown>;
+};
+
+/** Save a canvas-authored graph onto an existing workflow. */
+export async function saveWorkflowGraph(slug: string, graph: WorkflowGraph) {
+  const res = await fetch(`${BASE}/fabric/workflows/${encodeURIComponent(slug)}/graph`, {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(graph),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? "could not save graph");
+  return data as { ok: true; workflow: FabricWorkflow };
+}
+
+export async function listWorkflowRuns(slug?: string, limit = 20): Promise<WorkflowRunRecord[]> {
+  const q = new URLSearchParams();
+  if (slug) q.set("workflow", slug);
+  q.set("limit", String(limit));
+  const res = await fetch(`${BASE}/fabric/runs?${q}`);
+  if (!res.ok) return [];
+  return ((await res.json()) as { runs: WorkflowRunRecord[] }).runs;
+}
+
+export async function getWorkflowRun(id: string): Promise<WorkflowRunRecord | null> {
+  const res = await fetch(`${BASE}/fabric/runs/${encodeURIComponent(id)}`);
+  if (!res.ok) return null;
+  return (await res.json()) as WorkflowRunRecord;
 }
