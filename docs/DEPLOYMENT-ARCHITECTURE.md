@@ -17,8 +17,7 @@ kairos splits the **web UI** (Vercel) from the **execution backend** (VPS). Anyo
 │  VPS                                                              │
 │  ┌─────────────┐    ┌──────────────┐    ┌─────────────────────┐  │
 │  │ Caddy TLS   │───▶│ Gateway :8080│───▶│ Postgres (catalog)  │  │
-│  │ api.*.dev   │    │ Hono API     │    │ n8n :5678           │  │
-│  │ n8n.*.dev   │───▶│ x402 + chain │    │ redis, nats, minio  │  │
+│  │             │    │ x402 + chain │    │ redis, nats, minio  │  │
 │  └─────────────┘    └──────────────┘    └─────────────────────┘  │
 └──────────────────────────────────────────────────────────────────┘
          ▲
@@ -37,9 +36,7 @@ kairos splits the **web UI** (Vercel) from the **execution backend** (VPS). Anyo
 |---------|------|------|------|
 | Web UI | `kairos.vercel.app` / `kairos.dev` | 443 | Marketing, dashboard, publish UI |
 | Gateway API | `api.kairos.dev` | 443 → 8080 | Skills catalog, invoke, x402, session keys |
-| n8n embed | `n8n.kairos.dev` | 443 → 8089 | Workflow studio iframe in dashboard |
 | Postgres | localhost | 5432 | Catalog persistence (not public) |
-| n8n internal | localhost | 5678 | Workflow engine (gateway calls via `N8N_REST_URL`) |
 
 ## Request flows
 
@@ -59,19 +56,15 @@ kairos splits the **web UI** (Vercel) from the **execution backend** (VPS). Anyo
 
 ### Workflows
 
-1. Dashboard workflows page embeds `NEXT_PUBLIC_N8N_URL` (n8n proxy).
-2. Gateway `/workflows/*` talks to n8n on `127.0.0.1:5678`.
 
 ## Environment variable map
 
 | Where | Variable | Example |
 |-------|----------|---------|
 | Vercel | `NEXT_PUBLIC_GATEWAY_URL` | `https://api.kairos.dev` |
-| Vercel | `NEXT_PUBLIC_N8N_URL` | `https://n8n.kairos.dev` |
 | VPS `.env` | `GATEWAY_PUBLIC_URL` | `https://api.kairos.dev` |
 | VPS `.env` | `GATEWAY_PORT` | `8080` |
 | VPS `.env` | `DEPLOY_WEB` | `false` (Vercel hosts UI) |
-| VPS `.env` | `API_DOMAIN` / `N8N_DOMAIN` | Caddy hostnames |
 | Claude Code `.mcp.json` | `GATEWAY_URL` | Same as `NEXT_PUBLIC_GATEWAY_URL` |
 | VPS `.env` | `Sepolia_PUBLIC_KEY` | Testnet account for payments |
 | VPS `.env` | `CHAIN_WORKER_SECRET_KEY` | Signs transfers |
@@ -82,7 +75,6 @@ Full VPS template: `.env.production.example`.
 
 1. **Vercel** — deploy web with placeholder gateway URL ([VERCEL-DEPLOY.md](./VERCEL-DEPLOY.md)).
 2. **VPS** — provision Docker, copy `.env.production.example` → `.env`, run `infra/deploy.sh` ([VPS-DEPLOY.md](./VPS-DEPLOY.md)).
-3. **DNS** — point `api.kairos.dev` and `n8n.kairos.dev` at VPS IP; start Caddy.
 4. **Vercel redeploy** — set real `NEXT_PUBLIC_GATEWAY_URL` and redeploy.
 5. **Claude Code** — configure MCP per [CLAUDE-CODE-DEMO.md](./CLAUDE-CODE-DEMO.md).
 

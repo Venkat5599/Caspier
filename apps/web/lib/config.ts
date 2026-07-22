@@ -34,7 +34,7 @@ export const blurHeadlineConfig = {
 export const techStackConfig = {
   title: "Built on open standards",
   description:
-    "Kairos composes Sepolia, x402, MCP, and n8n — no proprietary lock-in.",
+    "Kairos composes Sepolia, x402, MCP, and iExec Nox — no proprietary lock-in.",
   items: [
     {
       name: "Sepolia",
@@ -49,8 +49,8 @@ export const techStackConfig = {
       description: "Model Context Protocol for agent discovery",
     },
     {
-      name: "n8n",
-      description: "Workflow automation for paid skill pipelines",
+      name: "iExec Nox",
+      description: "Confidential budgets and settlement inside a TEE",
     },
   ],
 };

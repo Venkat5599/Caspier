@@ -79,7 +79,6 @@ docker run -d --name agentfabric-gateway --restart unless-stopped --network host
   -e GATEWAY_PORT="$GATEWAY_PORT" \
   -e LOG_LEVEL=info \
   -e GATEWAY_PUBLIC_URL="$GATEWAY_PUBLIC_URL" \
-  -e N8N_REST_URL="${N8N_REST_URL:-http://127.0.0.1:5678}" \
   oven/bun:1 bash -lc "bun apps/gateway/src/index.ts" >/dev/null
 
 if [ "$DEPLOY_WEB" = "true" ]; then

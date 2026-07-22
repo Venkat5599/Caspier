@@ -1,9 +1,8 @@
 # Kairos — edge reverse proxy (auto-TLS via Caddy).
-# Web UI is on Vercel. VPS serves API + n8n only.
+# Web UI is on Vercel. VPS serves the API only.
 #
 # DNS:
 #   api.kairos.dev  A  -> VPS_IP
-#   n8n.kairos.dev  A  -> VPS_IP
 #
 # Run: caddy run --config infra/caddy/Caddyfile --envfile .env
 
@@ -12,7 +11,3 @@
 	reverse_proxy 127.0.0.1:{$GATEWAY_PORT:8080}
 }
 
-{$N8N_DOMAIN:n8n.localhost} {
-	encode gzip
-	reverse_proxy 127.0.0.1:{$N8N_PROXY_PORT:8089}
-}

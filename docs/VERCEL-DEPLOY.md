@@ -1,6 +1,6 @@
 # Deploy kairos web on Vercel
 
-**Split deployment:** the Next.js marketing site and dashboard run on **Vercel**. The **gateway**, Postgres, n8n, and chain worker run on your **VPS**. The **MCP server** runs on your developer machine (stdio) and points at the VPS gateway URL — same API the dashboard uses.
+**Split deployment:** the Next.js marketing site and dashboard run on **Vercel**. The **gateway**, Postgres, and chain worker run on your **VPS**. The **MCP server** runs on your developer machine (stdio) and points at the VPS gateway URL — same API the dashboard uses.
 
 See [DEPLOYMENT-ARCHITECTURE.md](./DEPLOYMENT-ARCHITECTURE.md) for request flows and [VPS-DEPLOY.md](./VPS-DEPLOY.md) for backend setup.
 
@@ -31,13 +31,11 @@ Set these in **Project Settings → Environment Variables** (Production, Preview
 | Variable | Production example | Notes |
 |----------|-------------------|-------|
 | `NEXT_PUBLIC_GATEWAY_URL` | `https://user-vps-api-domain` | Public gateway URL on VPS |
-| `NEXT_PUBLIC_N8N_URL` | `https://user-vps-n8n-domain` | n8n proxy for workflow iframe |
 
 **Before VPS is ready**, use a placeholder:
 
 ```
 NEXT_PUBLIC_GATEWAY_URL=https://user-vps-api-domain
-NEXT_PUBLIC_N8N_URL=https://user-vps-n8n-domain
 ```
 
 Dashboard API calls will fail until the gateway is live. Update and redeploy when the VPS is up.
@@ -89,7 +87,6 @@ NEXT_PUBLIC_GATEWAY_URL=http://localhost:8080 bun run dev
 |-------|-----|
 | Build fails on install | Confirm Root Directory is `apps/web` and `vercel.json` installCommand reaches monorepo root |
 | Dashboard shows fetch errors | Gateway down or wrong `NEXT_PUBLIC_GATEWAY_URL`; check CORS (gateway allows all origins) |
-| n8n iframe blank | Set `NEXT_PUBLIC_N8N_URL`; ensure n8n proxy allows Vercel origin in CSP |
 | TypeScript errors on Vercel | Run `bun run web:build` locally first |
 
 ## Files reference

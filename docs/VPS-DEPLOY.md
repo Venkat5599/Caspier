@@ -1,6 +1,6 @@
 # VPS deployment guide
 
-Deploy the kairos **backend** on a Linux VPS: gateway, Postgres, n8n, and optional Caddy TLS. The web UI is hosted on **Vercel** by default (`DEPLOY_WEB=false`).
+Deploy the kairos **backend** on a Linux VPS: gateway, Postgres, and optional Caddy TLS. The web UI is hosted on **Vercel** by default (`DEPLOY_WEB=false`).
 
 See [DEPLOYMENT-ARCHITECTURE.md](./DEPLOYMENT-ARCHITECTURE.md) for how Vercel + VPS connect.
 
@@ -10,7 +10,6 @@ Use this when you have VPS access:
 
 - [ ] VPS IP and SSH user/key
 - [ ] Domain DNS: `api.kairos.dev` → VPS IP
-- [ ] Domain DNS: `n8n.kairos.dev` → VPS IP (workflow iframe)
 - [ ] `Sepolia_PUBLIC_KEY` (testnet account hex)
 - [ ] `CHAIN_WORKER_SECRET_KEY` (testnet secret key)
 - [ ] Testnet ETH funded on that account
@@ -21,7 +20,6 @@ Use this when you have VPS access:
 |------|---------|----------|
 | VPS IP | `203.0.113.10` | SSH, DNS A records |
 | API domain | `api.kairos.dev` | Gateway (Caddy → :8080) |
-| n8n domain | `n8n.kairos.dev` | Workflow embed (Caddy → :8089) |
 | Vercel URL | `kairos.vercel.app` | Dashboard UI |
 | Sepolia public key | `01abc…` | x402 recipient, session keys |
 | Sepolia secret key | `secret_key_…` | Chain worker signs transfers |
@@ -59,8 +57,6 @@ Internal only (localhost):
 | Port | Service |
 |------|---------|
 | `5432` | Postgres |
-| `5678` | n8n |
-| `8089` | n8n proxy |
 
 ## One-time setup
 
@@ -96,7 +92,6 @@ DEPLOY_WEB=false
 GATEWAY_PORT=8080
 GATEWAY_PUBLIC_URL=https://api.kairos.dev
 API_DOMAIN=api.kairos.dev
-N8N_DOMAIN=n8n.kairos.dev
 VERCEL_WEB_URL=https://kairos.vercel.app
 
 DATABASE_URL=postgres://fabric:<password>@localhost:5432/fabric
@@ -105,12 +100,11 @@ CHAIN_WORKER_SECRET_KEY=<secret>
 FABRIC_DEMO_CHAIN=false
 ```
 
-Set matching vars on **Vercel** (`NEXT_PUBLIC_GATEWAY_URL`, `NEXT_PUBLIC_N8N_URL`) and redeploy the web app.
 
 ## What deploy.sh does
 
 1. Pulls `origin/main`
-2. Starts Postgres, Redis, NATS, MinIO, n8n via `infra/compose/docker-compose.yml`
+2. Starts Postgres, Redis, NATS, MinIO via `infra/compose/docker-compose.yml`
 3. Runs catalog DB migrations
 4. Skips web build when `DEPLOY_WEB=false` (Vercel)
 5. Restarts `agentfabric-gateway` on host port `GATEWAY_PORT`
@@ -131,9 +125,6 @@ curl -fsS "https://api.kairos.dev/chain/status"
 # Seed demo skill
 curl -fsS -X POST "https://api.kairos.dev/skills/seed-demo"
 curl -fsS "https://api.kairos.dev/skills"
-
-# n8n (VPS localhost)
-curl -fsS "http://127.0.0.1:5678/healthz"
 ```
 
 From Vercel dashboard: open `https://kairos.vercel.app/dashboard` — skills should load.
@@ -149,8 +140,6 @@ See [CLAUDE-CODE-DEMO.md](./CLAUDE-CODE-DEMO.md).
 | Container | Role |
 |-----------|------|
 | `agentfabric-postgres-1` | Catalog DB |
-| `agentfabric-n8n-1` | Workflows |
-| `agentfabric-n8n-proxy-1` | iframe proxy |
 | `agentfabric-gateway` | API + x402 + chain |
 
 ```bash
@@ -171,7 +160,6 @@ Secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
 | Vercel dashboard empty | Gateway down or wrong `NEXT_PUBLIC_GATEWAY_URL`; redeploy Vercel after fix |
 | CORS errors | Gateway uses open CORS; check URL typo |
 | Paid invoke fails | `curl /chain/status` — need `configured: true`, funded account |
-| n8n iframe blocked | Check `NEXT_PUBLIC_N8N_URL` and n8n proxy CSP |
 | `DEPLOY_WEB=false` but old web container running | `docker rm -f agentfabric-web` |
 
 ## All-in-one VPS (legacy)

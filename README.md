@@ -145,7 +145,7 @@ this be stated explicitly.
 
 **Pre-existing:** the x402 gateway and quote/settle flow, the SKILL.md manifest
 parser and catalog, the MCP server, the Next.js dashboard shell and marketplace,
-and the n8n workflow integration. Earlier iterations of this project targeted
+and the linear workflow runner. Earlier iterations of this project targeted
 other chains; that lineage is in the git history.
 
 **Built during this hackathon:**
