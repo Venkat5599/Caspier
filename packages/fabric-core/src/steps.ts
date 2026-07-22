@@ -2,7 +2,6 @@ import type { WfStep, WorkflowRow, CmpOp } from "./types.ts";
 import type { CatalogLoader } from "./catalog.ts";
 import { invokeSkillViaGateway } from "./proxy-tool.ts";
 import { currentScope } from "./auth.ts";
-import { resolve, type RunCtx } from "./resolver.ts";
 
 export type StepResult = {
   id: string;
@@ -143,53 +142,16 @@ export type WorkflowRun = {
   output?: Record<string, unknown>;
 };
 
-function mapOutput(wf: WorkflowRow, ctx: RunCtx): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const m of wf.output_mapping ?? []) {
-    if (!m?.name || m.from == null) continue;
-    try {
-      out[m.name] = resolve(m.from, ctx);
-    } catch {
-      out[m.name] = null;
-    }
-  }
-  return out;
-}
-
+/**
+ * Run a workflow. Delegates to the graph engine, which converts a legacy flat
+ * `steps` array into a linear graph when no explicit `graph` is present — so
+ * callers that predate branching keep getting the same result shape.
+ */
 export async function runWorkflow(
   wf: WorkflowRow,
   input: Record<string, unknown>,
   deps: WorkflowRunnerDeps,
 ): Promise<WorkflowRun> {
-  const ctx: RunCtx = { input, steps: {} };
-  const results: StepResult[] = [];
-
-  for (const raw of wf.steps ?? []) {
-    let step: WfStep;
-    try {
-      step = resolve(raw, ctx);
-    } catch (e) {
-      results.push({
-        id: (raw as { id?: string }).id ?? "?",
-        kind: (raw as WfStep).kind ?? "?",
-        status: "error",
-        detail: (e as Error).message,
-      });
-      return { workflow: wf.slug ?? wf.name, completed: false, steps: results };
-    }
-
-    const res = await runStep(step, wf, deps);
-    results.push(res);
-    ctx.steps[res.id] = { output: res.output };
-
-    if (res.status === "error") return { workflow: wf.slug ?? wf.name, completed: false, steps: results };
-    if (res.halt) return { workflow: wf.slug ?? wf.name, completed: false, steps: results };
-  }
-
-  return {
-    workflow: wf.slug ?? wf.name,
-    completed: true,
-    steps: results,
-    output: mapOutput(wf, ctx),
-  };
+  const { runGraph } = await import("./engine.ts");
+  return runGraph(wf, input, deps);
 }

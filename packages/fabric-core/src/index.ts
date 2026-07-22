@@ -8,5 +8,14 @@ export {
   type InvokeSkillFn,
 } from "./proxy-tool.ts";
 export { runWorkflow, runStep, type StepResult, type WorkflowRun, type WorkflowRunnerDeps } from "./steps.ts";
+export { runGraph, type NodeResult, type NodeStatus, type GraphRun } from "./engine.ts";
+export {
+  stepsToGraph,
+  workflowGraph,
+  validateGraph,
+  findCycle,
+  autoLayout,
+  type GraphIssue,
+} from "./graph.ts";
 export { resolveScope, withScope, currentScope, type AgentScope } from "./auth.ts";
 export { registerCatalog, buildFabricServer, type FabricRegisterDeps } from "./register.ts";
