@@ -436,6 +436,120 @@ export function seedMarketplaceTemplates(): {
     );
   }
 
+  // Every target below was hit and returned 200 before being seeded. These are
+  // real public endpoints, metered through the x402 gateway — not placeholders.
+
+  if (!apis.some((a) => a.slug === "coingecko-price")) {
+    created.apis.push(
+      createApi({
+        name: "CoinGecko Price",
+        slug: "coingecko-price",
+        description: "Spot price for any coin in any fiat. Live CoinGecko public API, metered per call.",
+        category: "Finance",
+        tags: ["crypto", "price", "x402"],
+        target_url: "https://api.coingecko.com/api/v3/simple/price?ids={ids}&vs_currencies={vs}",
+        http_method: "GET",
+        price: "1500",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        variables: [
+          { name: "ids", type: "string", in: "path", description: "Coin id, e.g. ethereum", required: true },
+          { name: "vs", type: "string", in: "path", description: "Fiat, e.g. usd", required: true },
+        ],
+      }),
+    );
+  }
+
+  if (!apis.some((a) => a.slug === "exchange-rates")) {
+    created.apis.push(
+      createApi({
+        name: "Exchange Rates",
+        slug: "exchange-rates",
+        description: "Daily FX rates against any base currency. Live open.er-api.com, no key required.",
+        category: "Finance",
+        tags: ["fx", "rates"],
+        target_url: "https://open.er-api.com/v6/latest/{base}",
+        http_method: "GET",
+        price: "800",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        variables: [{ name: "base", type: "string", in: "path", description: "Base currency, e.g. USD", required: true }],
+      }),
+    );
+  }
+
+  if (!apis.some((a) => a.slug === "ip-geolocation")) {
+    created.apis.push(
+      createApi({
+        name: "IP Geolocation",
+        slug: "ip-geolocation",
+        description: "Country, city, ISP and coordinates for an IP address. Live ip-api.com.",
+        category: "Data",
+        tags: ["geo", "ip"],
+        target_url: "http://ip-api.com/json/{ip}",
+        http_method: "GET",
+        price: "600",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        variables: [{ name: "ip", type: "string", in: "path", description: "IPv4 address", required: true }],
+      }),
+    );
+  }
+
+  if (!apis.some((a) => a.slug === "hn-top-stories")) {
+    created.apis.push(
+      createApi({
+        name: "Hacker News Top Stories",
+        slug: "hn-top-stories",
+        description: "Current front-page story ids from the official Firebase API. Real feed, updated live.",
+        category: "Data",
+        tags: ["news", "feed"],
+        target_url: "https://hacker-news.firebaseio.com/v0/topstories.json",
+        http_method: "GET",
+        price: "400",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        variables: [],
+      }),
+    );
+  }
+
+  if (!apis.some((a) => a.slug === "bitcoin-network-stats")) {
+    created.apis.push(
+      createApi({
+        name: "Bitcoin Network Stats",
+        slug: "bitcoin-network-stats",
+        description: "Hash rate, difficulty, block count and market price from blockchain.info.",
+        category: "Finance",
+        tags: ["bitcoin", "chain"],
+        target_url: "https://api.blockchain.info/stats",
+        http_method: "GET",
+        price: "700",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        variables: [],
+      }),
+    );
+  }
+
+  if (!apis.some((a) => a.slug === "random-user")) {
+    created.apis.push(
+      createApi({
+        name: "Random User",
+        slug: "random-user",
+        description: "Synthetic user records for agent test fixtures. Live randomuser.me.",
+        category: "Utility",
+        tags: ["testing", "fixtures"],
+        target_url: "https://randomuser.me/api/?results={count}",
+        http_method: "GET",
+        price: "300",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        variables: [{ name: "count", type: "number", in: "path", description: "How many records", required: true }],
+      }),
+    );
+  }
+
   if (!mcpServers.some((m) => m.slug === "kairos-fabric")) {
     created.mcps.push(
       createMcpServer({
@@ -454,6 +568,152 @@ export function seedMarketplaceTemplates(): {
           "api__json-placeholder",
         ],
         workflows: ["pay-if-budget"],
+      }),
+    );
+  }
+
+  if (!mcpServers.some((m) => m.slug === "kairos-market")) {
+    created.mcps.push(
+      createMcpServer({
+        slug: "kairos-market",
+        display_name: "Kairos Market Data",
+        description: "Live market and network data as agent tools — every call metered over x402.",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        tools: [
+          "api__coingecko-price",
+          "api__exchange-rates",
+          "api__bitcoin-network-stats",
+          "api__hn-top-stories",
+          "api__ip-geolocation",
+          "api__random-user",
+        ],
+        workflows: ["market-snapshot"],
+      }),
+    );
+  }
+
+  // Graph workflows over the seeded endpoints. Both run on the real engine
+  // against the real URLs — the parallel one exists to show fan-out and join.
+  if (!workflows.some((w) => w.slug === "market-snapshot")) {
+    created.workflows.push(
+      createWorkflow({
+        name: "Market snapshot",
+        slug: "market-snapshot",
+        description:
+          "Fetches an ETH price and USD FX rates at the same time, then joins both into one payload. Demonstrates parallel fan-out and join.",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        tags: ["http", "parallel", "market"],
+        input_variables: [{ name: "vs", required: false, description: "Fiat currency, defaults to usd" }],
+        steps: [],
+        graph: {
+          nodes: [
+            { id: "start", kind: "trigger", position: { x: 40, y: 150 } },
+            {
+              id: "eth_price",
+              kind: "http",
+              label: "ETH price",
+              position: { x: 300, y: 60 },
+              retry: { max: 2, backoffMs: 400 },
+              timeoutMs: 8000,
+              config: {
+                method: "GET",
+                url: "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
+              },
+            },
+            {
+              id: "fx",
+              kind: "http",
+              label: "USD rates",
+              position: { x: 300, y: 240 },
+              retry: { max: 2, backoffMs: 400 },
+              timeoutMs: 8000,
+              config: { method: "GET", url: "https://open.er-api.com/v6/latest/USD" },
+            },
+            {
+              id: "snapshot",
+              kind: "transform",
+              label: "Join",
+              position: { x: 580, y: 150 },
+              config: { value: "eth={{steps.eth_price.output.ethereum.usd}} usd_eur={{steps.fx.output.rates.EUR}}" },
+            },
+          ],
+          edges: [
+            { from: "start", to: "eth_price" },
+            { from: "start", to: "fx" },
+            { from: "eth_price", to: "snapshot" },
+            { from: "fx", to: "snapshot" },
+          ],
+        },
+        output_mapping: [{ name: "snapshot", from: "{{steps.snapshot.output}}" }],
+      }),
+    );
+  }
+
+  if (!workflows.some((w) => w.slug === "weather-gated-payout")) {
+    created.workflows.push(
+      createWorkflow({
+        name: "Weather-gated payout",
+        slug: "weather-gated-payout",
+        description:
+          "Reads live Berlin weather, then branches: settle on-chain when the temperature is at or below the threshold, otherwise record a skip. Demonstrates true/false branching.",
+        is_public: true,
+        owner_address: KAIROS_OWNER,
+        tags: ["http", "condition", "onchain"],
+        input_variables: [
+          { name: "threshold", required: true, description: "Temperature ceiling in Celsius" },
+          { name: "recipient", required: false, description: "Payout recipient" },
+          { name: "amount", required: false, description: "Payout amount in wei" },
+        ],
+        steps: [],
+        graph: {
+          nodes: [
+            {
+              id: "weather",
+              kind: "http",
+              label: "Berlin weather",
+              position: { x: 40, y: 150 },
+              retry: { max: 2, backoffMs: 500 },
+              timeoutMs: 8000,
+              config: {
+                method: "GET",
+                url: "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true",
+              },
+            },
+            {
+              id: "cold_enough",
+              kind: "condition",
+              label: "At or below threshold",
+              position: { x: 320, y: 150 },
+              config: {
+                left: "{{steps.weather.output.current_weather.temperature}}",
+                op: "<=",
+                right: "{{input.threshold}}",
+              },
+            },
+            {
+              id: "settle",
+              kind: "onchain",
+              label: "Settle",
+              position: { x: 600, y: 60 },
+              config: { recipient: "{{input.recipient}}", amount: "{{input.amount}}" },
+            },
+            {
+              id: "skipped",
+              kind: "transform",
+              label: "Record skip",
+              position: { x: 600, y: 240 },
+              config: { value: "above threshold — no payout" },
+            },
+          ],
+          edges: [
+            { from: "weather", to: "cold_enough" },
+            { from: "cold_enough", to: "settle", branch: "true" },
+            { from: "cold_enough", to: "skipped", branch: "false" },
+          ],
+        },
+        output_mapping: [{ name: "outcome", from: "{{steps.skipped.output}}" }],
       }),
     );
   }
