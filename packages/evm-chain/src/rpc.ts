@@ -34,6 +34,11 @@ export class EvmRpc {
     return this.call("eth_getTransactionReceipt", [txHash]);
   }
 
+  /** The transaction itself. A receipt carries no `value`, so a native transfer needs this. */
+  getTransactionByHash(txHash: string): Promise<EvmTransaction | null> {
+    return this.call("eth_getTransactionByHash", [txHash]);
+  }
+
   /** Account balance in wei for an EVM address (0x…). */
   async getBalanceWei(address: string): Promise<string> {
     const hex = await this.call<string>("eth_getBalance", [address, "latest"]);
@@ -49,20 +54,37 @@ export interface EvmTxReceipt {
   status?: string;
 }
 
+export interface EvmTransaction {
+  hash: string;
+  from: string;
+  to?: string;
+  value?: string;
+}
+
 export function txSucceeded(receipt: EvmTxReceipt | null): boolean {
   return receipt?.status === "0x1";
 }
 
-/** Extract native ETH transfer details from a transaction receipt. */
-export function extractTransfer(receipt: EvmTxReceipt | null): {
+/**
+ * Extract native ETH transfer details.
+ *
+ * The receipt is authoritative for sender/recipient/status but never carries the
+ * transferred `value` — that lives on the transaction. Pass `tx` for a real chain;
+ * without it the amount can only fall back to the receipt and will read as "0".
+ */
+export function extractTransfer(
+  receipt: EvmTxReceipt | null,
+  tx?: EvmTransaction | null,
+): {
   senderAccount: string;
   amountWei: string;
   recipientAccount?: string;
 } | null {
   if (!receipt?.to) return null;
+  const rawValue = tx?.value ?? receipt.value;
   return {
     senderAccount: receipt.from,
-    amountWei: receipt.value ? BigInt(receipt.value).toString() : "0",
+    amountWei: rawValue ? BigInt(rawValue).toString() : "0",
     recipientAccount: receipt.to,
   };
 }

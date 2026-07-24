@@ -135,20 +135,30 @@ export class ChainWorker {
       };
     }
 
-    const receipt = await this.rpc.getTransactionReceipt(hash);
+    const [receipt, tx] = await Promise.all([
+      this.rpc.getTransactionReceipt(hash),
+      this.rpc.getTransactionByHash(hash),
+    ]);
     const success = txSucceeded(receipt);
-    const t = extractTransfer(receipt);
+    const t = extractTransfer(receipt, tx);
     const transfer = t
       ? {
           senderPublicKeyHex: t.senderAccount,
-          recipientPublicKeyHex: expected.recipientPublicKeyHex,
+          recipientPublicKeyHex: t.recipientAccount ?? "",
           amountWei: t.amountWei,
         }
       : undefined;
 
+    // A proof only counts if this transaction actually paid the quoted recipient.
+    const paidExpectedRecipient =
+      transfer !== undefined &&
+      transfer.recipientPublicKeyHex.toLowerCase() ===
+        expected.recipientPublicKeyHex.toLowerCase();
+
     const ok =
       success &&
       transfer !== undefined &&
+      paidExpectedRecipient &&
       BigInt(transfer.amountWei) >= BigInt(expected.amountWei);
 
     return { deployHash: hash, success: ok, demo: false, transfer };
