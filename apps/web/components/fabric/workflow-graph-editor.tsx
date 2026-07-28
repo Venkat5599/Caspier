@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Panel, Field, Input, Button } from "./ui";
-import { WorkflowCanvas, NODE_KINDS, type RunState } from "./workflow-canvas";
+import { WorkflowCanvas, NODE_KINDS, type RunState , PALETTE_MIME } from "./workflow-canvas";
 import {
   saveWorkflowGraph,
   listWorkflowRuns,
@@ -77,8 +77,12 @@ export function GraphEditor({
     setDirty(true);
   };
 
-  const addNode = (kind: WfNode["kind"]) => {
-    // Lay each new node clear of the last rather than stacking them at origin.
+  /**
+   * Add a node. With no `position` (clicking the palette) it is laid clear of
+   * the last one; dragging from the palette supplies the drop point, already
+   * converted to graph coordinates by the canvas.
+   */
+  const addNode = (kind: WfNode["kind"], position?: { x: number; y: number }) => {
     const n = graph.nodes.length;
     const base = `${kind}_${n + 1}`;
     const id = graph.nodes.some((x) => x.id === base) ? `${base}_${Date.now() % 1000}` : base;
@@ -89,11 +93,20 @@ export function GraphEditor({
         {
           id,
           kind,
-          position: { x: 40 + (n % 4) * 230, y: 40 + Math.floor(n / 4) * 130 },
+          position: position ?? { x: 40 + (n % 4) * 230, y: 40 + Math.floor(n / 4) * 130 },
           config: blankConfig(kind),
         },
       ],
     });
+  };
+
+  /**
+   * Canvas drop handler. The kind crosses the drag boundary as a plain string,
+   * so it is re-checked against the known kinds before it becomes a node.
+   */
+  const addNodeAt = (kind: string, position: { x: number; y: number }) => {
+    if (!(KIND_LIST as readonly string[]).includes(kind)) return;
+    addNode(kind as WfNode["kind"], position);
   };
 
   const patchNode = (id: string, patch: Partial<WfNode>) =>
@@ -160,8 +173,14 @@ export function GraphEditor({
           <button
             key={k}
             type="button"
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData(PALETTE_MIME, k);
+              e.dataTransfer.effectAllowed = "copy";
+            }}
             onClick={() => addNode(k)}
-            className="rounded-lg border border-white/[0.12] px-2.5 py-1.5 text-xs text-neutral-300 transition-colors hover:border-white/25 hover:text-white"
+            title="Drag onto the canvas, or click to append"
+            className="cursor-grab rounded-lg border border-white/[0.12] px-2.5 py-1.5 text-xs text-neutral-300 transition-colors hover:border-white/25 hover:text-white active:cursor-grabbing"
           >
             + {NODE_KINDS[k].label}
           </button>
@@ -171,7 +190,13 @@ export function GraphEditor({
       {err && <p className="mt-3 text-sm text-red-400">{err}</p>}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_270px]">
-        <WorkflowCanvas graph={graph} onChange={update} onSelect={setSelected} runState={runState} />
+        <WorkflowCanvas
+          graph={graph}
+          onChange={update}
+          onSelect={setSelected}
+          onDropNode={addNodeAt}
+          runState={runState}
+        />
 
         <div className="rounded-2xl border border-white/[0.08] p-4">
           {!node ? (

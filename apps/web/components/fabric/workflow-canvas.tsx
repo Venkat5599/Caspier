@@ -74,21 +74,37 @@ type Drag =
 
 export type RunState = Record<string, RunNode["status"]>;
 
+/**
+ * Drag payload type for palette-to-canvas node creation. A custom MIME rather
+ * than `text/plain` so the canvas can tell a palette drag from a stray text
+ * selection or a file dragged in from the desktop.
+ */
+export const PALETTE_MIME = "application/x-kairos-node";
+
 export function WorkflowCanvas({
   graph,
   onChange,
   onSelect,
+  onDropNode,
   runState,
   readOnly = false,
 }: {
   graph: WorkflowGraph;
   onChange?: (g: WorkflowGraph) => void;
   onSelect?: (id: string | null) => void;
+  /**
+   * A node kind dragged in from the palette, with the drop point already
+   * converted to graph coordinates. The canvas owns the pan/zoom transform, so
+   * only it can convert a screen position correctly.
+   */
+  onDropNode?: (kind: string, position: { x: number; y: number }) => void;
   runState?: RunState;
   readOnly?: boolean;
 }) {
   const surface = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<Drag>(null);
+  /** A palette node is hovering over the canvas, awaiting a drop. */
+  const [dropping, setDropping] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [view, setView] = useState({ x: 24, y: 24, scale: 1 });
 
@@ -239,7 +255,35 @@ export function WorkflowCanvas({
           setDrag({ mode: "pan", x: e.clientX, y: e.clientY, ox: view.x, oy: view.y });
         }
       }}
-      className="relative h-[460px] touch-none overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0b0c0e] select-none"
+      onDragOver={(e) => {
+        // Only claim the drop when a palette node is actually in flight, so
+        // dragging anything else over the canvas keeps the browser default.
+        if (!onDropNode || readOnly) return;
+        if (!e.dataTransfer.types.includes(PALETTE_MIME)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        setDropping(true);
+      }}
+      onDragLeave={(e) => {
+        // Fires when crossing onto a child too; ignore unless the pointer has
+        // genuinely left the surface, otherwise the hint flickers.
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        setDropping(false);
+      }}
+      onDrop={(e) => {
+        if (!onDropNode || readOnly) return;
+        const kind = e.dataTransfer.getData(PALETTE_MIME);
+        setDropping(false);
+        if (!kind) return;
+        e.preventDefault();
+        // Place the node centred under the cursor rather than with its corner
+        // there — dropping should land where you were looking.
+        const at = toCanvas(e);
+        onDropNode(kind, { x: Math.round(at.x - NODE_W / 2), y: Math.round(at.y - NODE_H / 2) });
+      }}
+      className={`relative h-[460px] touch-none overflow-hidden rounded-2xl border bg-[#0b0c0e] select-none ${
+        dropping ? "border-accent/50" : "border-white/[0.08]"
+      }`}
       style={{ cursor: drag?.mode === "pan" ? "grabbing" : "default" }}
     >
       <div data-surface className="absolute inset-0" />
