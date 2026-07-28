@@ -73,9 +73,25 @@ export const short = (s: string | null | undefined, head = 8, tail = 6) =>
 export const ETH = (raw: string | number | null | undefined) =>
   raw == null ? "—" : `${Number(raw).toLocaleString()} ETH`;
 
+/**
+ * Nested enclosure: an outer tray holding an inner plate.
+ *
+ * A single bordered box is the default dashboard card, and a hard hairline on
+ * every panel is what makes a page read as a wireframe. Two concentric shells
+ * instead — the outer barely lighter than the page, the inner carrying its own
+ * surface and a one-pixel top highlight — give an edge you sense as a lip
+ * catching light rather than a line someone drew. Radii are concentric
+ * (outer 1.5rem, inner 1.5rem − 5px padding) so the curves stay parallel.
+ */
 export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 ${className}`}>{children}</div>
+    <div className="rounded-[1.5rem] bg-white/[0.025] p-[5px]">
+      <div
+        className={`rounded-[calc(1.5rem-5px)] bg-[#0d0e11] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] ${className}`}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -95,7 +111,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3.5 py-2.5 text-sm text-white placeholder:text-neutral-600 outline-none transition focus:border-accent/60 focus:bg-white/[0.05] ${props.className ?? ""}`}
+      className={`w-full rounded-xl bg-black/40 px-3.5 py-2.5 text-sm text-white placeholder:text-neutral-600 outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.06)] transition-shadow duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(163,230,53,0.35)] ${props.className ?? ""}`}
     />
   );
 }
@@ -104,7 +120,7 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...props}
-      className={`w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3.5 py-2.5 font-mono text-sm text-white placeholder:text-neutral-600 outline-none transition focus:border-accent/60 focus:bg-white/[0.05] ${props.className ?? ""}`}
+      className={`w-full rounded-xl bg-black/40 px-3.5 py-2.5 font-mono text-sm text-white placeholder:text-neutral-600 outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.06)] transition-shadow duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(163,230,53,0.35)] ${props.className ?? ""}`}
     />
   );
 }
@@ -122,14 +138,25 @@ export function Button({
   variant?: "primary" | "ghost" | "outline";
   type?: "button" | "submit";
 }) {
+  // Motion carries mass: a tuned curve, and only transform/opacity so nothing
+  // triggers layout. No lift on hover — a button that jumps is a template tic.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:opacity-50";
+    "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium " +
+    "transition-[background-color,color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] " +
+    "active:scale-[0.985] disabled:opacity-40 disabled:pointer-events-none";
+
+  // The accent is tonal, never a flood. Primary reads as a raised plate — a
+  // lifted surface with a lit top edge and a faint accent wash — so it leads
+  // by elevation rather than by being the brightest thing on screen. That also
+  // dissolves the filled-vs-outlined button duo: these differ in altitude, not
+  // in fill.
   const styles =
     variant === "primary"
-      ? "bg-accent text-black hover:brightness-105"
+      ? "bg-white/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.5)] " +
+        "hover:bg-accent/[0.16] hover:text-accent hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_2px_rgba(0,0,0,0.5)]"
       : variant === "outline"
-        ? "border border-white/[0.14] text-white hover:bg-white/[0.05]"
-        : "text-neutral-400 hover:text-white";
+        ? "bg-white/[0.03] text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:bg-white/[0.06] hover:text-white"
+        : "text-neutral-500 hover:text-white";
   return (
     <button type={type} onClick={onClick} disabled={disabled} className={`${base} ${styles}`}>
       {children}
@@ -166,7 +193,13 @@ export function Toggle({
 export function Chip({ children, accent = false }: { children: ReactNode; accent?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${accent ? "bg-accent/15 text-accent" : "bg-white/[0.06] text-neutral-400"}`}
+      // Tonal, not a coloured pill. An accent chip earns its colour by being
+      // rare; when every label wears one the page reads as a component kit.
+      className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium ${
+        accent
+          ? "bg-accent/[0.08] text-accent/90 shadow-[inset_0_0_0_1px_rgba(163,230,53,0.15)]"
+          : "bg-white/[0.04] text-neutral-400 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]"
+      }`}
     >
       {children}
     </span>
@@ -175,7 +208,7 @@ export function Chip({ children, accent = false }: { children: ReactNode; accent
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-white/[0.1] px-6 py-10 text-center text-sm text-neutral-500">
+    <div className="rounded-[1.25rem] bg-black/25 px-6 py-12 text-center text-sm text-neutral-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
       {children}
     </div>
   );

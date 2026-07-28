@@ -78,16 +78,15 @@ export function KairosDashboard({ initialTab }: { initialTab?: SectionKey }): Re
     >
       <aside className="border-b border-white/[0.06] bg-white/[0.015] lg:sticky lg:top-0 lg:h-[100dvh] lg:w-[17rem] lg:shrink-0 lg:border-b-0 lg:border-r">
         <div className="flex h-full flex-col gap-3 p-4">
-          <div className="flex items-center gap-3 rounded-2xl bg-accent/10 px-3 py-3 ring-1 ring-inset ring-accent/15">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent">
-              <KairosMark className="h-5 w-5 text-black" />
+          <div className="flex items-center gap-3 rounded-2xl bg-white/[0.03] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+              <KairosMark className="h-5 w-5 text-accent" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold leading-tight tracking-tight">{siteConfig.name}</p>
               <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-accent">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+                                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
                 </span>
                 live · {network}
               </p>
@@ -104,7 +103,9 @@ export function KairosDashboard({ initialTab }: { initialTab?: SectionKey }): Re
                   type="button"
                   onClick={() => setActive(s.key)}
                   className={`group flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 active:scale-[0.98] ${
-                    on ? "bg-accent text-black" : "text-neutral-400 hover:bg-white/[0.04] hover:text-white"
+                    on
+                      ? "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                      : "text-neutral-500 hover:bg-white/[0.03] hover:text-neutral-200"
                   }`}
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.6} />
@@ -118,7 +119,7 @@ export function KairosDashboard({ initialTab }: { initialTab?: SectionKey }): Re
             href={explorer}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-xs text-neutral-400 transition hover:border-accent/40 hover:text-white lg:mt-auto"
+            className="flex items-center justify-between gap-2 rounded-xl bg-white/[0.03] px-3 py-2.5 text-xs text-neutral-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors duration-300 hover:bg-white/[0.06] hover:text-neutral-200 lg:mt-auto"
           >
             <span className="font-mono">Sepolia {network}</span>
             <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.6} />
@@ -135,12 +136,12 @@ export function KairosDashboard({ initialTab }: { initialTab?: SectionKey }): Re
           <div className="flex items-center gap-2">
             <button
               onClick={connect}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.03] px-3.5 py-1.5 text-xs font-semibold text-neutral-300 transition hover:border-accent/40 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.09] hover:text-white"
             >
               <Wallet className="h-3.5 w-3.5" />
               {address ? short(address, 6, 4) : connecting ? "Connecting…" : "Connect agent key"}
             </button>
-            <span className="hidden items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3.5 py-1.5 text-xs font-semibold text-accent sm:inline-flex">
+            <span className="hidden items-center gap-1.5 rounded-md bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-neutral-300 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] sm:inline-flex">
               <Eye className="h-3.5 w-3.5" /> Sepolia {network}
             </span>
           </div>
@@ -150,10 +151,10 @@ export function KairosDashboard({ initialTab }: { initialTab?: SectionKey }): Re
           <AnimatePresence mode="wait">
             <motion.div
               key={active}
-              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
-              transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+              initial={{ y: 8 }}
+              animate={{ y: 0 }}
+              exit={{ y: -4 }}
+              transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
             >
               {active === "dashboard" && <DashboardHome go={(k) => setActive(k)} />}
               {active === "vault" && <NoxVaultSection />}
