@@ -4,10 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Panel, Empty } from "./ui";
 import {
+  getFabricLogs,
   getFabricStats,
   getNoxClosedEpoch,
   getNoxStatus,
   listWorkflowRuns,
+  type FabricLog,
   type FabricStats,
   type WorkflowRunRecord,
 } from "@/lib/api";
@@ -89,10 +91,69 @@ function VolumeChart({ points }: { points: EpochPoint[] }) {
   );
 }
 
+/** Per-endpoint rollup, built from the gateway's own call log. */
+interface EndpointRow {
+  slug: string;
+  name: string;
+  calls: number;
+  paid: number;
+  revenueWei: number;
+  okRate: number;
+  medianMs: number;
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)]!;
+}
+
+function rollUpEndpoints(logs: FabricLog[]): EndpointRow[] {
+  const byslug = new Map<string, FabricLog[]>();
+  for (const log of logs) {
+    const key = log.api_slug || "(unknown)";
+    const bucket = byslug.get(key);
+    if (bucket) bucket.push(log);
+    else byslug.set(key, [log]);
+  }
+
+  return [...byslug.entries()]
+    .map(([slug, entries]) => ({
+      slug,
+      name: entries[0]?.api_name ?? slug,
+      calls: entries.length,
+      paid: entries.filter((e) => e.paid).length,
+      // Only settled calls produced revenue. Counting the price of a failed or
+      // unpaid call would inflate earnings that never existed.
+      revenueWei: entries.reduce((sum, e) => sum + (e.paid ? (e.price ?? 0) : 0), 0),
+      okRate: Math.round((entries.filter((e) => e.ok).length / entries.length) * 100),
+      medianMs: median(entries.map((e) => e.duration_ms ?? 0).filter((d) => d > 0)),
+    }))
+    .sort((a, b) => b.revenueWei - a.revenueWei || b.calls - a.calls);
+}
+
+/** Calls per day, oldest first, over the window the log covers. */
+function dailyUsage(logs: FabricLog[]): { day: string; calls: number; paid: number }[] {
+  const byDay = new Map<string, { calls: number; paid: number }>();
+  for (const log of logs) {
+    const day = log.created_at?.slice(0, 10);
+    if (!day) continue;
+    const bucket = byDay.get(day) ?? { calls: 0, paid: 0 };
+    bucket.calls += 1;
+    if (log.paid) bucket.paid += 1;
+    byDay.set(day, bucket);
+  }
+  return [...byDay.entries()]
+    .map(([day, v]) => ({ day, ...v }))
+    .sort((a, b) => a.day.localeCompare(b.day))
+    .slice(-14);
+}
+
 export function AnalyticsSection() {
   const [stats, setStats] = useState<FabricStats | null>(null);
   const [points, setPoints] = useState<EpochPoint[]>([]);
   const [runs, setRuns] = useState<WorkflowRunRecord[]>([]);
+  const [logs, setLogs] = useState<FabricLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
@@ -100,13 +161,15 @@ export function AnalyticsSection() {
     setLoading(true);
     setErr(null);
     try {
-      const [s, nox, r] = await Promise.all([
+      const [s, nox, r, l] = await Promise.all([
         getFabricStats().catch(() => null),
         getNoxStatus().catch(() => null),
         listWorkflowRuns(undefined, 50).catch(() => []),
+        getFabricLogs("30d").catch(() => ({ logs: [], stats: null })),
       ]);
       setStats(s);
       setRuns(r);
+      setLogs(l.logs ?? []);
 
       // Only epochs strictly before the open one are closed, and only closed
       // epochs have released an aggregate.
@@ -145,6 +208,9 @@ export function AnalyticsSection() {
   // The privacy dividend, quantified: one public movement stands in for N
   // payments, so this is how far the payment graph is compressed.
   const perBatch = batches > 0 ? payments / batches : 0;
+
+  const endpoints = rollUpEndpoints(logs);
+  const usage = dailyUsage(logs);
 
   const failed = runs.filter((r) => r.status === "failed").length;
   const durations = runs.map((r) => r.duration_ms ?? 0).filter((d) => d > 0);
@@ -221,6 +287,97 @@ export function AnalyticsSection() {
           )}
         </div>
       </Panel>
+
+      <Panel>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-sm font-semibold text-white">Revenue by endpoint</h3>
+          <span className="text-[11px] text-neutral-600">last 30 days</span>
+        </div>
+
+        {endpoints.length === 0 ? (
+          <div className="mt-3">
+            <Empty>No metered calls recorded yet.</Empty>
+          </div>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.08] text-left text-xs text-neutral-500">
+                  <th className="pb-2 font-normal">Endpoint</th>
+                  <th className="pb-2 text-right font-normal">Calls</th>
+                  <th className="pb-2 text-right font-normal">Paid</th>
+                  <th className="pb-2 text-right font-normal">Revenue</th>
+                  <th className="pb-2 text-right font-normal">Success</th>
+                  <th className="pb-2 text-right font-normal">Median</th>
+                </tr>
+              </thead>
+              <tbody>
+                {endpoints.map((row) => (
+                  <tr key={row.slug} className="border-b border-white/[0.04] last:border-0">
+                    <td className="py-2 pr-4">
+                      <div className="text-neutral-200">{row.name}</div>
+                      <div className="font-mono text-[11px] text-neutral-600">{row.slug}</div>
+                    </td>
+                    <td className="py-2 text-right font-mono text-neutral-300">{row.calls}</td>
+                    <td className="py-2 text-right font-mono text-neutral-300">{row.paid}</td>
+                    <td className="py-2 text-right font-mono text-white">
+                      {row.revenueWei.toLocaleString()}
+                    </td>
+                    <td
+                      className={`py-2 text-right font-mono ${
+                        row.okRate < 100 ? "text-amber-400" : "text-neutral-300"
+                      }`}
+                    >
+                      {row.okRate}%
+                    </td>
+                    <td className="py-2 text-right font-mono text-neutral-500">
+                      {row.medianMs > 0 ? `${row.medianMs}ms` : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="mt-2 text-[11px] text-neutral-600">
+          Revenue counts settled calls only — pricing an unpaid or failed call would report
+          earnings that never happened.
+        </p>
+      </Panel>
+
+      {usage.length > 0 && (
+        <Panel>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-sm font-semibold text-white">Usage trend</h3>
+            <span className="text-[11px] text-neutral-600">
+              calls per day · paid shown solid
+            </span>
+          </div>
+          <div className="mt-4 flex h-28 items-end gap-1.5">
+            {usage.map((d) => {
+              const peak = Math.max(...usage.map((x) => x.calls), 1);
+              const h = Math.max(6, (d.calls / peak) * 100);
+              const paidPct = d.calls > 0 ? (d.paid / d.calls) * 100 : 0;
+              return (
+                <div key={d.day} className="group flex min-w-0 flex-1 flex-col items-center gap-1">
+                  <div className="relative flex w-full flex-1 items-end">
+                    <div
+                      className="flex w-full flex-col justify-end rounded-t bg-neutral-700/60"
+                      style={{ height: `${h}%` }}
+                    >
+                      <div className="w-full rounded-t bg-accent/70" style={{ height: `${paidPct}%` }} />
+                    </div>
+                    <div className="pointer-events-none absolute -top-1 left-1/2 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-white/10 bg-neutral-900 px-2 py-1 text-[11px] text-neutral-200 group-hover:block">
+                      {d.day} · {d.calls} call{d.calls === 1 ? "" : "s"}, {d.paid} paid
+                    </div>
+                  </div>
+                  <div className="font-mono text-[9px] text-neutral-600">{d.day.slice(5)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel>

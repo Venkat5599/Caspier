@@ -293,10 +293,31 @@ export async function getFabricActivity() {
   return ((await res.json()) as { activity: unknown[] }).activity ?? [];
 }
 
-export async function getFabricLogs(period: string) {
+/** One metered call, as recorded by the gateway. `price` is in wei. */
+export interface FabricLog {
+  id: string;
+  api_slug: string;
+  api_name: string;
+  kind: string;
+  status: number;
+  ok: boolean;
+  /** Settled, as opposed to served free or failing before payment. */
+  paid: boolean;
+  price: number;
+  duration_ms: number;
+  /** ISO-8601, e.g. "2026-07-23T10:14:12.766Z". */
+  created_at: string;
+}
+
+export interface FabricLogsResponse {
+  logs: FabricLog[];
+  stats: { total: number; ok: number; paid: number; revenue: number } | null;
+}
+
+export async function getFabricLogs(period: string): Promise<FabricLogsResponse> {
   const res = await fetch(`${BASE}/fabric/logs?period=${period}`);
   if (!res.ok) return { logs: [], stats: null };
-  return (await res.json()) as { logs: unknown[]; stats: { total: number; ok: number; paid: number; revenue: number } };
+  return (await res.json()) as FabricLogsResponse;
 }
 
 export async function provisionFabricSession(body: Record<string, unknown>) {
