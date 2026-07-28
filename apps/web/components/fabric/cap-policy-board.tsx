@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
-import { Panel, Input, Button, short, CopyBtn } from "./ui";
+import { Panel, Input, Button, short, CopyBtn, formatAmount } from "./ui";
 import { getNoxAgent, noxRegisterAgent } from "@/lib/api";
 
 /**
@@ -90,7 +90,7 @@ function isAddress(value: string): boolean {
 }
 
 function wei(value: string | undefined): string {
-  return value == null ? "—" : `${Number(value).toLocaleString()} wei`;
+  return formatAmount(value);
 }
 
 export function CapPolicyBoard() {
@@ -262,7 +262,7 @@ export function CapPolicyBoard() {
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-sm font-semibold text-white">{tier.label}</span>
                 <span className="font-mono text-xs text-neutral-400">
-                  {Number(tier.capWei).toLocaleString()} wei
+                  {formatAmount(tier.capWei)}
                 </span>
               </div>
               <div className="mt-0.5 text-[11px] text-neutral-600">{tier.description}</div>

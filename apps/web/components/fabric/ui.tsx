@@ -3,6 +3,53 @@
 import { useState, type ReactNode, type InputHTMLAttributes, type TextareaHTMLAttributes } from "react";
 import { Copy, Check } from "lucide-react";
 
+/**
+ * Render a wei amount in whichever unit actually reads.
+ *
+ * Converting everything to ETH is the obvious move and the wrong one: this
+ * works in small denominations, so a 1,000,000 wei budget becomes
+ * "0.000000000001 ETH" — strictly accurate and completely unreadable. Pick the
+ * unit by magnitude instead, and abbreviate thousands so the eye can size a
+ * number at a glance.
+ *
+ * The exact figure is never lost — `Amount` keeps it in the title attribute,
+ * because on a treasury screen an approximation must always be checkable.
+ */
+export function formatAmount(value: string | number | bigint | null | undefined): string {
+  if (value == null || value === "") return "—";
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  if (n === 0) return "0 wei";
+
+  // 1e15 wei = 0.001 ETH: the point where ETH stops being all leading zeros.
+  if (n >= 1e15) {
+    const eth = n / 1e18;
+    return `${eth < 1 ? eth.toFixed(4) : eth.toFixed(3)} ETH`;
+  }
+  // 1e7 wei = 0.01 gwei — below this, gwei reads worse than plain wei.
+  if (n >= 1e7) return `${(n / 1e9).toFixed(n >= 1e10 ? 2 : 4)} gwei`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(n % 1e6 === 0 ? 0 : 1)}M wei`;
+  if (n >= 1e4) return `${(n / 1e3).toFixed(n % 1e3 === 0 ? 0 : 1)}K wei`;
+  return `${n.toLocaleString()} wei`;
+}
+
+/** An amount, abbreviated for reading, exact on hover. */
+export function Amount({
+  value,
+  className = "",
+}: {
+  value: string | number | bigint | null | undefined;
+  className?: string;
+}) {
+  const n = value == null || value === "" ? null : Number(value);
+  const exact = n != null && Number.isFinite(n) ? `${Math.trunc(n).toLocaleString()} wei` : undefined;
+  return (
+    <span className={className} title={exact}>
+      {formatAmount(value)}
+    </span>
+  );
+}
+
 export function CopyBtn({ text }: { text: string }) {
   const [ok, setOk] = useState(false);
   return (

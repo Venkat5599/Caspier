@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { Panel, Empty } from "./ui";
+import { Panel, Empty, formatAmount } from "./ui";
 import {
   getFabricLogs,
   getFabricStats,
@@ -38,13 +38,6 @@ interface EpochPoint {
 /** How many recent epochs to walk. Each is a separate round trip. */
 const EPOCH_WINDOW = 12;
 
-function compact(n: number): string {
-  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
-}
-
 function Metric({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3">
@@ -79,7 +72,7 @@ function VolumeChart({ points }: { points: EpochPoint[] }) {
                 style={{ height: `${pct}%` }}
               />
               <div className="pointer-events-none absolute -top-1 left-1/2 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-white/10 bg-neutral-900 px-2 py-1 text-[11px] text-neutral-200 group-hover:block">
-                {p.totalWei.toLocaleString()} wei · {p.count} settlement
+                {formatAmount(p.totalWei)} · {p.count} settlement
                 {p.count === 1 ? "" : "s"}
               </div>
             </div>
@@ -248,7 +241,7 @@ export function AnalyticsSection() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric
           label="Settled volume"
-          value={`${compact(settled)} wei`}
+          value={formatAmount(settled)}
           note={`across ${batches} closed batch${batches === 1 ? "" : "es"}`}
         />
         <Metric
@@ -321,7 +314,7 @@ export function AnalyticsSection() {
                     <td className="py-2 text-right font-mono text-neutral-300">{row.calls}</td>
                     <td className="py-2 text-right font-mono text-neutral-300">{row.paid}</td>
                     <td className="py-2 text-right font-mono text-white">
-                      {row.revenueWei.toLocaleString()}
+                      {formatAmount(row.revenueWei)}
                     </td>
                     <td
                       className={`py-2 text-right font-mono ${

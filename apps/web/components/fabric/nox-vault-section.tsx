@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowUpRight, Loader2, ShieldCheck, ShieldX } from "lucide-react";
-import { Panel, Field, Input, Button, Chip, Empty, short, CopyBtn } from "./ui";
+import { Panel, Field, Input, Button, Chip, Empty, short, CopyBtn, formatAmount } from "./ui";
 import { CapPolicyBoard } from "./cap-policy-board";
 import {
   getNoxAgent,
@@ -26,8 +26,9 @@ import {
 
 const DEAD = "0x000000000000000000000000000000000000dEaD";
 
+/** Amounts render via the shared formatter so units read consistently. */
 function wei(v: string | undefined): string {
-  return v == null ? "—" : `${Number(v).toLocaleString()} wei`;
+  return formatAmount(v);
 }
 
 function TxLink({ url, hash }: { url?: string | undefined; hash?: string | undefined }) {
@@ -186,7 +187,7 @@ export function NoxVaultSection() {
           value={wei(agent?.spentWei)}
           note={
             agent?.capWei
-              ? `cap ${Number(agent.capWei).toLocaleString()} wei per call`
+              ? `cap ${formatAmount(agent.capWei)} per call`
               : "no agent registered"
           }
         />
