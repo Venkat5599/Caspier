@@ -40,7 +40,12 @@ const WITHIN = 5_000n; // should be authorized
 const OVER = 50_000n; // should be rejected (over cap)
 const RECIPIENT = "0x000000000000000000000000000000000000dEaD";
 
-step(1, `fund encrypted budget (${wei(BUDGET)})`);
+// Read the balance first so the expectation below holds on a vault that has
+// already been used. A hardcoded expectation is wrong on every run but the
+// first, and reads as a failure when it is not one.
+const opening = await client.readBudget().catch(() => 0n);
+
+step(1, `fund encrypted budget (${wei(BUDGET)}, opening balance ${wei(opening)})`);
 const funded = await client.fund(BUDGET);
 console.log(`    tx: ${funded.explorerUrl}`);
 
@@ -63,7 +68,9 @@ console.log(`    agent spent (decrypted): ${wei(rejected.spentWei)}`);
 step(5, "owner reads encrypted budget");
 const remaining = await client.readBudget();
 console.log(`    remaining (decrypted by owner): ${wei(remaining)}`);
-console.log(`    expected: ${wei(BUDGET - WITHIN)} (only the in-cap spend debited)`);
+console.log(
+  `    expected: ${wei(opening + BUDGET - WITHIN)} (only the in-cap spend debited)`,
+);
 
 step(6, "batching — epoch state before flush");
 const before = await client.epochStatus();

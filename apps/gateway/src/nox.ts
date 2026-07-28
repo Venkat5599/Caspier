@@ -28,6 +28,43 @@ export async function getVault(config: NoxConfig = loadNoxConfig()): Promise<Nox
   }
 }
 
+/**
+ * Guard for routes that act as the vault owner.
+ *
+ * The gateway signs with the owner key, so every mutating `/nox/*` route is a
+ * direct instruction to move or authorize money. Left open on a public port
+ * with permissive CORS, they let anyone fund, register agents, revoke, flush
+ * and execute batches.
+ *
+ * When `NOX_OWNER_TOKEN` is set, those routes require
+ * `Authorization: Bearer <token>`. When it is unset the routes stay open and
+ * `/nox/status` reports `ownerRoutesProtected: false`, so the exposure is
+ * visible rather than silent.
+ *
+ * Honest limitation: a bearer token cannot protect owner actions triggered
+ * from the browser dashboard, because the browser would have to hold it. The
+ * real fix is wallet-signature auth (sign-in-with-Ethereum, verifying the
+ * signer is the vault owner). That is the documented next step, not something
+ * this token pretends to solve.
+ */
+const OWNER_TOKEN = process.env.NOX_OWNER_TOKEN ?? "";
+
+/** Constant-time compare so a token cannot be recovered byte-by-byte. */
+function tokensMatch(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/** Null when the caller may act as owner, otherwise the reason it may not. */
+function ownerDenied(c: { req: { header(name: string): string | undefined } }): string | null {
+  if (!OWNER_TOKEN) return null; // open by configuration; surfaced in /nox/status
+  const header = c.req.header("authorization") ?? "";
+  const presented = header.startsWith("Bearer ") ? header.slice(7) : "";
+  return tokensMatch(presented, OWNER_TOKEN) ? null : "owner token required";
+}
+
 function toWei(value: unknown, field: string): bigint {
   if (typeof value === "bigint") return value;
   if (typeof value === "number" && Number.isInteger(value) && value >= 0) return BigInt(value);
@@ -45,6 +82,7 @@ export function mountNoxRoutes(app: Hono): void {
         configured: false,
         reason: cachedError ?? "VAULT_CONTRACT_ADDRESS or CHAIN_WORKER_SECRET_KEY not set",
         network: config.chainId,
+        ownerRoutesProtected: OWNER_TOKEN.length > 0,
       });
     }
     const [epoch, relayer] = await Promise.all([vault.epochStatus(), vault.signerAddress()]);
@@ -56,6 +94,9 @@ export function mountNoxRoutes(app: Hono): void {
       explorer: `https://sepolia.etherscan.io/address/${vault.vaultAddress}`,
       epoch: Number(epoch.epoch),
       epochCount: Number(epoch.count),
+      // False means every mutating /nox route is open to anyone who can reach
+      // this gateway, which holds the owner key. Surfaced deliberately.
+      ownerRoutesProtected: OWNER_TOKEN.length > 0,
     });
   });
 
@@ -81,6 +122,8 @@ export function mountNoxRoutes(app: Hono): void {
   });
 
   app.post("/nox/fund", async (c) => {
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     try {
@@ -94,6 +137,8 @@ export function mountNoxRoutes(app: Hono): void {
   });
 
   app.post("/nox/agents", async (c) => {
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     try {
@@ -127,6 +172,8 @@ export function mountNoxRoutes(app: Hono): void {
   });
 
   app.delete("/nox/agents/:agent", async (c) => {
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     try {
@@ -143,6 +190,10 @@ export function mountNoxRoutes(app: Hono): void {
    * must not proceed.
    */
   app.post("/nox/settle", async (c) => {
+    // Guarded too: a settlement debits the confidential budget. Caps bound the
+    // damage per call, but an open endpoint allows unbounded repetition.
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     try {
@@ -194,6 +245,10 @@ export function mountNoxRoutes(app: Hono): void {
 
   /** Owner: attach the vault to a Safe. */
   app.post("/nox/safe", async (c) => {
+    // Repointing the vault at an attacker's Safe would redirect every future
+    // batch payout, so this is the most sensitive route on the gateway.
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     try {
@@ -248,6 +303,8 @@ export function mountNoxRoutes(app: Hono): void {
    * public movement, so on-chain timing cannot be mapped back to API calls.
    */
   app.post("/nox/epoch/:epoch/execute", async (c) => {
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     const raw = c.req.param("epoch");
@@ -264,6 +321,8 @@ export function mountNoxRoutes(app: Hono): void {
   });
 
   app.post("/nox/epoch/flush", async (c) => {
+    const denied = ownerDenied(c);
+    if (denied) return c.json({ error: denied }, 401);
     const vault = await getVault(config);
     if (!vault) return c.json({ error: "nox not configured" }, 503);
     try {

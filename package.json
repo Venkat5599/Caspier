@@ -13,8 +13,9 @@
     "@fabric/nox-chain": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.5.3",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "ethers": "^6.13.0",
+    "typescript": "^5.5.3"
   },
   "scripts": {
     "build": "bun run typecheck && bun run web:build",
@@ -31,6 +32,7 @@
     "agent:provision": "bun run scripts/fabric-provision-cli.ts",
     "flow": "bun run scripts/fabric-flow.ts",
     "stack:up": "docker compose -f infra/compose/docker-compose.yml up -d",
-    "nox:demo": "bun run scripts/nox-demo.ts"
+    "nox:demo": "bun run scripts/nox-demo.ts",
+    "safe:attach": "bun run scripts/attach-safe.ts"
   }
 }
