@@ -13,8 +13,7 @@ import {
   Wallet,
   KeyRound,
   Lock,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, BarChart3 } from "lucide-react";
 import { KairosMark } from "@/components/kairos-logo";
 import { siteConfig } from "@/lib/config";
 import { DashboardHome } from "@/components/fabric/dashboard-home";
@@ -22,6 +21,7 @@ import { ApisSection } from "@/components/fabric/apis-section";
 import { McpSection } from "@/components/fabric/mcp-section";
 import { WorkflowsSection } from "@/components/fabric/workflows-section";
 import { MarketplaceSection } from "@/components/fabric/marketplace-section";
+import { AnalyticsSection } from "@/components/fabric/analytics-section";
 import { SessionKeysSection } from "@/components/fabric/session-keys-section";
 import { NoxVaultSection } from "@/components/fabric/nox-vault-section";
 import { useWallet } from "@/lib/wallet";
@@ -33,6 +33,7 @@ export type SectionKey =
   | "apis"
   | "mcp"
   | "workflows"
+  | "analytics"
   | "marketplace"
   | "session-keys";
 
@@ -42,6 +43,7 @@ const SECTIONS: { key: SectionKey; label: string; icon: LucideIcon }[] = [
   { key: "apis", label: "APIs", icon: Store },
   { key: "mcp", label: "MCP Servers", icon: Server },
   { key: "workflows", label: "Workflows", icon: Workflow },
+  { key: "analytics", label: "Analytics", icon: BarChart3 },
   { key: "marketplace", label: "Marketplace", icon: ShoppingBag },
   { key: "session-keys", label: "Session keys", icon: KeyRound },
 ];
@@ -158,6 +160,7 @@ export function KairosDashboard({ initialTab }: { initialTab?: SectionKey }): Re
               {active === "apis" && <ApisSection />}
               {active === "mcp" && <McpSection />}
               {active === "workflows" && <WorkflowsSection />}
+              {active === "analytics" && <AnalyticsSection />}
               {active === "marketplace" && <MarketplaceSection />}
               {active === "session-keys" && <SessionKeysSection />}
             </motion.div>
