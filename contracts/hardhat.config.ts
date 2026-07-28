@@ -22,6 +22,18 @@ export default defineConfig({
       chainType: "op",
       allowUnlimitedContractSize: true,
     },
+    // `hardhat test` is wrapped by the Nox plugin, which starts a node on
+    // 127.0.0.1:8545 and etches NoxCompute into it. Tests must attach to THAT
+    // node: calling `network.connect()` with no argument spins up a second,
+    // separate in-process chain where NoxCompute does not exist, and every
+    // `Nox.*` call then reverts with "function returned an unexpected amount
+    // of data" — a call to an address holding no code.
+    noxLocal: {
+      type: "http",
+      chainType: "l1",
+      url: "http://127.0.0.1:8545",
+      chainId: 31337,
+    },
     sepolia: {
       type: "http",
       chainType: "l1",

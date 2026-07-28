@@ -2,85 +2,172 @@
 
 ## One-liner
 
-**Private agent payments on Ethereum Sepolia** — scoped session budgets and per-call API settlements through **Nox confidential contracts**, without exposing amounts or spend patterns on-chain.
+**A Safe module that gives any existing Gnosis Safe a confidential agent
+payroll.** Budgets, per-agent spending caps and individual payment amounts live
+encrypted inside iExec Nox; the Safe is never forked, never modified, and its
+funds never migrate.
 
-## Problem (why Nox fits)
+## Why this answers the brief
 
-Kairos already solves **custody** (agents never hold the owner key) and **metering** (pay-per-call). On a **transparent** chain, every settlement still leaks:
+The brief asks for a real, impactful open-source protocol made private with Nox,
+*without modifying the underlying protocol*. Safe is that protocol: the most
+widely deployed smart-account standard in the ecosystem, and public by design —
+every treasury movement, every counterparty, every amount is visible forever.
 
-- how much the agent spent
-- who was paid
-- running totals that deanonymise treasury usage
+Kairos adds privacy through Safe's own extension point. A Safe owner calls
+`enableModule(kairosVault)` once. From then on the vault can move funds through
+`execTransactionFromModule`, and the entire authorization layer — who may spend,
+how much per call, how much is left — happens on encrypted values inside Nox.
 
-Institutions and power users won't route agent payroll through that. **Nox adds the missing privacy layer** without rewriting the open x402 + MCP fabric.
+Nothing about Safe changes. No fork, no upgrade, no migration, no custom
+deployment. Composability is intact: the Safe is still a Safe, still works with
+the Safe UI and every other module, and the owner can remove Kairos with
+`disableModule` at any time. That is the "layer, don't fork" property the brief
+asks for, expressed through one line of Safe's existing API.
 
-## Integration target (hackathon brief)
+## What Nox actually does here
 
-| Suggested target | Kairos mapping |
-|------------------|----------------|
-| Wallets (MetaMask) | Owner connects MetaMask on Sepolia; funds confidential agent vault |
-| Treasury / payouts | Private agent session budget + hidden per-call debits |
-| DeFi composability | Optional: wrap USDC → confidential token for settlements |
+This is not a Nox sprinkle on a conventional app. The authorization decision
+itself is confidential computation — it could not be written on a transparent
+chain.
 
-We **do not** modify Uniswap/Aave — we **batch/layer** agent settlements through a Nox vault while the public gateway still speaks HTTP/x402/MCP.
+| Step | Where it runs | What leaks |
+|------|---------------|------------|
+| Owner funds a budget | `Nox.add` on `euint256` | nothing |
+| Agent registered with a per-call cap | encrypted handle + ACL grant | that *an* agent was registered |
+| Agent settles a payment | `Nox.le(amount, cap)` → `Nox.select` → `Nox.safeSub(budget, …)` | nothing |
+| Outcome of the check | `ebool`, ACL-scoped to owner + that agent | nothing |
+| Batch closes | `Nox.allowPublicDecryption` on the epoch total | one aggregate, deliberately |
+
+Three Nox properties carry the design:
+
+1. **`safeSub` instead of `sub` + `require`.** Debiting an encrypted budget with
+   revert-on-underflow would leak the balance through the revert. `safeSub`
+   returns an `ebool` flag instead, so an over-budget attempt is
+   indistinguishable from a funded one.
+2. **`select` instead of branching.** An `ebool` cannot gate a `require` — that
+   would publish the comparison. Authorization is `select(withinCap, amount, 0)`:
+   debit the amount, or debit zero, with identical observable behaviour.
+3. **The ACL as the permission model.** `allow(handle, owner)` plus
+   `allow(handle, agent)` gives exactly "the owner sees everything, an agent sees
+   only its own cap and spend" with no permissions layer of our own.
+
+The subtle part is what happens after `select`. A naive implementation silently
+debits zero and the transaction still *succeeds*, so an over-budget agent looks
+served. Kairos writes the outcome to an encrypted per-agent flag and the gateway
+**fails closed** on it: any decryption failure, RPC error or unreachable Nox
+gateway blocks the paid call rather than granting free access.
+
+## Counterparty privacy: batching
+
+Encrypting amounts is not enough. One settlement transaction per API call leaks
+the payment graph through timing and frequency alone.
+
+So settlements do not move funds. Each debit accumulates into an encrypted epoch
+total, and `PrivateSettlement(epoch)` is emitted carrying **no addresses and no
+amount**. The owner later closes the epoch, which releases one publicly
+decryptable aggregate, and `executeBatch` moves that single sum out of the Safe
+through `execTransactionFromModule`.
+
+An observer sees one transfer covering N payments and cannot decompose it. That
+aggregate is the deliberate, documented cost of the design — everything else
+stays encrypted.
+
+## What is public, precisely
+
+**Public:** the vault and Safe addresses, that settlements occurred in an epoch,
+how many a batch contained, the relayer address, and each closed batch's
+aggregate.
+
+**Private:** the treasury budget and what remains, every agent's per-call cap,
+every agent's cumulative spend, every individual payment amount, and whether any
+given settlement was authorized.
+
+**Known limitation, stated plainly:** `msg.sender` is public, so an agent
+submitting its own settlement is identifiable. Kairos routes every settlement
+through a single gateway relayer, so on-chain all settlements share one sender
+and per-agent activity is not distinguishable.
 
 ## Architecture
 
 ```
-Owner (MetaMask, Sepolia)
-    │
-    ▼
-KairosAgentVault (Nox confidential contract)
-    │  encrypted budget + encrypted per-call cap
-    ▼
-Gateway (TypeScript) ── x402 quote ── encrypt amount (Nox JS SDK)
-    │
-    ▼
-Agent (MCP / Claude Code) ── private settle ──► vendor API proxy
+Safe (Sepolia, unmodified, open source)
+   │  enableModule(vault)  ← the only change to Safe, and it is reversible
+   ▼
+KairosAgentVault  ── Nox confidential contract ──┐
+   │  encrypted budget · encrypted per-agent cap │  euint256 / ebool
+   │  encrypted epoch accumulator                │  handles on-chain
+   ▼                                             │
+Gateway (TypeScript, single relayer) ────────────┘
+   │  x402 quote → encrypt amount → settle → fail closed on the ebool
+   ▼
+Agent (MCP / Claude Code) → vendor API
 ```
 
-Public on-chain: contract address, function names, agent wallet.  
-**Private via Nox:** budget remaining, payment amounts, cumulative spend.
+## Verification
+
+- `cd contracts && bun run test` — **25 passing**, covering the Safe module
+  surface (installation state, `execTransactionFromModule` forwarding, batch
+  execution, every revert guard) and access control, against a real local Nox
+  stack with `NoxCompute` deployed.
+- `bun run typecheck` — clean across all 14 workspaces.
+- `bun run nox:demo` — full owner → agent lifecycle against deployed Sepolia
+  contracts with real transactions and real encrypted handles.
+
+The suite caught a genuine production bug before submission: closing an epoch
+that absorbed zero settlements reverted, because `allowPublicDecryption` rejects
+the trivially encrypted zero the accumulator is initialised with. See
+`feedback.md` item 7 — that finding is written up for iExec.
 
 ## Deliverables checklist
 
-- [ ] Public GitHub repo (this repo)
-- [ ] `feedback.md` for iExec tools
-- [ ] README: install, Sepolia deploy, demo flow
-- [ ] Confidential contract deployed on **Ethereum Sepolia** (`11155111`)
-- [ ] NoxCompute: `0x24ef36ec5b626d7dcd09a98f3083c2758f0f77bf`
-- [ ] Functional dashboard (`apps/web`) + gateway (`apps/gateway`)
-- [ ] Graph workflow engine + drag-and-drop canvas (`packages/fabric-core`, `apps/web`)
-- [ ] End-to-end demo **without mock settlement** (real Sepolia txs + Nox handles)
+- [x] Public GitHub repo, MIT licensed
+- [x] `feedback.md` with eight concrete, reproducible findings for iExec
+- [x] README with install, Sepolia deploy and demo instructions
+- [x] Confidential contract on **Ethereum Sepolia** (`11155111`)
+- [x] NoxCompute: `0x24ef36ec5b626d7dcd09a98f3083c2758f0f77bf`
+- [x] Safe module integration, exercised end to end
+- [x] Contract test suite (25 tests)
+- [x] Functional front-end (`apps/web`) + gateway (`apps/gateway`)
+- [x] Graph workflow engine + drag-and-drop canvas
 - [ ] Demo video ≤ 4 minutes
-- [ ] X post tagging `@iEx_ec` with description, video, repo link
+- [ ] X post tagging `@iEx_ec`
 
-## Build order (MVP)
+## What we contribute back to iExec
 
-1. `contracts/` — `KairosAgentVault.sol` (deposit budget, register agent cap, private debit)
-2. `packages/nox-chain/` — deploy helpers + encrypt/decrypt via `@iexec-nox/nox-handle-sdk`
-3. Gateway — Sepolia verifier replaces Sepolia demo chain for WTF track
-4. Web — MetaMask Sepolia, vault fund UI, session provision
-5. Record demo: fund vault → publish skill → build the flow on the canvas →
-   MCP invoke → private settlement
+`feedback.md` is not a formality. Two of its findings are defects a future
+integrator would otherwise rediscover the hard way:
 
-## What we reuse from Sepolia build
+- **Item 7** — `allowPublicDecryption` reverts on trivially encrypted handles
+  while `allow`/`allowThis` no-op on them. Initialising an encrypted accumulator
+  from a constant is the obvious pattern, and it is the one that breaks. We
+  include the error selector (`0xc1045af6` = `PublicHandleACLForbidden()`), which
+  viem surfaces only as "an unrecognized custom error".
+- **Item 8** — the plugin's `hardhat test` override and a bare
+  `network.connect()` attach to different chains, so `Nox.*` reverts with a
+  message that reads like an ABI bug. We include the working test wiring.
 
-- Fabric dashboard (APIs, MCP, workflows, marketplace)
-- The workflow surface, since rebuilt on a graph engine (branching, retries,
-  parallelism, run history) with a drag-and-drop canvas
-- SKILL.md catalog + MCP `api__*` / `wf__*` tools
-- x402 quote → pay → retry flow (adapt proofs to Nox handles)
+Both come with suggested fixes, and this repo is a working reference for the
+Safe-module-over-Nox pattern that any other team can copy.
 
-## What we replace
+## Prior work vs. this hackathon
 
-- `packages/evm-chain` → `packages/nox-chain` (Sepolia + Nox SDK)
-- Sepolia session keys → Nox ACL-scoped encrypted caps
-- `FABRIC_DEMO_CHAIN` → real Sepolia + Nox handles only for submission
+Per the brief's originality requirement, stated explicitly.
+
+**Existing before this hackathon:** the Kairos gateway, the SKILL.md catalog,
+MCP tooling, the x402 quote/pay/retry flow, the workflow graph engine and
+canvas, and the dashboard shell.
+
+**Built during this hackathon:** every Nox integration — `KairosAgentVault.sol`,
+`packages/nox-chain`, the `/nox/*` gateway routes including the Safe module
+endpoints, the confidential vault UI, the Safe module surface, the contract test
+suite, `scripts/nox-demo.ts`, and this document.
+
+This project was **not** submitted to the previous VIBE Coding Hackathon.
 
 ## Links
 
 - [Nox docs](https://docs.iex.ec/nox-protocol/getting-started/welcome)
 - [Nox confidential contracts](https://github.com/iExec-Nox/nox-confidential-contracts)
+- [Safe modules](https://docs.safe.global/advanced/smart-account-modules)
 - [cDeFi wizard](https://cdefi-wizard.iex.ec/)
-- [Discord](https://discord.gg/RXYHBJceMe)

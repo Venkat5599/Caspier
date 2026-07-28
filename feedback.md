@@ -116,6 +116,60 @@ Hardhat `3.11.0`, solc `0.8.35`, Ethereum Sepolia (`11155111`).
    document the expected compute latency so integrators know to poll rather
    than assuming a permission problem.
 
+7. **`allowPublicDecryption` reverts on a trivially encrypted handle, and this
+   silently bricks a legitimate transaction.** This is the sharpest issue we
+   hit, and it only surfaced because we wrote tests.
+
+   A handle produced from a plaintext constant — `Nox.toEuint256(0)`, which is
+   the natural way to initialise an encrypted accumulator in a constructor — is
+   *trivially encrypted*, i.e. already public. The two ACL functions then behave
+   differently:
+
+   - `Nox.allow` / `Nox.allowThis` **no-op** on such a handle. Our constructor
+     called both and deployed cleanly.
+   - `Nox.allowPublicDecryption` **reverts** with `PublicHandleACLForbidden()`
+     (selector `0xc1045af6`).
+
+   The consequence in our contract: an owner closing a batching epoch that had
+   absorbed zero settlements reverted, because the epoch accumulator was still
+   the trivially encrypted zero it was initialised with. Nothing was wrong with
+   the design — a quiet hour on a payment rail is normal — but the owner's
+   transaction failed with an undecodable custom error. We fixed it by skipping
+   the ACL call when the batch is empty.
+
+   Three suggestions, in order of value:
+   - Make `allowPublicDecryption` a no-op on trivially encrypted handles, for
+     symmetry with `allow`/`allowThis`. A handle that is already public needs no
+     permission to be made public, and that asymmetry is the entire trap.
+   - If the revert is intentional, say so in the `Nox` library docs next to
+     `toEuint256`, because initialising accumulators from a constant is the
+     obvious pattern and it is the one that breaks.
+   - Ship the error selectors in a decode table. `0xc1045af6` arrives through
+     viem as "an unrecognized custom error"; we had to hash all twelve error
+     signatures in `INoxCompute.sol` ourselves to identify it.
+
+8. **`hardhat test` and `network.connect()` attach to different chains, and the
+   failure is unreadable.** The plugin's test override starts a node on
+   `127.0.0.1:8545` via `hre.network.createServer` and etches `NoxCompute` into
+   it. But test code calling `network.connect()` with no argument gets a
+   *second*, independent in-process chain where `NoxCompute` was never
+   deployed. Every `Nox.*` call then reverts with:
+
+   ```
+   Transaction reverted: function returned an unexpected amount of data
+       at KairosAgentVault.toEuint256 (…/sdk/Nox.sol:126)
+   ```
+
+   That message describes a call to an address holding no code, but it reads
+   like an ABI or return-type problem, so the instinct is to audit your own
+   contract. The fix is to declare an `http` network pointing at
+   `http://127.0.0.1:8545` and connect to it by name.
+
+   Suggestions: document the required test wiring in the plugin README (this is
+   step zero for anyone writing tests, and it is currently absent), and have
+   `Nox.sol` check `address(noxCompute).code.length` and revert with something
+   like `NoxComputeNotDeployed(address)` so the diagnosis is immediate.
+
 ## Documentation gaps
 
 - No end-to-end example that goes **contract → encrypt → call → decrypt result**

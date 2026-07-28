@@ -400,6 +400,53 @@ export function noxFlushEpoch(): Promise<NoxTx & { epoch?: number }> {
   return noxJson<NoxTx & { epoch?: number }>("/nox/epoch/flush", { method: "POST" });
 }
 
+// --- Safe module ----------------------------------------------------------
+// Kairos spends from an unmodified Safe through `execTransactionFromModule`.
+// `standalone` means no Safe is attached; `installed` means the Safe has run
+// `enableModule` for this vault. Both must hold before a batch can execute.
+
+export interface NoxSafe {
+  safe: string | null;
+  standalone: boolean;
+  installed: boolean;
+  explorer: string | null;
+  error?: string;
+}
+
+export interface NoxClosedEpoch {
+  epoch: number;
+  closed: boolean;
+  /** Absent until the epoch is closed; "0" when it absorbed no settlements. */
+  totalWei?: string;
+  /** How many settlements the batch covered. */
+  count?: number;
+  error?: string;
+}
+
+export function getNoxSafe(): Promise<NoxSafe> {
+  return noxJson<NoxSafe>("/nox/safe");
+}
+
+export function noxSetSafe(safe: string): Promise<NoxTx & { safe?: string }> {
+  return noxJson<NoxTx & { safe?: string }>("/nox/safe", postJson({ safe }));
+}
+
+/** Aggregate released by `flushEpoch` — one number covering the whole batch. */
+export function getNoxClosedEpoch(epoch: number): Promise<NoxClosedEpoch> {
+  return noxJson<NoxClosedEpoch>(`/nox/epoch/${epoch}`);
+}
+
+export function noxExecuteBatch(
+  epoch: number,
+  to: string,
+  amountWei: string,
+): Promise<NoxTx & { epoch?: number }> {
+  return noxJson<NoxTx & { epoch?: number }>(
+    `/nox/epoch/${epoch}/execute`,
+    postJson({ to, amountWei }),
+  );
+}
+
 // --- Workflow graphs and run history ---
 
 export type WfNode = {

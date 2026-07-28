@@ -58,6 +58,7 @@ export const VAULT_ABI = [
   "function isInstalledOnSafe() view returns (bool)",
   "function executeBatch(uint256 closedEpoch, address to, uint256 amount)",
   "function closedEpochTotalHandle(uint256 closedEpoch) view returns (bytes32)",
+  "function closedEpochCount(uint256 closedEpoch) view returns (uint256)",
   "function flushEpoch()",
   "function epoch() view returns (uint256)",
   "function epochCount() view returns (uint256)",
@@ -92,6 +93,7 @@ interface VaultMethods {
   isInstalledOnSafe(): Promise<boolean>;
   executeBatch(closedEpoch: bigint, to: string, amount: bigint): Promise<TxResponse>;
   closedEpochTotalHandle(closedEpoch: bigint): Promise<Hex>;
+  closedEpochCount(closedEpoch: bigint): Promise<bigint>;
   flushEpoch(): Promise<TxResponse>;
   epoch(): Promise<bigint>;
   epochCount(): Promise<bigint>;
@@ -259,6 +261,21 @@ export class NoxVaultClient {
    */
   async executeBatch(closedEpoch: bigint, to: string, amount: bigint): Promise<TxReceiptSummary> {
     return this.send(this.vault.executeBatch(closedEpoch, to, amount));
+  }
+
+  /**
+   * Publicly decryptable aggregate for a closed epoch, plus how many
+   * settlements it covered.
+   *
+   * An epoch that absorbed no settlements releases no handle — its aggregate
+   * is zero and zero is not a secret, so the contract skips the ACL call that
+   * would otherwise revert. Report that case as zero rather than attempting to
+   * decrypt an unset handle.
+   */
+  async readClosedEpoch(closedEpoch: bigint): Promise<{ totalWei: bigint; count: bigint }> {
+    const count = await this.vault.closedEpochCount(closedEpoch);
+    if (count === 0n) return { totalWei: 0n, count };
+    return { totalWei: await this.readClosedEpochTotal(closedEpoch), count };
   }
 
   /** Publicly decryptable aggregate for a closed epoch. */

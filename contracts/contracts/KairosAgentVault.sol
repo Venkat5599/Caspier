@@ -77,6 +77,11 @@ contract KairosAgentVault {
     /// by `flushEpoch` so the aggregate can be verified against `executeBatch`.
     mapping(uint256 => euint256) private closedEpochTotal;
 
+    /// How many settlements each closed epoch absorbed. Public by design: the
+    /// batch size is already visible from `EpochSettled`, and consumers need it
+    /// to tell an empty epoch (no aggregate released) from a funded one.
+    mapping(uint256 => uint256) public closedEpochCount;
+
     struct AgentSession {
         bool active;
         /// Encrypted maximum spend allowed in a single settlement.
@@ -218,8 +223,18 @@ contract KairosAgentVault {
         uint256 closed = epoch;
         uint256 count = epochCount;
 
-        Nox.allowPublicDecryption(epochTotal);
-        closedEpochTotal[closed] = epochTotal;
+        closedEpochCount[closed] = count;
+
+        // An epoch that absorbed no settlements still holds the trivially
+        // encrypted zero it was initialised with. `allowPublicDecryption`
+        // rejects an already-public handle with `PublicHandleACLForbidden`, so
+        // releasing an empty epoch would revert the owner's transaction. There
+        // is also nothing to release: the aggregate is zero, and zero is not a
+        // secret. Skip the ACL call and leave the handle unset.
+        if (count > 0) {
+            Nox.allowPublicDecryption(epochTotal);
+            closedEpochTotal[closed] = epochTotal;
+        }
 
         emit EpochSettled(closed, count);
 

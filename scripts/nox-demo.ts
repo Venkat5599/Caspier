@@ -77,7 +77,38 @@ console.log(`    tx: ${flushed.explorerUrl}`);
 const after = await client.epochStatus();
 console.log(`    now epoch ${after.epoch}, count reset to ${after.count}`);
 
+step(8, "the closed batch — one public number covering every payment in it");
+const closedEpoch = after.epoch - 1n;
+const closed = await client.readClosedEpoch(closedEpoch);
+console.log(`    epoch ${closedEpoch}: ${closed.count} settlements`);
+console.log(`    aggregate (publicly decryptable): ${wei(closed.totalWei)}`);
+console.log("    nobody can decompose this into the individual payments");
+
+step(9, "Safe module — spend from an unmodified Safe");
+const safeAddress = await client.safeAddress();
+const standalone = /^0x0{40}$/i.test(safeAddress);
+
+if (standalone) {
+  console.log("    no Safe attached — the vault is running standalone");
+  console.log("    attach one with: POST /nox/safe { safe: '0x…' }");
+  console.log("    then, from the Safe, run: enableModule(vault)");
+} else {
+  const installed = await client.isInstalledOnSafe();
+  console.log(`    safe:      ${safeAddress}`);
+  console.log(`    installed: ${installed}`);
+
+  if (installed && closed.totalWei > 0n) {
+    const batch = await client.executeBatch(closedEpoch, RECIPIENT, closed.totalWei);
+    console.log(`    tx: ${batch.explorerUrl}`);
+    console.log("    one execTransactionFromModule call moved the whole batch");
+    console.log("    Safe was never forked, modified, or migrated");
+  } else if (!installed) {
+    console.log("    Safe has not enabled the module yet — run enableModule(vault)");
+  }
+}
+
 console.log("\nWhat an on-chain observer sees:");
 console.log("  · PrivateSettlement(epoch) — no agent, no recipient, no amount");
 console.log("  · EpochSettled(epoch, count) — one aggregate per batch");
+console.log("  · one Safe transfer per batch, not one per API call");
 console.log("Amounts, caps, running totals and the payment graph stay private.");
