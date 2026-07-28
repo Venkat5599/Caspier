@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowUpRight, Loader2, ShieldCheck, ShieldX } from "lucide-react";
 import { Panel, Field, Input, Button, Chip, Empty, short, CopyBtn } from "./ui";
+import { CapPolicyBoard } from "./cap-policy-board";
 import {
   getNoxAgent,
   getNoxBudget,
@@ -320,6 +321,8 @@ export function NoxVaultSection() {
           )}
         </Panel>
       </div>
+
+      <CapPolicyBoard />
 
       <Panel className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
