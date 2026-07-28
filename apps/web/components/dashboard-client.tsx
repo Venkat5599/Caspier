@@ -11,6 +11,7 @@ const TAB_ALIASES: Record<string, SectionKey> = {
   apis: "apis",
   mcp: "mcp",
   workflows: "workflows",
+  analytics: "analytics",
   marketplace: "marketplace",
   "session-keys": "session-keys",
   create: "apis",

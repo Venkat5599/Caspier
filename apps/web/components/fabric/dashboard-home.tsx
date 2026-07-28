@@ -129,7 +129,7 @@ export function DashboardHome({
           <h1 className="text-4xl font-semibold tracking-tight text-white">Dashboard</h1>
           <p className="mt-1 text-neutral-400">Manage your creations and track performance — live on Sepolia {chain}.</p>
         </div>
-        <div className="flex gap-1 rounded-xl border border-white/[0.08] p-1">
+        <div className="flex gap-1 rounded-xl bg-white/[0.03] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
           {TOGGLE.map((x) => (
             <button
               key={x.k}
@@ -154,14 +154,14 @@ export function DashboardHome({
           <KeyRound className="h-5 w-5 text-accent" />
           <p className="text-lg font-semibold text-white">x402 Payments</p>
           {sess?.live && (
-            <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-medium text-accent">
+            <span className="ml-1 inline-flex items-center gap-1 rounded-md bg-accent/[0.08] px-2 py-0.5 text-[11px] font-medium text-accent/90 shadow-[inset_0_0_0_1px_rgba(163,230,53,0.15)]">
               live
             </span>
           )}
         </div>
         <p className="mt-1 text-sm text-neutral-500">Scoped session keys for automated, metered agent payments on Sepolia.</p>
 
-        <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
+        <div className="mt-5 flex items-start gap-3 rounded-xl bg-white/[0.03] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
           <div className="min-w-0">
             <p className="font-semibold text-white">{address ? "Your wallet" : "Session key required"}</p>
@@ -212,7 +212,7 @@ export function DashboardHome({
             <button
               onClick={() => generate()}
               disabled={connecting}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/[0.09] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.5)] transition-[background-color,color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-accent/[0.16] hover:text-accent disabled:opacity-40"
             >
               <Wallet className="h-4 w-4" />
               {connecting ? "Generating…" : "Generate Session Wallet"}
@@ -220,21 +220,21 @@ export function DashboardHome({
             <button
               onClick={() => connect()}
               disabled={connecting}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] px-4 py-3 text-sm font-semibold text-neutral-300 transition hover:border-accent/40 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-sm font-medium text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.06] hover:text-white"
             >
               Connect Sepolia Wallet
             </button>
           </div>
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+            <div className="rounded-xl bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <p className="text-xs text-neutral-500">Your wallet balance</p>
               <p className="mt-1 text-2xl font-semibold text-white">
                 {wstat === null ? "—" : `${wstat.ETH} ETH`}
               </p>
               <p className="text-xs text-neutral-600">{wstat?.funded ? "funded on testnet" : "fund via faucet"}</p>
             </div>
-            <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+            <div className="rounded-xl bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <p className="text-xs text-neutral-500">
                 Demo agent session {sess?.live && "· live"}
               </p>
@@ -252,14 +252,14 @@ export function DashboardHome({
         )}
 
         {address && !secret && !prov && (
-          <div className="mt-4 rounded-xl border border-white/[0.08] p-4 text-sm text-neutral-400">
+          <div className="mt-4 rounded-xl bg-white/[0.02] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] text-sm text-neutral-400">
             External wallet connected — provision a scoped session key for your agent below, or generate a session wallet to
             manage keys locally.
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 onClick={() => generate()}
                 disabled={connecting}
-                className="rounded-xl border border-white/[0.12] px-3 py-2 text-xs font-semibold text-neutral-300 hover:border-accent/40"
+                className="rounded-xl bg-white/[0.04] px-3 py-2 text-xs font-medium text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 hover:bg-white/[0.07] hover:text-white"
               >
                 Generate session wallet
               </button>
@@ -273,11 +273,11 @@ export function DashboardHome({
         {address && (
           <div className="mt-4">
             {prov ? (
-              <div className="rounded-xl border border-accent/30 bg-accent/5 p-4">
+              <div className="rounded-xl bg-accent/[0.05] p-4 shadow-[inset_0_0_0_1px_rgba(163,230,53,0.14)]">
                 <p className="font-semibold text-white">Your session key is live</p>
                 <p className="mt-1 font-mono text-xs text-neutral-500">{prov.sessionId}</p>
                 <p className="mt-3 text-sm text-neutral-400">Personal agent token — use as Bearer when settling through your session:</p>
-                <div className="mt-2 flex items-center gap-2 rounded-lg border border-white/[0.08] bg-black/40 px-3 py-2">
+                <div className="mt-2 flex items-center gap-2 rounded-lg bg-black/40 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
                   <span className="flex-1 truncate font-mono text-xs text-white">{prov.token}</span>
                   <CopyBtn text={prov.token} />
                 </div>
@@ -294,7 +294,7 @@ export function DashboardHome({
                 </button>
               </div>
             ) : (
-              <div className="rounded-xl border border-white/[0.08] p-4">
+              <div className="rounded-xl bg-white/[0.02] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                 <p className="text-sm text-neutral-400">
                   Mint a scoped session key for agent <span className="font-mono text-neutral-300">{short(address, 6, 4)}</span> — capped per call on Sepolia.
                 </p>
@@ -305,7 +305,7 @@ export function DashboardHome({
                       value={agentKey}
                       onChange={(e) => setAgentKey(e.target.value)}
                       placeholder="defaults to your wallet"
-                      className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 font-mono text-sm text-white outline-none focus:border-accent/60"
+                      className="mt-1 w-full rounded-lg bg-black/40 px-3 py-2 font-mono text-sm text-white outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.06)] transition-shadow duration-300 focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(163,230,53,0.35)]"
                     />
                   </label>
                   <label className="block text-sm">
@@ -313,14 +313,14 @@ export function DashboardHome({
                     <input
                       value={capWei}
                       onChange={(e) => setCapWei(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 font-mono text-sm text-white outline-none focus:border-accent/60"
+                      className="mt-1 w-full rounded-lg bg-black/40 px-3 py-2 font-mono text-sm text-white outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(255,255,255,0.06)] transition-shadow duration-300 focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.6),inset_0_0_0_1px_rgba(163,230,53,0.35)]"
                     />
                   </label>
                 </div>
                 <button
                   onClick={provision}
                   disabled={provBusy}
-                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:opacity-90 disabled:opacity-50"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/[0.09] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.5)] transition-[background-color,color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-accent/[0.16] hover:text-accent disabled:opacity-40"
                 >
                   <KeyRound className="h-4 w-4" />
                   {provBusy ? "Provisioning…" : "Provision Session Key"}
@@ -333,13 +333,13 @@ export function DashboardHome({
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={() => go("session-keys")}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-black transition hover:opacity-90"
+            className="inline-flex items-center gap-2 rounded-xl bg-white/[0.09] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.5)] transition-[background-color,color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-accent/[0.16] hover:text-accent"
           >
             <KeyRound className="h-4 w-4" /> Manage session keys
           </button>
           <button
             onClick={() => go("apis")}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/[0.12] px-4 py-3 text-sm font-semibold text-neutral-300 transition hover:border-accent/40 hover:text-white"
+            className="inline-flex items-center gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-sm font-medium text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.06] hover:text-white"
           >
             Publish API
           </button>
