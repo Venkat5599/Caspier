@@ -254,3 +254,20 @@ body {
     display: none;
   }
 }
+
+/* Indeterminate progress for values still being decrypted in the Nox TEE.
+   Transform only, so it never triggers layout, and it animates an element
+   that is already on screen — content is never gated on it. */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[shimmer_1\.4s_ease-in-out_infinite\] {
+    animation: none;
+    transform: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}

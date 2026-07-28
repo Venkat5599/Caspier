@@ -46,14 +46,44 @@ function TxLink({ url, hash }: { url?: string | undefined; hash?: string | undef
   );
 }
 
-/** Encrypted value readout. The number is only visible because the gateway
- *  holds the owner key and decrypted it through the Nox ACL. */
-function Encrypted({ label, value, note }: { label: string; value: string; note?: string }) {
+/**
+ * Encrypted value readout. The number is visible only because the gateway holds
+ * the owner key and decrypted it through the Nox ACL.
+ *
+ * That decryption is not instant — the TEE computes the handle after the
+ * transaction lands, and the client retries with backoff, so a value can take
+ * tens of seconds to arrive. Showing a bare dash for that whole window reads as
+ * broken data. Name the wait instead: it is the one moment the interface can
+ * show that the number was never sitting in plaintext.
+ */
+function Encrypted({
+  label,
+  value,
+  note,
+  pending = false,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+  pending?: boolean;
+}) {
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3">
-      <div className="text-xs text-neutral-500">{label}</div>
-      <div className="mt-1 font-mono text-lg text-white">{value}</div>
-      {note && <div className="mt-0.5 text-[11px] text-neutral-600">{note}</div>}
+    <div className="rounded-[1.25rem] bg-white/[0.02] p-[4px]">
+      <div className="rounded-[calc(1.25rem-4px)] bg-[#0d0e11] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+        <div className="text-xs text-neutral-500">{label}</div>
+        {pending ? (
+          <div className="mt-1.5 flex items-center gap-2">
+            {/* Motion on an element already on screen, never a gate on content. */}
+            <span className="h-1 w-16 overflow-hidden rounded-full bg-white/[0.06]">
+              <span className="block h-full w-1/2 animate-[shimmer_1.4s_ease-in-out_infinite] rounded-full bg-accent/50" />
+            </span>
+            <span className="text-xs text-neutral-500">decrypting…</span>
+          </div>
+        ) : (
+          <div className="mt-1 font-mono text-lg text-white">{value}</div>
+        )}
+        {note && <div className="mt-0.5 text-[11px] text-neutral-600">{note}</div>}
+      </div>
     </div>
   );
 }
@@ -174,16 +204,19 @@ export function NoxVaultSection() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Encrypted
           label="Treasury budget"
+          pending={budget == null}
           value={wei(budget?.budgetWei)}
           note="encrypted on-chain · decrypted for the owner"
         />
         <Encrypted
           label="Current epoch total"
+          pending={budget == null}
           value={wei(budget?.epochTotalWei)}
           note={`${budget?.epochCount ?? 0} settlements batched`}
         />
         <Encrypted
           label="Agent spend"
+          pending={agent == null && status?.configured === true}
           value={wei(agent?.spentWei)}
           note={
             agent?.capWei
