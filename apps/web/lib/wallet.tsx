@@ -1,44 +1,62 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
+import { RainbowKitProvider, darkTheme, getDefaultConfig, useConnectModal } from "@rainbow-me/rainbowkit";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, useAccount, useChainId, useDisconnect, useSwitchChain } from "wagmi";
+import { sepolia } from "wagmi/chains";
+
+import "@rainbow-me/rainbowkit/styles.css";
 
 /**
- * Wallet adapter — EIP-1193 (MetaMask, Rabby, Rainbow, any injected provider).
+ * Wallet adapter — RainbowKit over wagmi.
  *
- * This replaces an adapter left over from the Casper era, which probed globals
- * named `SepoliaWalletProvider`/`SepoliaWallet` — Casper names that had been
- * find-replaced and therefore never existed — and, failing that, fabricated a
- * `01…` ed25519 public key in Casper's format. On an Ethereum deployment that
- * adapter could not connect a real wallet, and the "generated" identity was not
- * an Ethereum address at all.
+ * Replaces an adapter left over from the Casper era, which probed globals named
+ * `SepoliaWalletProvider`/`SepoliaWallet` (Casper names that had been
+ * find-replaced and so existed nowhere) and otherwise fabricated a `01…`
+ * ed25519 key in Casper's format as the owner identity. Connecting a real
+ * wallet was impossible; the prompt asked for a "Sepolia public key (01… hex)".
  *
- * What it does now:
- *   - connects through `window.ethereum` and requests accounts
- *   - checks the chain and offers to switch to Sepolia, adding it if unknown
- *   - tracks `accountsChanged` / `chainChanged`, so switching account or network
- *     in the wallet is reflected without a reload
+ * RainbowKit brings the connector set (MetaMask, Rabby, Rainbow, Coinbase,
+ * WalletConnect), the account/chain modals, and reconnection — none of which is
+ * worth hand-rolling.
  *
- * Watch-only mode is preserved for demoing on a machine with no wallet
- * installed: paste an address and the dashboard scopes to it. It holds no key
- * and cannot sign — `real` is false, and callers should treat it as read-only.
+ * The `useWallet()` shape is deliberately preserved so the five components that
+ * consume it did not have to change. It is now a thin projection of wagmi
+ * state rather than its own source of truth.
  */
 
-/** Ethereum Sepolia. Hex form is what EIP-1193 expects. */
-const SEPOLIA_CHAIN_ID = "0xaa36a7"; // 11155111
+/**
+ * WalletConnect Cloud project id. Only the WalletConnect/mobile-QR path needs
+ * it — injected wallets (MetaMask, Rabby, Brave) work without one, which is the
+ * path the demo uses. Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to enable the
+ * rest. The placeholder keeps `getDefaultConfig` from throwing at import time,
+ * which would take the whole dashboard down.
+ */
+const WALLETCONNECT_PROJECT_ID =
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "kairos_injected_only";
+
+const wagmiConfig = getDefaultConfig({
+  appName: "Kairos",
+  projectId: WALLETCONNECT_PROJECT_ID,
+  chains: [sepolia],
+  ssr: true, // Next.js App Router renders this on the server first.
+});
+
+const queryClient = new QueryClient();
 
 type WalletCtx = {
   address: string | null;
-  /** Always null. The previous adapter stored a fabricated key here. */
+  /** Always null — kept for compatibility. The old adapter stored a fake key. */
   secret: string | null;
-  /** True only for a real injected wallet, false for watch-only. */
+  /** True when a real wallet is connected. */
   real: boolean;
   connecting: boolean;
-  /** Current chain, or null when unknown / watch-only. */
-  chainId: string | null;
-  /** Connected to a real wallet that is not on Sepolia. */
+  chainId: number | null;
+  /** Connected, but not on Sepolia. */
   wrongNetwork: boolean;
   connect: () => Promise<void>;
-  /** Watch-only: track an address without a key. */
+  /** Retained for compatibility; opens the same connect modal. */
   generate: () => Promise<void>;
   switchToSepolia: () => Promise<void>;
   disconnect: () => void;
@@ -57,190 +75,87 @@ const Ctx = createContext<WalletCtx>({
   disconnect: () => {},
 });
 
-const KEY = "kairos_owner";
-const REALKEY = "kairos_owner_real";
-/** Retired: previously held a fabricated secret. Cleared on load. */
-const LEGACY_SECRET_KEY = "kairos_owner_secret";
+/**
+ * Projects wagmi + RainbowKit state onto the context the app already consumes.
+ * Must sit inside the wagmi and RainbowKit providers, hence the split from
+ * `WalletProvider`.
+ */
+function WalletBridge({ children }: { children: ReactNode }) {
+  const { address, isConnected, isConnecting, isReconnecting } = useAccount();
+  const chainId = useChainId();
+  const { openConnectModal } = useConnectModal();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
 
-interface Eip1193Provider {
-  request(args: { method: string; params?: unknown[] }): Promise<unknown>;
-  on?(event: string, handler: (...args: never[]) => void): void;
-  removeListener?(event: string, handler: (...args: never[]) => void): void;
-}
+  const connect = useCallback(async () => {
+    openConnectModal?.();
+  }, [openConnectModal]);
 
-function injected(): Eip1193Provider | null {
-  if (typeof window === "undefined") return null;
-  return (window as unknown as { ethereum?: Eip1193Provider }).ethereum ?? null;
-}
+  const switchToSepolia = useCallback(async () => {
+    switchChain({ chainId: sepolia.id });
+  }, [switchChain]);
 
-function isAddress(value: string): boolean {
-  return /^0x[0-9a-fA-F]{40}$/.test(value);
+  const disconnect = useCallback(() => {
+    wagmiDisconnect();
+    // Retired keys from the pre-RainbowKit adapter. Left behind they would
+    // resurrect a stale identity on the next load.
+    localStorage.removeItem("kairos_owner");
+    localStorage.removeItem("kairos_owner_real");
+    localStorage.removeItem("kairos_owner_secret");
+    localStorage.removeItem("kairos_session_token");
+    localStorage.removeItem("kairos_session_id");
+  }, [wagmiDisconnect]);
+
+  const value = useMemo<WalletCtx>(
+    () => ({
+      address: address ?? null,
+      secret: null,
+      real: isConnected,
+      connecting: isConnecting || isReconnecting,
+      chainId: isConnected ? chainId : null,
+      wrongNetwork: isConnected && chainId !== sepolia.id,
+      connect,
+      generate: connect,
+      switchToSepolia,
+      disconnect,
+    }),
+    [
+      address,
+      isConnected,
+      isConnecting,
+      isReconnecting,
+      chainId,
+      connect,
+      switchToSepolia,
+      disconnect,
+    ],
+  );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [address, setAddress] = useState<string | null>(null);
-  const [real, setReal] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const [chainId, setChainId] = useState<string | null>(null);
-
-  // Restore a previous session, and drop any fabricated key the old adapter
-  // may have left behind.
-  useEffect(() => {
-    localStorage.removeItem(LEGACY_SECRET_KEY);
-    const saved = localStorage.getItem(KEY);
-    if (saved && isAddress(saved)) {
-      setAddress(saved);
-      setReal(localStorage.getItem(REALKEY) === "1");
-    }
-  }, []);
-
-  // Reflect wallet-side changes. Without these, switching account or network in
-  // MetaMask leaves the dashboard showing a stale identity — which on a
-  // treasury app is how money goes out from the wrong place.
-  useEffect(() => {
-    const provider = injected();
-    if (!provider?.on) return;
-
-    const onAccounts = (...args: never[]) => {
-      const accounts = args[0] as unknown as string[] | undefined;
-      const next = accounts?.[0];
-      if (!next) {
-        setAddress(null);
-        setReal(false);
-        localStorage.removeItem(KEY);
-        localStorage.removeItem(REALKEY);
-        return;
-      }
-      setAddress(next);
-      setReal(true);
-      localStorage.setItem(KEY, next);
-      localStorage.setItem(REALKEY, "1");
-    };
-
-    const onChain = (...args: never[]) => {
-      setChainId((args[0] as unknown as string) ?? null);
-    };
-
-    provider.on("accountsChanged", onAccounts);
-    provider.on("chainChanged", onChain);
-    return () => {
-      provider.removeListener?.("accountsChanged", onAccounts);
-      provider.removeListener?.("chainChanged", onChain);
-    };
-  }, []);
-
-  const switchToSepolia = useCallback(async () => {
-    const provider = injected();
-    if (!provider) return;
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: SEPOLIA_CHAIN_ID }],
-      });
-    } catch (err) {
-      // 4902: the wallet does not know this chain yet. Add it — the switch is
-      // then implicit.
-      if ((err as { code?: number }).code === 4902) {
-        await provider.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: SEPOLIA_CHAIN_ID,
-              chainName: "Ethereum Sepolia",
-              nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-              rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com"],
-              blockExplorerUrls: ["https://sepolia.etherscan.io"],
-            },
-          ],
-        });
-      } else {
-        throw err;
-      }
-    }
-    setChainId(SEPOLIA_CHAIN_ID);
-  }, []);
-
-  const connect = useCallback(async () => {
-    setConnecting(true);
-    try {
-      const provider = injected();
-      if (!provider) {
-        throw new Error(
-          "No Ethereum wallet detected. Install MetaMask, or use watch-only mode.",
-        );
-      }
-
-      const accounts = (await provider.request({ method: "eth_requestAccounts" })) as string[];
-      const account = accounts?.[0];
-      if (!account) throw new Error("Wallet returned no account.");
-
-      const current = (await provider.request({ method: "eth_chainId" })) as string;
-      setChainId(current);
-      if (current !== SEPOLIA_CHAIN_ID) {
-        // Offer rather than force: a rejected switch still leaves a connected
-        // wallet, and `wrongNetwork` tells the UI to warn.
-        await switchToSepolia().catch(() => {});
-      }
-
-      setAddress(account);
-      setReal(true);
-      localStorage.setItem(KEY, account);
-      localStorage.setItem(REALKEY, "1");
-    } finally {
-      setConnecting(false);
-    }
-  }, [switchToSepolia]);
-
-  /** Watch-only. No key, cannot sign — for demoing without a wallet installed. */
-  const generate = useCallback(async () => {
-    setConnecting(true);
-    try {
-      const entered = window.prompt("Ethereum address to watch (0x…):")?.trim();
-      if (!entered) return;
-      if (!isAddress(entered)) {
-        throw new Error("Not an Ethereum address — expected 0x followed by 40 hex characters.");
-      }
-      setAddress(entered);
-      setReal(false);
-      setChainId(null);
-      localStorage.setItem(KEY, entered);
-      localStorage.setItem(REALKEY, "0");
-    } finally {
-      setConnecting(false);
-    }
-  }, []);
-
-  const disconnect = useCallback(() => {
-    setAddress(null);
-    setReal(false);
-    setChainId(null);
-    localStorage.removeItem(KEY);
-    localStorage.removeItem(REALKEY);
-    localStorage.removeItem(LEGACY_SECRET_KEY);
-    localStorage.removeItem("kairos_session_token");
-    localStorage.removeItem("kairos_session_id");
-  }, []);
-
-  const wrongNetwork = real && chainId !== null && chainId !== SEPOLIA_CHAIN_ID;
-
   return (
-    <Ctx.Provider
-      value={{
-        address,
-        secret: null,
-        real,
-        connecting,
-        chainId,
-        wrongNetwork,
-        connect,
-        generate,
-        switchToSepolia,
-        disconnect,
-      }}
-    >
-      {children}
-    </Ctx.Provider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider
+          theme={darkTheme({
+            // Match the dashboard rather than shipping RainbowKit's default
+            // blue, which belongs to no part of this brand.
+            accentColor: "#a3e635",
+            accentColorForeground: "#0b0c0e",
+            borderRadius: "medium",
+          })}
+          initialChain={sepolia}
+        >
+          <WalletBridge>{children}</WalletBridge>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 
 export const useWallet = () => useContext(Ctx);
+
+/** RainbowKit's own button, for places that want the full account UI. */
+export { ConnectButton } from "@rainbow-me/rainbowkit";

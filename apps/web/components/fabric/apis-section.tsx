@@ -329,7 +329,7 @@ function CreateApiForm({ onDone, onCancel }: { onDone: () => void; onCancel: () 
           <Field label="Tags" hint="Add tags to help users find your API (max 10)">
             <Input value={f.tags} onChange={(e) => set("tags")(e.target.value)} placeholder="Sepolia, x402, agents" />
           </Field>
-          <Field label="Payment Address" hint="Sepolia public key (01…) that receives payments">
+          <Field label="Payment Address" hint="Ethereum address (0x…) that receives payments">
             <Input value={f.payment_address} onChange={(e) => set("payment_address")(e.target.value)} className="font-mono" placeholder="01…" />
           </Field>
           <Field label="Target API URL" hint="the endpoint called after payment">

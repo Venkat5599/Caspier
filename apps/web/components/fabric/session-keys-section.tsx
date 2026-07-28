@@ -51,7 +51,7 @@ export function SessionKeysSection() {
           expires. Use the agent key you connect in Claude Code or your wallet during scoped invoke tests.
         </p>
         <div className="mt-5 space-y-3">
-          <Field label="Agent public key (01… hex)">
+          <Field label="Agent address (0x… hex)">
             <Input
               placeholder="01…"
               value={agentKey}

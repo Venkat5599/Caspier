@@ -20,7 +20,8 @@
   "scripts": {
     "build": "bun run typecheck && bun run web:build",
     "lint": "bun run typecheck",
-    "test": "bun test",
+    "// test": "Scoped to the workspaces bun can run. contracts/ holds Hardhat tests that need the Nox plugin and a Docker stack; run those with `cd contracts && bun run test`. Unscoped `bun test` globs them, cannot find a Hardhat config from the repo root, and reds the build.",
+    "test": "bun test packages services apps",
     "typecheck": "bun --filter '*' typecheck",
     "web:dev": "bun --filter @fabric/web dev",
     "web:build": "bun --filter @fabric/web build",
