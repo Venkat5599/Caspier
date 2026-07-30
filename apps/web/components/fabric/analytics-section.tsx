@@ -58,10 +58,10 @@ function Metric({ label, value, note }: { label: string; value: string; note?: s
 function VolumeChart({ points }: { points: EpochPoint[] }) {
   const peak = Math.max(...points.map((p) => p.totalWei), 1);
 
+  // Columns must stretch to the full height, not sit at content height:
+  // `items-end` here would leave the bar track with an indefinite height, so
+  // each bar's percentage would resolve against nothing and collapse.
   return (
-    {/* Columns must stretch to the full height, not sit at content height:
-        `items-end` here would leave the bar track with an indefinite height,
-        so each bar's percentage would resolve against nothing and collapse. */}
     <div className="flex h-40 items-stretch gap-2">
       {points.map((p) => {
         // Floor the height so a small-but-real batch stays visible instead of
