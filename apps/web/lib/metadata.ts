@@ -46,7 +46,11 @@ export const baseMetadata: Metadata = {
     images: [siteConfig.ogImage],
     creator: siteConfig.creator,
   },
-  icons: { icon: "/icon.svg", apple: "/apple-icon.svg" },
+  // One SVG mark, and only a URL that actually resolves. Next's `apple-icon`
+  // file convention accepts raster formats only, so an `apple-icon.svg` never
+  // gets a route built for it — declaring one here emitted a <link> pointing
+  // at a permanent 404.
+  icons: { icon: "/icon.svg" },
   manifest: "/site.webmanifest",
 };
 
