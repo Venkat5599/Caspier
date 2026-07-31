@@ -2,41 +2,110 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Kairos palette.
+ *
+ * Every value is pulled out of the fold artwork, so the page and the picture
+ * are one surface rather than a picture pasted onto a theme. The sea gives the
+ * ink and the recessed tones, the dawn gives the single accent, and the grout
+ * the tesserae are set into gives the dark sections.
+ *
+ * The accent is used tonally and sparingly. Saturation lives in the artwork;
+ * the interface around it stays quiet, because an accent sprayed onto every
+ * label, dot and button is what makes a page read as a template.
+ */
 :root {
-  --background: #f5f5f5;
-  --foreground: #0a0a0a;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
-  --border: #e5e5e5;
-  --ring: #0066ff;
+  /* Page. A pale wall with a green-blue cast lifted from the water — not
+     cream, and not the cool grey that ships as every UI kit's default. */
+  --surface: #edf0ee;
+  --surface-2: #e2e8e5;
+  --surface-3: #d6dedb;
+
+  /* Ink. A deep sea-black that belongs to the artwork, never a stock #111. */
+  --ink: #0c2128;
+  --ink-2: #3d5155;
+  --ink-3: #6b7c7d;
+
+  --amber: #b8722e;
+  --amber-deep: #8f5520;
+
+  /* The two sides of the artwork's own complementary pair, taken down to
+     interface strength. The sea drives the primary action, the horizon light
+     drives the secondary — so the button pair repeats the relationship the
+     picture is built on instead of falling back to black-on-grey. */
+  --teal: #0f4a52;
+  --teal-lift: #15616c;
+  --sand: #e5dccb;
+  --sand-lift: #dcd1bc;
+
+  /* The mortar the tesserae are set into. Dark sections use it so they read as
+     the same material as the fold. */
+  --grout: #0e1a20;
+  --grout-2: #16262d;
+
+  /* The picture's two zones, used where something is exposed versus sealed.
+     Daylight above the horizon, deep water below it — a real complementary
+     pair taken from the artwork, so neither panel falls back to the washed
+     UI-kit grey or to a generic near-black card. */
+  --daylight: #eae3d5;
+  --daylight-line: #d6ccb8;
+  --sea-deep: #0d3b44;
+
+  /* Legacy token names kept so the dashboard keeps compiling, re-pointed off
+     the old lime and onto the real palette. */
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-3);
+  --border: var(--surface-3);
+  --ring: var(--amber-deep);
   --frame: #ffffff;
-  --accent: #a8d946;
-  --card-primary: #a8d946;
-  --card-secondary: #e8f5c8;
-  --card-foreground: #171717;
-  --card-foreground-muted: #525252;
-  --phone-screen: #f5f5f5;
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --accent: var(--amber);
+  --card-primary: var(--amber);
+  --card-secondary: var(--surface-2);
+  --card-foreground: var(--ink);
+  --card-foreground-muted: var(--ink-2);
+  --phone-screen: var(--surface);
+
+  /* Named `--stack-*`, not `--font-*`. Tailwind's `@theme` owns the `--font-*`
+     namespace, so declaring `--font-display: var(--font-display)` below would
+     be self-referential, resolve to guaranteed-invalid, and silently drop the
+     face — which is exactly what it did. */
+  --stack-sans: var(--font-sentient), Georgia, "Times New Roman", serif;
+  --stack-display: var(--font-gambarino), Georgia, "Times New Roman", serif;
+  /* Reserved for content that genuinely is data: handles, wei, hashes, curl
+     output. Never for labels, eyebrows or captions. */
+  --stack-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/*
+ * The dashboard ships its own dark surface and sets `color-scheme: dark`
+ * locally. The marketing pages are committed to light: the artwork is lit from
+ * a single low sun, and there is no honest dark counterpart to that.
+ */
 .dark {
-  --background: #141414;
-  --foreground: #fafafa;
-  --muted: #171717;
-  --muted-foreground: #a3a3a3;
-  --border: #262626;
-  --ring: #3b82f6;
-  --frame: #000;
-  --accent: #a8d946;
-  --card-primary: #a8d946;
-  --card-secondary: #2a3a1a;
-  --card-foreground: #fafafa;
-  --card-foreground-muted: #d4d4d4;
-  --phone-screen: #f5f5f5;
+  --frame: #0e1a20;
 }
 
 @theme inline {
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-amber: var(--amber);
+  --color-amber-deep: var(--amber-deep);
+  --color-teal: var(--teal);
+  --color-teal-lift: var(--teal-lift);
+  --color-sand: var(--sand);
+  --color-sand-lift: var(--sand-lift);
+  --color-daylight: var(--daylight);
+  --color-daylight-line: var(--daylight-line);
+  --color-sea-deep: var(--sea-deep);
+  --color-grout: var(--grout);
+  --color-grout-2: var(--grout-2);
+
   --color-frame: var(--frame);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -50,8 +119,10 @@
   --color-card-foreground: var(--card-foreground);
   --color-card-foreground-muted: var(--card-foreground-muted);
   --color-phone-screen: var(--phone-screen);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
+
+  --font-sans: var(--stack-sans);
+  --font-display: var(--stack-display);
+  --font-mono: var(--stack-mono);
 }
 
 html {
@@ -60,19 +131,42 @@ html {
   overflow-x: hidden;
 }
 
-html.dark {
-  color-scheme: dark;
-}
-
 html,
 body {
   overscroll-behavior-x: none;
 }
 
-/* Custom text selection */
+body {
+  overflow-x: hidden;
+  background-color: var(--surface);
+  color: var(--ink);
+  font-family: var(--stack-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 ::selection {
-  background-color: var(--accent);
-  color: white;
+  background-color: var(--ink);
+  color: var(--surface);
+}
+
+/*
+ * Display type. Gambarino, self-hosted; sizes are set per component. Optical
+ * tightening only — a big serif needs less letter-spacing, never less air
+ * between the lines.
+ */
+.display {
+  font-family: var(--stack-display);
+  font-weight: 400;
+  letter-spacing: -0.021em;
+  line-height: 1.04;
+}
+
+/* Data. Tabular figures so columns of wei actually line up. */
+.data {
+  font-family: var(--stack-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -95,17 +189,8 @@ body {
 }
 
 .animate-logo-marquee {
-  animation: logo-marquee 28s linear infinite;
+  animation: logo-marquee 44s linear infinite;
   will-change: transform;
-}
-
-@keyframes veil-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -114,116 +199,29 @@ body {
   }
 }
 
-body {
-  overflow-x: hidden;
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 .skip-to-content {
   position: absolute;
   left: -9999px;
   top: 1rem;
   z-index: 9999;
   padding: 0.75rem 1rem;
-  background: var(--background);
-  border: 2px solid var(--ring);
+  background: var(--surface);
+  border: 2px solid var(--ink);
   border-radius: 0.375rem;
   font-weight: 600;
   text-decoration: none;
-  color: var(--foreground);
+  color: var(--ink);
 }
 
 .skip-to-content:focus {
   left: 1rem;
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
-}
-
-.site-frame {
-  display: block;
-  position: fixed;
-  z-index: 9999;
-  pointer-events: none;
-  background-color: var(--frame);
-}
-
-.site-frame--top {
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 10px;
-}
-
-.site-frame--bottom {
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 10px;
-}
-
-.site-frame--left {
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 10px;
-}
-
-.site-frame--right {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 10px;
-}
-
-/* Corner decorations */
-.site-corner {
-  display: block;
-  position: fixed;
-  z-index: 9998;
-  pointer-events: none;
-  color: var(--frame);
-}
-
-.site-corner--top-left {
-  transform: rotate(90deg);
-  top: 10px;
-  left: 10px;
-}
-
-.site-corner--top-right {
-  top: 10px;
-  right: 10px;
-  transform: rotate(180deg);
-}
-
-.site-corner--bottom-left {
-  bottom: 10px;
-  left: 10px;
-  transform: rotate(0deg);
-}
-
-.site-corner--bottom-right {
-  bottom: 10px;
-  right: 10px;
-  transform: rotate(270deg);
-}
-
-.card-hover {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-hover:hover {
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
-  box-shadow: 0 8px 30px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .terminal {
@@ -247,20 +245,16 @@ body {
   border-radius: 9999px;
 }
 
-/* Hide frame and corners on mobile */
-@media (max-width: 850px) {
-  .site-frame,
-  .site-corner {
-    display: none;
-  }
-}
-
 /* Indeterminate progress for values still being decrypted in the Nox TEE.
    Transform only, so it never triggers layout, and it animates an element
    that is already on screen — content is never gated on it. */
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

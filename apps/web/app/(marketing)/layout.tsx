@@ -1,30 +1,23 @@
 import { Header } from "@/components/header";
 import { SkipToContent } from "@/components/skip-to-content";
-import { ThemeSwitch } from "@/components/theme-switch";
 import type { ReactNode } from "react";
 
+/**
+ * The marketing surface is committed to light. The artwork is lit by a single
+ * low sun and there is no honest dark counterpart to it, so there is no theme
+ * control here — and a sliding sun-and-moon pill would be a stock component
+ * either way. The dashboard keeps its own dark surface.
+ *
+ * The previous layout also painted a fixed white frame down all four edges
+ * with cut corners. Dropped: a full-bleed art plate has to reach the edge of
+ * the viewport to work at all, and a frame laid on top of it fought the one
+ * thing on the page worth looking at.
+ */
 export default function MarketingLayout({ children }: { children: ReactNode }): ReactNode {
   return (
     <>
-      <div className="site-frame site-frame--top" aria-hidden="true" />
-      <div className="site-frame site-frame--bottom" aria-hidden="true" />
-      <div className="site-frame site-frame--left" aria-hidden="true" />
-      <div className="site-frame site-frame--right" aria-hidden="true" />
-      <svg className="site-corner site-corner--top-left" width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-        <path d="M5.50871e-06 0C-0.00788227 37.3001 8.99616 50.0116 50 50H5.50871e-06V0Z" fill="currentColor" />
-      </svg>
-      <svg className="site-corner site-corner--top-right" width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-        <path d="M5.50871e-06 0C-0.00788227 37.3001 8.99616 50.0116 50 50H5.50871e-06V0Z" fill="currentColor" />
-      </svg>
-      <svg className="site-corner site-corner--bottom-left" width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-        <path d="M5.50871e-06 0C-0.00788227 37.3001 8.99616 50.0116 50 50H5.50871e-06V0Z" fill="currentColor" />
-      </svg>
-      <svg className="site-corner site-corner--bottom-right" width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-        <path d="M5.50871e-06 0C-0.00788227 37.3001 8.99616 50.0116 50 50H5.50871e-06V0Z" fill="currentColor" />
-      </svg>
-      <Header />
-      <ThemeSwitch />
       <SkipToContent />
+      <Header />
       {children}
     </>
   );

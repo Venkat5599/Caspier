@@ -1,154 +1,219 @@
 /**
- * Kairos — site configuration (customize landing + nav here).
+ * Kairos — landing page copy.
+ *
+ * Rule for everything in this file: no claim that is not already true and
+ * checkable. The addresses and endpoints below are the live ones, and the
+ * limitations are stated in the same voice as the features.
  */
 
 export const siteConfig = {
   name: "Kairos",
-  tagline: "Private agent payments on Ethereum",
+  tagline: "Confidential spending limits for AI agents",
   description:
-    "Kairos lets AI agents call paid APIs without custody or public spend trails. Scoped session budgets and x402 metering — settlement amounts hidden via iExec Nox on Sepolia.",
+    "Give an AI agent a budget it cannot exceed, without publishing the budget. Caps, balances and settlement amounts stay encrypted inside iExec Nox and are compared in a TEE. x402 and MCP are left exactly as they are.",
   url: "https://kairos.dev",
   twitter: "@kairos",
+  repo: "https://github.com/Venkat5599/kairos",
+  gateway: "https://agentfabric-api.187.127.137.136.sslip.io",
+  vault: "0xe417e9e36291a2d74121db0d3ce013854f5123cc",
+  vaultExplorer:
+    "https://sepolia.etherscan.io/address/0xe417e9e36291a2d74121db0d3ce013854f5123cc",
   nav: {
     cta: { text: "Open dashboard", href: "/dashboard" },
-    signIn: { text: "Sepolia demo", href: "/dashboard" },
   },
 };
 
 export const heroConfig = {
-  badge: "Kairos · iExec Nox · Sepolia · MCP",
-  headline: {
-    line1: "Private payments for",
-    line2: "autonomous agents,",
-    accent: "on Ethereum",
-  },
+  /* Two lines. A display line that wraps to three or four is a staircase, not
+     a composition. */
+  headline: ["A budget your agent", "cannot exceed or reveal"],
   subheadline:
-    "Scoped session budgets and metered API calls. Settlement amounts stay confidential with Nox — while your agents keep using MCP and x402.",
-  cta: { text: "Publish SKILL.md", href: "/dashboard/create" },
-};
-
-export const blurHeadlineConfig = {
-  text: "Kairos brings permissioned execution to Sepolia — publish SKILL.md, discover skills over MCP, pay with x402, and run inside scoped session keys without giving up custody.",
+    "Enforce an agent's spending cap on-chain while the cap, the balance and every settlement amount stay encrypted. The comparison happens inside the TEE; the chain only ever stores handles.",
+  primary: { text: "Open dashboard", href: "/dashboard" },
+  secondary: { text: "Verify it yourself", href: "#verify" },
 };
 
 export const techStackConfig = {
-  title: "Built on open standards",
-  description:
-    "Kairos composes Sepolia, x402, MCP, and iExec Nox — no proprietary lock-in.",
+  /* "Built on", never "used by" — these are dependencies, not customers. */
+  title: "Built on",
   items: [
-    {
-      name: "Sepolia",
-      description: "On-chain settlement and scoped session keys",
-    },
-    {
-      name: "x402",
-      description: "HTTP 402 micropayments per skill invoke",
-    },
-    {
-      name: "MCP",
-      description: "Model Context Protocol for agent discovery",
-    },
-    {
-      name: "iExec Nox",
-      description: "Confidential budgets and settlement inside a TEE",
-    },
+    { name: "iExec Nox", description: "Confidential compute in a TEE" },
+    { name: "Ethereum Sepolia", description: "Settlement and session keys" },
+    { name: "x402", description: "HTTP 402 metering per call" },
+    { name: "MCP", description: "Agent tool discovery" },
+    { name: "Safe", description: "Spends from an unmodified Safe" },
   ],
 };
 
-export const howItWorksConfig = {
-  title: "How it works",
-  description: "From SKILL.md to metered endpoint in four steps — publish, discover, pay, execute.",
-  cta: { text: "Try hello-weather", href: "/dashboard/apis/hello-weather" },
-  steps: [
-    { title: "Publish SKILL.md", description: "Define name, pricing, egress allowlist, and runtime. Gateway validates and registers the skill." },
-    { title: "Discover via REST or MCP", description: "Agents list skills, read manifests, and call POST /s/:slug or invoke_skill over MCP." },
-    { title: "Pay with x402", description: "Paid skills return HTTP 402 with a quote. Auto-pay settles on Sepolia and unlocks execution." },
-    { title: "Execute in sandbox", description: "Scoped session keys bound spend. Egress is allowlisted. Every call is metered and logged." },
-  ],
-};
+/** One row of a settlement ledger: field, value, and what it gives away. */
+export type LedgerRow = readonly [field: string, value: string, note: string];
 
-export const faqItems = [
-  {
-    question: "What is a skill?",
-    answer: "A skill is a SKILL.md manifest plus handler. Kairos validates it, registers REST and MCP endpoints, and meters every invocation on Sepolia.",
+/** The problem, shown rather than asserted. Both columns are real log shapes. */
+export const leakConfig: {
+  statement: string;
+  body: string;
+  plain: { label: string; caption: string; rows: LedgerRow[] };
+  sealed: { label: string; caption: string; rows: LedgerRow[] };
+} = {
+  /* Two lines at display size. A headline that wraps to four is a staircase
+     of short rows, not a composition. */
+  statement: "Every metered call leaves an operational diary.",
+  body: "Run a fleet of agents against metered APIs over x402 and the chain records it all in the open. Which agent is active, how often, against which vendor, for how much, and how much of its allowance is left. Anyone can read it. For a company that is a competitive leak before it is a privacy problem. The naive fix — don't enforce the budget on-chain — is worse: then the cap is a suggestion, and one compromised prompt drains the treasury.",
+  plain: {
+    label: "Plain x402 settlement",
+    caption: "Every field is public, and permanently linkable.",
+    rows: [
+      ["from", "0x91c4…7a20", "which agent"],
+      ["to", "0x5ef0…13bb", "which vendor"],
+      ["value", "1500 wei", "what it cost"],
+      ["block", "8421907", "exactly when"],
+    ],
   },
-  {
-    question: "How does x402 payment work?",
-    answer: "Paid skills return HTTP 402 with price, asset, nonce, and expiry. Call POST /s/:slug/auto-pay with the nonce to settle on Sepolia and run the handler.",
-  },
-  {
-    question: "What are session keys?",
-    answer: "Scoped Sepolia agent keys with max spend per call and expiry. Agents get autonomy without custody of your main wallet.",
-  },
-  {
-    question: "Can I use MCP?",
-    answer: "Yes. The MCP server exposes list_skills, get_skill, and invoke_skill — same gateway, same metering.",
-  },
-  {
-    question: "Does it work without Sepolia keys?",
-    answer: "Set FABRIC_DEMO_CHAIN=true for local demo mode. Real testnet deploys when CHAIN_WORKER_SECRET_KEY is configured.",
-  },
-];
-
-export const faqConfig = {
-  title: "Everything you need to know",
-  description: "Can't find the answer? Open the dashboard or check the repo.",
-  cta: {
-    primary: { text: "Open dashboard", href: "/dashboard" },
-    secondary: { text: "GitHub", href: "https://github.com/Venkat5599/kairos" },
-  },
-};
-
-export const footerConfig = {
-  cta: {
-    headline: "Ship your Sepolia testnet demo with Kairos.",
-    placeholder: "your@email.com",
-    button: "Open dashboard",
-  },
-  copyright: `© ${new Date().getFullYear()} Kairos. Built on Sepolia.`,
-};
-
-export const featuresBentoConfig = {
-  publish: {
-    title: "Publish SKILL.md in minutes",
-    description: "Upload a manifest — gateway validates pricing, egress, and runtime.",
-    phoneTitle: "Skill live",
-    phoneSubtitle: "REST + MCP ready",
-    phoneBody: "hello-weather is metered and sandboxed.",
-    projectName: "hello-weather",
-    projectMeta: "SKILL · v0.1 · LIVE",
-  },
-  invoke: {
-    title: "Metered invoke",
-    description: "402 quotes, auto-pay, and usage ledger on every call.",
-    activeLabel: "Paid skills",
-    activeCount: "402 → pay → run",
-    statusLabel: "Last invoke",
-    statusValue: "Weather OK",
-    statusBadge: "Paid via x402",
-  },
-  ecosystem: {
-    title: "Agent ecosystem",
-    subtitle: "MCP + x402 + Sepolia",
-    rating: "Built for hackathon demos",
-  },
-  scale: {
-    title: "Production paths",
-    description: "Demo chain locally, Sepolia testnet when keys are set.",
-    stats: [
-      { tag: "CHAIN", label: "Sepolia deploys", change: "testnet" },
-      { tag: "KEYS", label: "Session keys", change: "scoped" },
+  sealed: {
+    label: "The same settlement on Kairos",
+    caption: "One event. No addresses, no amount, only the epoch.",
+    rows: [
+      ["event", "PrivateSettlement", "that one occurred"],
+      ["epoch", "4", "which batch it joined"],
+      ["amount", "sealed", "never emitted"],
+      ["agent", "sealed", "never emitted"],
     ],
   },
 };
 
-export const features = {
-  smoothScroll: true,
-  parallaxHero: true,
-  blurInHeadline: true,
+/**
+ * Source: README, "What is hidden, and what is not". Being precise about this
+ * matters more than the feature list, so it is reproduced rather than softened.
+ */
+export const disclosureConfig = {
+  title: "What is hidden, and what is not",
+  lede: "Being precise about this matters more than any feature list.",
+  sealed: {
+    label: "Encrypted",
+    note: "Handles on-chain, decryptable only by permitted accounts.",
+    items: [
+      "The treasury budget and what remains of it",
+      "Each agent's per-call spending cap",
+      "Each agent's cumulative spend",
+      "The amount of any individual settlement",
+      "Whether a settlement was authorized or rejected",
+    ],
+  },
+  open: {
+    label: "Public",
+    note: "Visible to anyone reading the chain.",
+    items: [
+      "That a settlement occurred, and in which epoch",
+      "How many settlements a batch contained",
+      "The relayer address that submitted the transaction",
+      "The aggregate total of a closed epoch, once flushed",
+      "The vault's existence and its owner",
+    ],
+  },
+  limitation: {
+    label: "Known limitation, stated plainly",
+    body: "msg.sender is inherently public. Kairos routes every settlement through one gateway relayer, so on-chain all settlements share a sender and per-agent activity is not distinguishable — but the relayer itself is visible, and it learns what it relays.",
+  },
 };
 
-export const themeConfig = {
-  defaultTheme: "system" as "light" | "dark" | "system",
-  enableSystemTheme: true,
+/** The four movements of a payment. Deliberately not a numbered list on a rail. */
+export const pathConfig = {
+  title: "How a payment moves",
+  lede: "Individual debits never move funds on their own. That is what breaks the one-transaction-per-API-call trail.",
+  steps: [
+    {
+      key: "settle",
+      title: "Settle",
+      body: "The agent submits an encrypted amount. Two encrypted comparisons run inside the TEE: within cap, and within budget.",
+      detail: "amount ≤ cap · budget ≥ amount",
+    },
+    {
+      key: "authorize",
+      title: "Authorize",
+      body: "An encrypted boolean cannot gate a require — reverting would leak the comparison. The contract debits the amount or debits zero, then publishes the outcome as an encrypted flag.",
+      detail: "Nox.select(ok, amount, 0)",
+    },
+    {
+      key: "accumulate",
+      title: "Accumulate",
+      body: "The debit joins an encrypted epoch total instead of moving money, so no single transaction corresponds to a single API call.",
+      detail: "epochTotal += debited",
+    },
+    {
+      key: "flush",
+      title: "Flush",
+      body: "The owner closes the epoch. One aggregate is released for public decryption and leaves the Safe as a single transfer covering every payment in the batch.",
+      detail: "one number, N payments",
+    },
+  ],
+};
+
+/** Real commands against the live gateway, with their real response shapes. */
+export const verifyConfig = {
+  title: "Verify it yourself",
+  lede: "Every claim on this page is checkable from a terminal right now. Nothing here is a mock.",
+  checks: [
+    {
+      label: "The gateway is on the real chain",
+      command: "curl -s $GATEWAY/chain/status",
+      output: `{ "configured": true,
+  "demoMode": false,
+  "network": "testnet",
+  "chainId": 11155111 }`,
+    },
+    {
+      label: "The vault is live, with its relayer and epoch",
+      command: "curl -s $GATEWAY/nox/status",
+      output: `{ "configured": true,
+  "vaultAddress": "0xe417e9e3…5123cc",
+  "relayer": "0xEEfbC8d6…Ba4eBa",
+  "network": 11155111,
+  "epoch": 1 }`,
+    },
+    {
+      label: "A closed epoch reveals one aggregate, never a payment",
+      command: "curl -s $GATEWAY/nox/epoch/0",
+      output: `{ "epoch": 0,
+  "closed": true,
+  "totalWei": "38500",
+  "count": 7 }`,
+    },
+  ],
+  footnote:
+    "count is how many settlements the batch absorbed. totalWei covers all of them, and cannot be decomposed back into the payments that produced it.",
+};
+
+export const footerConfig = {
+  columns: [
+    {
+      heading: "Product",
+      links: [
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Confidential vault", href: "/dashboard" },
+        { label: "Workflows", href: "/dashboard/workflows" },
+        { label: "MCP servers", href: "/dashboard/mcp" },
+      ],
+    },
+    {
+      heading: "Build",
+      links: [
+        { label: "Publish a SKILL.md", href: "/dashboard/create" },
+        { label: "Session keys", href: "/dashboard/session-keys" },
+        { label: "Marketplace", href: "/dashboard/marketplace" },
+      ],
+    },
+    {
+      heading: "Source",
+      links: [
+        { label: "GitHub", href: "https://github.com/Venkat5599/kairos" },
+        { label: "Vault contract", href: siteConfig.vaultExplorer },
+        { label: "iExec Nox", href: "https://docs.iex.ec/nox-protocol" },
+      ],
+    },
+  ],
+  colophon: `Ethereum Sepolia · chain 11155111 · MIT · ${new Date().getFullYear()}`,
+};
+
+export const features = {
+  smoothScroll: true,
 };

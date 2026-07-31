@@ -1,130 +1,205 @@
 "use client";
 
-import { KairosLogo } from "@/components/kairos-logo";
+import { KairosMark } from "@/components/kairos-logo";
+import { Action } from "@/components/action";
 import { siteConfig } from "@/lib/config";
-import { ArrowDownRight, ChevronDown } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-const menus = {
-  product: [
-    { label: "Skill catalog", href: "/dashboard", description: "Browse published APIs" },
-    { label: "Marketplace", href: "/dashboard/marketplace", description: "Discover community skills" },
-    { label: "Publish skill", href: "/dashboard/create", description: "Upload a SKILL.md" },
-    { label: "Workflows", href: "/dashboard/workflows", description: "Kairos workflow automation" },
-    { label: "MCP server", href: "/dashboard/mcp", description: "Agent tool discovery" },
-  ],
-  developers: [
-    { label: "Gateway API", href: process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://localhost:8080", description: "REST catalog + invoke" },
-    { label: "Session keys", href: "/dashboard/session-keys", description: "Scoped Sepolia keys" },
-    { label: "GitHub", href: "https://github.com/Venkat5599/kairos", description: "Source code" },
-  ],
-};
+/**
+ * The nav is built from the page's own unit rather than laid out as the stock
+ * bar — logo left, links centred, button right, which is the arrangement on
+ * every product site.
+ *
+ * Instead the whole row is one baseline of type: the wordmark set in the
+ * display face at the far left, then the sections as a numbered index, the way
+ * a document lists its contents. That suits a page whose argument is a
+ * sequence, and the numerals are honest — they say how far through you are.
+ *
+ * The active section is marked by a tessera that travels between items on a
+ * shared layout animation. It is a real indicator with real state, not a stray
+ * dot bolted under a link, and the type shifts tone underneath it so the state
+ * still reads with motion disabled.
+ */
+
+const LINKS = [
+  { label: "The leak", href: "#leak", id: "leak" },
+  { label: "What's hidden", href: "#disclosure", id: "disclosure" },
+  { label: "How it moves", href: "#path", id: "path" },
+  { label: "Verify", href: "#verify", id: "verify" },
+];
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
-function HamburgerIcon({ isOpen }: { isOpen: boolean }): ReactNode {
-  return (
-    <div className="relative flex h-4 w-8 cursor-pointer flex-col justify-between">
-      <motion.span className="block h-0.5 w-full origin-center rounded-full bg-foreground" animate={isOpen ? { rotate: 45, y: 4.5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.25, ease }} />
-      <motion.span className="block h-0.5 w-full origin-center rounded-full bg-foreground" animate={isOpen ? { rotate: -45, y: -9.5 } : { rotate: 0, y: 0 }} transition={{ duration: 0.25, ease }} />
-    </div>
-  );
+/** Which section is currently under the top of the viewport. */
+function useActiveSection(ids: string[]): string | null {
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sections = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (sections.length === 0) return;
+
+    const onScroll = () => {
+      // The section whose top has most recently passed the reading line.
+      const line = window.innerHeight * 0.34;
+      let current: string | null = null;
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top <= line) current = s.id;
+      }
+      setActive(current);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [ids]);
+
+  return active;
 }
 
-function DesktopDropdown({ label, menuKey, isOpen, onOpen, onClose }: { label: string; menuKey: keyof typeof menus; isOpen: boolean; onOpen: () => void; onClose: () => void }): ReactNode {
+function Hamburger({ open }: { open: boolean }): ReactNode {
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
-      <button className="flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground max-[1200px]:px-3" aria-expanded={isOpen}>
-        {label}
-        <ChevronDown className="h-4 w-4" aria-hidden="true" />
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }} transition={{ duration: 0.2, ease }} className="absolute top-full left-0 w-72 pt-2">
-            <div className="overflow-hidden rounded-2xl border border-border bg-frame p-2 shadow-lg">
-              {menus[menuKey].map((item) => (
-                <Link key={item.label} href={item.href} className="block rounded-xl px-4 py-3 transition-colors hover:bg-muted">
-                  <div className="text-sm font-medium text-foreground">{item.label}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">{item.description}</div>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <span className="relative flex h-3.5 w-6 flex-col justify-between">
+      <motion.span
+        className="block h-[1.5px] w-full origin-center bg-ink"
+        animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+        transition={{ duration: 0.24, ease }}
+      />
+      <motion.span
+        className="block h-[1.5px] w-full origin-center bg-ink"
+        animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+        transition={{ duration: 0.24, ease }}
+      />
+    </span>
   );
 }
-
-const CornerSVG = ({ className }: { className: string }) => (
-  <svg className={className} width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-    <path d="M5.50871e-06 0C-0.00788227 37.3001 8.99616 50.0116 50 50H5.50871e-06V0Z" fill="currentColor" />
-  </svg>
-);
 
 export function Header(): ReactNode {
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const ids = useRef(LINKS.map((l) => l.id)).current;
+  const active = useActiveSection(ids);
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease }}
-      className="fixed top-2.5 left-1/2 z-[9998] w-full max-w-5xl -translate-x-1/2 rounded-b-4xl bg-frame shadow-2xl/20 max-[1200px]:max-w-2xl max-[850px]:top-0 max-[850px]:right-0 max-[850px]:left-0 max-[850px]:w-full max-[850px]:max-w-none max-[850px]:translate-x-0 max-[850px]:overflow-hidden max-[850px]:rounded-none max-[850px]:rounded-b-4xl"
-    >
-      <div className="flex h-20 items-center justify-between px-4 max-[850px]:h-18 max-[850px]:px-6">
-        <Link href="/" className="ml-4 max-[850px]:ml-0" aria-label={`${siteConfig.name} home`}>
-          <KairosLogo className="max-[1200px]:[&_span:last-child]:hidden max-[850px]:[&_span:last-child]:inline" />
+    <header className="relative z-50 bg-surface">
+      <div className="mx-auto flex h-[4.75rem] max-w-[96rem] items-center gap-8 px-6 sm:px-10">
+        <Link
+          href="/"
+          aria-label={`${siteConfig.name} home`}
+          className="focus-ring flex shrink-0 items-center gap-2.5 text-ink"
+        >
+          <KairosMark className="h-[1.05em] w-auto" />
+          {/* The wordmark in the display face, so the brand speaks in the same
+              voice as the headline rather than in the interface font. */}
+          <span className="display text-[1.375rem] leading-none">{siteConfig.name}</span>
         </Link>
 
-        <nav className="flex items-center gap-1 max-[850px]:hidden max-[1200px]:gap-0">
-          <DesktopDropdown label="Product" menuKey="product" isOpen={activeMenu === "product"} onOpen={() => setActiveMenu("product")} onClose={() => setActiveMenu(null)} />
-          <DesktopDropdown label="Developers" menuKey="developers" isOpen={activeMenu === "developers"} onOpen={() => setActiveMenu("developers")} onClose={() => setActiveMenu(null)} />
-          <Link href="/dashboard/apis/hello-weather" className="rounded-full px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-foreground/5 hover:text-foreground max-[1200px]:px-3">
-            Live demo
-          </Link>
+        <nav
+          className="ml-auto hidden items-baseline gap-8 lg:flex"
+          aria-label="Page sections"
+        >
+          {LINKS.map((l, i) => {
+            const on = active === l.id;
+            return (
+              <a
+                key={l.href}
+                href={l.href}
+                aria-current={on ? "true" : undefined}
+                className="focus-ring group relative flex items-baseline gap-2 py-1"
+              >
+                <span
+                  className={`data text-[0.6875rem] tabular-nums transition-colors duration-300 ${
+                    on ? "text-amber-deep" : "text-ink-3"
+                  }`}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className={`text-[0.9375rem] transition-colors duration-300 ${
+                    on ? "text-ink" : "text-ink-2 group-hover:text-ink"
+                  }`}
+                >
+                  {l.label}
+                </span>
+                {on && (
+                  <motion.span
+                    layoutId="nav-tessera"
+                    aria-hidden="true"
+                    className="absolute -bottom-1 left-0 block h-[5px] w-[5px] bg-amber-deep"
+                    transition={{ duration: 0.4, ease }}
+                  />
+                )}
+              </a>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-4 max-[850px]:hidden">
-          <Link href={siteConfig.nav.signIn.href} className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground">
-            {siteConfig.nav.signIn.text}
-          </Link>
-          <Link href={siteConfig.nav.cta.href} className="group relative inline-flex items-center">
-            <span className="absolute inset-y-0 right-0 w-[calc(100%-1.5rem)] rounded-xl bg-accent" />
-            <span className="relative z-10 rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background">{siteConfig.nav.cta.text}</span>
-            <span className="relative -left-px z-10 flex h-10 w-10 items-center justify-center rounded-xl text-black">
-              <ArrowDownRight className="h-4 w-4 transition-transform duration-300 group-hover:-rotate-45" />
-            </span>
-          </Link>
+        <div className="ml-auto hidden shrink-0 items-center gap-6 lg:ml-8 lg:flex">
+          <a
+            href={siteConfig.repo}
+            target="_blank"
+            rel="noreferrer"
+            className="focus-ring text-[0.9375rem] text-ink-2 transition-colors duration-200 hover:text-ink"
+          >
+            GitHub
+          </a>
+          <Action href={siteConfig.nav.cta.href} icon>
+            {siteConfig.nav.cta.text}
+          </Action>
         </div>
 
-        <button className="hidden h-10 w-10 items-center justify-center max-[850px]:flex" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}>
-          <HamburgerIcon isOpen={mobileMenuOpen} />
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label={open ? "Close menu" : "Open menu"}
+          className="focus-ring ml-auto flex h-10 w-10 items-center justify-center lg:hidden"
+        >
+          <Hamburger open={open} />
         </button>
       </div>
 
       <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="hidden overflow-hidden max-[850px]:block">
-            <div className="space-y-2 px-6 pb-4">
-              {[...menus.product, ...menus.developers].map((item) => (
-                <Link key={item.label} href={item.href} className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
-                  {item.label}
-                </Link>
+        {open && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.28, ease }}
+            className="overflow-hidden lg:hidden"
+          >
+            <div className="flex flex-col px-6 pb-6 sm:px-10">
+              {LINKS.map((l, i) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="focus-ring flex items-baseline gap-3 border-t border-ink/[0.09] py-3 first:border-t-0"
+                >
+                  <span className="data text-[0.6875rem] text-ink-3">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-ink-2">{l.label}</span>
+                </a>
               ))}
-              <Link href={siteConfig.nav.cta.href} className="mt-4 inline-flex rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background" onClick={() => setMobileMenuOpen(false)}>
+              <a
+                href={siteConfig.repo}
+                target="_blank"
+                rel="noreferrer"
+                className="focus-ring flex items-baseline gap-3 border-t border-ink/[0.09] py-3 text-ink-2"
+              >
+                <span className="data text-[0.6875rem] text-ink-3">05</span>
+                <span>GitHub</span>
+              </a>
+              <Action href={siteConfig.nav.cta.href} icon className="mt-5 self-start">
                 {siteConfig.nav.cta.text}
-              </Link>
+              </Action>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <CornerSVG className="pointer-events-none absolute top-0 -left-12.25 rotate-180 text-frame max-[850px]:hidden" />
-      <CornerSVG className="pointer-events-none absolute top-0 -right-12.25 rotate-90 text-frame max-[850px]:hidden" />
-    </motion.header>
+    </header>
   );
 }

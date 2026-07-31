@@ -19,21 +19,12 @@ const PER_ROW = 4;
 const ink = "color-mix(in srgb, var(--foreground) 58%, transparent)";
 const mark = "color-mix(in srgb, var(--accent) 70%, transparent)";
 
-/** A small rotated square between names — drawn here, not a borrowed bullet. */
+/** A single tessera between names — the page's own unit, not a borrowed bullet. */
 function Divider(): ReactNode {
   return (
     <span aria-hidden className="shrink-0 px-6 sm:px-9">
-      <svg width="7" height="7" viewBox="0 0 7 7">
-        <rect
-          x="3.5"
-          y="0.4"
-          width="4.38"
-          height="4.38"
-          transform="rotate(45 3.5 0.4)"
-          fill="none"
-          stroke={mark}
-          strokeWidth="1"
-        />
+      <svg width="6" height="6" viewBox="0 0 6 6">
+        <rect x="0" y="0" width="6" height="6" fill={mark} />
       </svg>
     </span>
   );
