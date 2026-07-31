@@ -113,7 +113,7 @@ export function DisclosureSection(): ReactNode {
           />
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-3 rounded-2xl bg-daylight p-6 sm:p-8 lg:grid-cols-12">
+        <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-3 slab rounded-2xl bg-daylight p-6 sm:p-8 lg:grid-cols-12">
           <p className="col-span-1 text-[0.9375rem] font-medium text-ink lg:col-span-4">
             {disclosureConfig.limitation.label}
           </p>

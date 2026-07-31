@@ -40,7 +40,7 @@ export function VerifySection(): ReactNode {
           {verifyConfig.checks.map((check) => (
             <div
               key={check.label}
-              className="grid grid-rows-[auto_auto_1fr] gap-4 rounded-2xl bg-sea-deep p-6 sm:p-7"
+              className="grid grid-rows-[auto_auto_1fr] gap-4 slab-deep rounded-2xl bg-sea-deep p-6 sm:p-7"
             >
               <p className="text-[0.9375rem] leading-snug font-medium text-surface">
                 {check.label}

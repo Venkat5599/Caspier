@@ -4,10 +4,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   Layers,
   Activity,
+  Check,
   CheckCircle2,
   DollarSign,
   KeyRound,
-  Lock,
   Store,
   Server,
   Workflow,
@@ -43,6 +43,67 @@ function Stat({ icon: Icon, label, value, sub }: { icon: typeof Layers; label: s
   );
 }
 
+/**
+ * One step of the x402 setup sequence.
+ *
+ * `done` is filled and quiet, `active` is the one the eye should land on, and
+ * `waiting` is dimmed so a step you cannot start yet does not read as an
+ * option. The marker is a number until the step is finished, then a check —
+ * so progress is legible without relying on colour alone.
+ */
+function FlowStep({
+  n,
+  state,
+  title,
+  detail,
+}: {
+  n: number;
+  state: "done" | "active" | "waiting";
+  title: string;
+  detail: string;
+}) {
+  const done = state === "done";
+  const active = state === "active";
+  return (
+    <li
+      className={`flex items-start gap-3 rounded-xl p-4 transition-colors duration-300 ${
+        active
+          ? "bg-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.09)]"
+          : "bg-white/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      }`}
+    >
+      <span
+        aria-hidden
+        className={`mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+          done
+            ? "bg-accent/[0.16] text-accent"
+            : active
+              ? "bg-white/[0.12] text-white"
+              : "bg-white/[0.05] text-neutral-600"
+        }`}
+      >
+        {done ? <Check className="h-3 w-3" strokeWidth={2.5} /> : n}
+      </span>
+      <div className="min-w-0">
+        <p
+          className={`text-sm font-semibold ${
+            state === "waiting" ? "text-neutral-500" : "text-white"
+          }`}
+        >
+          {title}
+        </p>
+        <p
+          className={`mt-0.5 text-sm ${
+            state === "waiting" ? "text-neutral-600" : "text-neutral-400"
+          } ${done ? "font-mono text-xs" : ""}`}
+        >
+          {detail}
+        </p>
+      </div>
+    </li>
+  );
+}
+
 export function DashboardHome({
   go,
 }: {
@@ -66,7 +127,7 @@ export function DashboardHome({
       .then(setS)
       .catch(() => {});
     getFabricActivity().then(setAct).catch(() => setAct([]));
-    getChainStatus().then((c) => setChain(c.demoMode ? "demo" : c.network)).catch(() => {});
+    getChainStatus().then((c) => setChain(c.configured ? c.network : "unconfigured")).catch(() => {});
     listSkills().then(setSkills).catch(() => setSkills([]));
     const t = localStorage.getItem("kairos_session_token");
     const sid = localStorage.getItem("kairos_session_id");
@@ -161,27 +222,40 @@ export function DashboardHome({
         </div>
         <p className="mt-1 text-sm text-neutral-500">Scoped session keys for automated, metered agent payments on Sepolia.</p>
 
-        <div className="mt-5 flex items-start gap-3 rounded-xl bg-white/[0.03] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-          <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
-          <div className="min-w-0">
-            <p className="font-semibold text-white">{address ? "Your wallet" : "Session key required"}</p>
-            <p className="mt-1 text-sm text-neutral-400">
-              Unlike handing an agent your owner key, agents pay through scoped, revocable Sepolia session keys — capped per call,
-              before expiry.{" "}
-              <span className="inline-flex items-center gap-1 text-accent">
-                <Lock className="h-3 w-3" /> zero custody
-              </span>
-            </p>
-            {address && (
-              <p className="mt-2 font-mono text-xs text-neutral-500">
-                {short(address, 8, 6)}
-                {" · "}
-                {wstat === null ? "…" : wstat.funded ? `${wstat.ETH} ETH` : "unfunded"}
-                {real && " · Sepolia Wallet"}
-              </p>
-            )}
-          </div>
-        </div>
+        {/* Where you actually are, in order.
+            This card used to open with an explainer panel repeating the line
+            above it, then offer four buttons at once across two rows with
+            nothing to say which came first. Getting an agent paying is a
+            two-step sequence, so it is shown as one: each step reports its own
+            state, and only the step you are on carries an action. */}
+        <ol className="mt-5 flex flex-col gap-2">
+          <FlowStep
+            n={1}
+            state={address ? "done" : "active"}
+            title={address ? "Wallet connected" : "Connect a wallet"}
+            detail={
+              address
+                ? `${short(address, 8, 6)} · ${
+                    wstat === null
+                      ? "checking balance…"
+                      : wstat.funded
+                        ? `${wstat.ETH} ETH`
+                        : "unfunded — use the faucet"
+                  }${real ? " · Sepolia" : ""}`
+                : "Generate a scoped session wallet, or connect one you already control."
+            }
+          />
+          <FlowStep
+            n={2}
+            state={prov ? "done" : address ? "active" : "waiting"}
+            title={prov ? "Session key live" : "Provision a session key"}
+            detail={
+              prov
+                ? "Capped per call and revocable on-chain."
+                : "Your agent pays through a scoped, revocable key — your owner key is never handed over."
+            }
+          />
+        </ol>
 
         {secret && (
           <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
@@ -330,20 +404,20 @@ export function DashboardHome({
           </div>
         )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            onClick={() => go("session-keys")}
-            className="inline-flex items-center gap-2 rounded-xl bg-white/[0.09] px-4 py-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.5)] transition-[background-color,color] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-accent/[0.16] hover:text-accent"
-          >
-            <KeyRound className="h-4 w-4" /> Manage session keys
-          </button>
-          <button
-            onClick={() => go("apis")}
-            className="inline-flex items-center gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-sm font-medium text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.06] hover:text-white"
-          >
-            Publish API
-          </button>
-        </div>
+        {/* Only once there is something to manage. Offering "Manage session
+            keys" to someone with no session key sends them to an empty screen,
+            and "Publish API" was a different job entirely — it already has its
+            own card in Manage directly below, so it is not repeated here. */}
+        {prov && (
+          <div className="mt-4">
+            <button
+              onClick={() => go("session-keys")}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/[0.03] px-4 py-3 text-sm font-medium text-neutral-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.06] hover:text-white"
+            >
+              <KeyRound className="h-4 w-4" /> Manage session keys
+            </button>
+          </div>
+        )}
       </Panel>
 
       <div>

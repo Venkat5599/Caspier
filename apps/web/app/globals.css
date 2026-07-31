@@ -151,6 +151,62 @@ body {
 }
 
 /*
+ * Slabs — the panels that sit on the page as physical objects.
+ *
+ * The depth here is lit, not floated. The mosaic is lit by one low sun sitting
+ * left of centre, so every panel is lit by that same source: a bright lip along
+ * the top edge where the light lands, a darker inner line along the bottom edge
+ * turned away from it, a hairline in the panel's own colour rather than a drawn
+ * outline, and a cast shadow that drifts a little to the right because the sun
+ * is to the left.
+ *
+ * The cast is three layers at increasing blur with negative spread, so it stays
+ * tight under the panel and falls off to nothing. It is tinted to the panel's
+ * own colour, never black, and it never traces the panel's shape — no bloom, no
+ * second box, no halo.
+ */
+.slab,
+.slab-deep {
+  /* Light falling across the face: the top of the slab catches the sun, the
+     bottom turns away from it. This is what gives the panel form — without it
+     a flat fill plus an edge highlight still reads as a sticker. Very low
+     contrast and laid over a solid colour, so there is nothing for banding to
+     grab onto. */
+  background-image: linear-gradient(
+    180deg,
+    var(--slab-lit) 0%,
+    transparent 44%,
+    var(--slab-shade) 100%
+  );
+}
+
+.slab {
+  --slab-lit: rgba(255, 255, 255, 0.55);
+  --slab-shade: rgba(92, 76, 50, 0.05);
+  box-shadow:
+    /* the lip along the top edge, where the light actually lands */
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(92, 76, 50, 0.15),
+    inset 0 0 0 1px rgba(150, 132, 100, 0.15),
+    /* contact, then two casts drifting right as the sun is to the left */
+    0 1px 2px -1px rgba(74, 60, 38, 0.10),
+    1px 8px 14px -6px rgba(74, 60, 38, 0.16),
+    3px 22px 40px -18px rgba(74, 60, 38, 0.24);
+}
+
+.slab-deep {
+  --slab-lit: rgba(190, 228, 234, 0.06);
+  --slab-shade: rgba(0, 0, 0, 0.11);
+  box-shadow:
+    inset 0 1px 0 rgba(190, 228, 234, 0.26),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(122, 176, 184, 0.13),
+    0 1px 2px -1px rgba(5, 26, 32, 0.26),
+    1px 8px 14px -6px rgba(5, 26, 32, 0.34),
+    3px 22px 40px -18px rgba(5, 26, 32, 0.42);
+}
+
+/*
  * Display type. Gambarino, self-hosted; sizes are set per component. Optical
  * tightening only — a big serif needs less letter-spacing, never less air
  * between the lines.

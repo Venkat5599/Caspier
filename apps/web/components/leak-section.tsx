@@ -29,7 +29,7 @@ function Ledger({
   return (
     <div
       className={`flex h-full flex-col rounded-2xl p-6 sm:p-8 ${
-        sealed ? "bg-sea-deep text-surface" : "bg-daylight text-ink"
+        sealed ? "slab-deep bg-sea-deep text-surface" : "slab bg-daylight text-ink"
       }`}
     >
       <p className={`text-[0.9375rem] font-medium ${sealed ? "text-surface" : "text-ink"}`}>
