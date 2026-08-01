@@ -80,7 +80,7 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
     gatewayUrl: deps.gatewayUrl,
     transfer: async (recipient, amountWei) => {
       const tx = await deps.chain.transfer({ recipientPublicKeyHex: recipient, amountWei });
-      return { deployHash: tx.deployHash, demo: tx.demo };
+      return { deployHash: tx.deployHash };
     },
   };
 
@@ -310,7 +310,6 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
         funded: n > 0,
         wei,
         ETH: (n / 1e18).toFixed(6),
-        demo: deps.chain.status().demoMode,
       });
     } catch (e) {
       return c.json({ ok: false, error: (e as Error).message }, 502);
@@ -452,7 +451,10 @@ export function mountFabricRoutes(app: Hono, deps: FabricRouteDeps) {
       return c.json({ ok: false, error: "agentPublicKeyHex and scope required" }, 400);
     }
     try {
-      const key = deps.authz.mint(body.agentPublicKeyHex, body.scope);
+      // `mint` registers the agent on-chain and is async. Without the await
+      // this read `.id` off a pending Promise, threw, and the route answered
+      // 500 on every call — so provisioning could never succeed.
+      const key = await deps.authz.mint(body.agentPublicKeyHex, body.scope);
       const token = `kairos_sk_${key.id.replace(/-/g, "").slice(0, 24)}`;
       return c.json({ ok: true, sessionId: key.id, token, key });
     } catch (e) {

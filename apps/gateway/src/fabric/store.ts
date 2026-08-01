@@ -170,7 +170,7 @@ export function bumpApiStats(slug: string, ok: boolean, paid: boolean, price: nu
 export function listWorkflows(scope?: string, owner?: string): WorkflowRow[] {
   let rows = workflows;
   if (scope === "public") rows = rows.filter((w) => w.is_public);
-  if (owner) rows = rows.filter((w) => (w as WorkflowRow & { owner_address?: string }).owner_address === owner);
+  if (owner) rows = rows.filter((w) => (w as WorkflowRow & { owner_address?: string | null }).owner_address === owner);
   return rows;
 }
 
@@ -180,9 +180,9 @@ export function getWorkflow(slugOrId: string): WorkflowRow | undefined {
 }
 
 export function createWorkflow(
-  body: Partial<WorkflowRow> & { name: string; owner_address?: string },
+  body: Partial<WorkflowRow> & { name: string; owner_address?: string | null },
 ): WorkflowRow {
-  const row: WorkflowRow & { owner_address?: string } = {
+  const row: WorkflowRow & { owner_address?: string | null } = {
     id: id(),
     name: body.name,
     slug: body.slug ?? slugify(body.name),
@@ -263,7 +263,7 @@ export function createMcpServer(body: {
   is_public?: boolean;
   tools?: string[];
   workflows?: string[];
-  owner_address?: string;
+  owner_address?: string | null;
 }): McpServerRow {
   const row: McpServerRow = {
     id: id(),
@@ -387,9 +387,25 @@ export function seedBuiltinWorkflows(): WorkflowRow[] {
   return [wf];
 }
 
-const KAIROS_OWNER = "01kairos0000000000000000000000000000000000000000000000000000000000";
+/**
+ * Owner recorded against seeded marketplace entries.
+ *
+ * This used to be a fabricated 64-character string that looked like an address
+ * and was not one. The publisher of a seeded entry is whichever account this
+ * gateway signs with; when that is unset the entry is recorded as unowned
+ * rather than attributed to an account nobody controls.
+ */
+function seedOwner(): string | null {
+  return process.env.SEPOLIA_PUBLIC_KEY ?? process.env.EVM_PUBLIC_KEY ?? null;
+}
 
-/** Public marketplace starters (kage-style demo catalog). */
+/**
+ * Marketplace starters.
+ *
+ * Every target below is a live public endpoint that was called and returned
+ * 200 before being listed here. Nothing in this catalog is a placeholder or a
+ * stand-in: an entry that cannot actually be invoked does not belong in it.
+ */
 export function seedMarketplaceTemplates(): {
   apis: FabricApiRow[];
   mcps: McpServerRow[];
@@ -409,7 +425,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "1000",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [
           { name: "lat", type: "number", in: "path", description: "Latitude", required: true },
           { name: "lon", type: "number", in: "path", description: "Longitude", required: true },
@@ -417,27 +433,6 @@ export function seedMarketplaceTemplates(): {
       }),
     );
   }
-
-  if (!apis.some((a) => a.slug === "json-placeholder")) {
-    created.apis.push(
-      createApi({
-        name: "JSON Placeholder",
-        slug: "json-placeholder",
-        description: "Demo REST proxy for agent integration tests — metered via Kairos gateway.",
-        category: "Data",
-        tags: ["demo", "rest"],
-        target_url: "https://jsonplaceholder.typicode.com/posts/{id}",
-        http_method: "GET",
-        price: "500",
-        is_public: true,
-        owner_address: KAIROS_OWNER,
-        variables: [{ name: "id", type: "number", in: "path", description: "Post id", required: true }],
-      }),
-    );
-  }
-
-  // Every target below was hit and returned 200 before being seeded. These are
-  // real public endpoints, metered through the x402 gateway — not placeholders.
 
   if (!apis.some((a) => a.slug === "coingecko-price")) {
     created.apis.push(
@@ -451,7 +446,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "1500",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [
           { name: "ids", type: "string", in: "path", description: "Coin id, e.g. ethereum", required: true },
           { name: "vs", type: "string", in: "path", description: "Fiat, e.g. usd", required: true },
@@ -472,7 +467,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "800",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [{ name: "base", type: "string", in: "path", description: "Base currency, e.g. USD", required: true }],
       }),
     );
@@ -490,7 +485,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "600",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [{ name: "ip", type: "string", in: "path", description: "IPv4 address", required: true }],
       }),
     );
@@ -508,7 +503,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "400",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [],
       }),
     );
@@ -526,7 +521,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "700",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [],
       }),
     );
@@ -544,7 +539,7 @@ export function seedMarketplaceTemplates(): {
         http_method: "GET",
         price: "300",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         variables: [{ name: "count", type: "number", in: "path", description: "How many records", required: true }],
       }),
     );
@@ -557,7 +552,7 @@ export function seedMarketplaceTemplates(): {
         display_name: "Kairos Fabric",
         description: "Official starter MCP — chain status, skills catalog, and public workflow tools for agents.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         tools: [
           "kairos_chain_status",
           "kairos_budget",
@@ -565,7 +560,6 @@ export function seedMarketplaceTemplates(): {
           "get_skill",
           "fabric_reload",
           "api__open-meteo-weather",
-          "api__json-placeholder",
         ],
         workflows: ["pay-if-budget"],
       }),
@@ -579,7 +573,7 @@ export function seedMarketplaceTemplates(): {
         display_name: "Kairos Market Data",
         description: "Live market and network data as agent tools — every call metered over x402.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         tools: [
           "api__coingecko-price",
           "api__exchange-rates",
@@ -603,7 +597,7 @@ export function seedMarketplaceTemplates(): {
         description:
           "Fetches an ETH price and USD FX rates at the same time, then joins both into one payload. Demonstrates parallel fan-out and join.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         tags: ["http", "parallel", "market"],
         input_variables: [{ name: "vs", required: false, description: "Fiat currency, defaults to usd" }],
         steps: [],
@@ -659,7 +653,7 @@ export function seedMarketplaceTemplates(): {
         description:
           "Reads live Berlin weather, then branches: settle on-chain when the temperature is at or below the threshold, otherwise record a skip. Demonstrates true/false branching.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         tags: ["http", "condition", "onchain"],
         input_variables: [
           { name: "threshold", required: true, description: "Temperature ceiling in Celsius" },
@@ -728,7 +722,7 @@ export function seedMarketplaceTemplates(): {
         slug: "agent-api-chain",
         description: "Budget gate → HTTP weather fetch — template for multi-step agent flows.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         input_variables: [
           { name: "lat", required: true, description: "Latitude" },
           { name: "lon", required: true, description: "Longitude" },
@@ -814,7 +808,7 @@ export function seedMarketplaceTemplates(): {
           http_method: "GET",
           price: a.price,
           is_public: true,
-          owner_address: KAIROS_OWNER,
+          owner_address: seedOwner(),
           variables: a.variables,
         }),
       );
@@ -828,7 +822,7 @@ export function seedMarketplaceTemplates(): {
         display_name: "Agent Toolkit",
         description: "Everyday agent tools — crypto prices, FX, geo-IP, and test data over metered x402.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         tools: [
           "api__coingecko-price",
           "api__exchange-rates",
@@ -847,7 +841,7 @@ export function seedMarketplaceTemplates(): {
         slug: "crypto-price-check",
         description: "Budget gate → CoinGecko USD price lookup — template for on-demand market data.",
         is_public: true,
-        owner_address: KAIROS_OWNER,
+        owner_address: seedOwner(),
         input_variables: [{ name: "coin", required: true, description: "Coin id (e.g. bitcoin)" }],
         steps: [
           { id: "gate", kind: "condition", left: "{{input.coin}}", op: "!=", right: "" },
